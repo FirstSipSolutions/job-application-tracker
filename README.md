@@ -66,38 +66,45 @@ To maintain high velocity and avoid integration bottlenecks, development is divi
 - [ ] **UI:** Add a "Delete" action to the table rows with a confirmation prompt
 
 ---
-```
-project-root/
-├── frontend/                         # React + Vite
-│   ├── public/
-│   ├── src/
-│   │   ├── api/
-│   │   │   └── applications.js       # Axios/fetch wrappers for all API calls
-│   │   ├── components/
-│   │   │   ├── ApplicationForm.jsx   # Add new application (POST)
-│   │   │   ├── ApplicationTable.jsx  # Dashboard list view (GET)
-│   │   │   ├── EditModal.jsx         # Edit notes/url/etc (PUT)
-│   │   │   ├── StatusDropdown.jsx    # Inline status update (PUT)
-│   │   │   └── DeleteButton.jsx      # Delete with confirmation (DELETE)
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   ├── vite.config.js
-│   └── package.json
+Volume serial number is D2CB-DDB6
+C:.
+│   .gitignore
+│   README.md
 │
-├── backend/                          # Node.js + Express
-│   ├── src/
-│   │   ├── db/
-│   │   │   └── pool.js               # pg Pool instance and connection config
-│   │   ├── controllers/
-│   │   │   └── applications.controller.js  # All query logic lives here
-│   │   ├── routes/
-│   │   │   └── applications.routes.js      # Route definitions only, no logic
-│   │   └── app.js                    # Express app setup, middleware, route mounting
-│   ├── schema.sql                    # Source of truth for DB schema
-│   ├── server.js                     # Entry point — binds app to port
-│   ├── .env                          # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
-│   └── package.json
+├───backend
+│   │   .env
+│   │   package.json
+│   │   schema.sql
+│   │   server.js
+│   │
+│   └───src
+│       │   app.js
+│       │
+│       ├───controllers
+│       │       applications.controller.js
+│       │
+│       ├───db
+│       │       pool.js
+│       │
+│       └───routes
+│               applications.routes.js
 │
-└── README.md
-```
+└───frontend
+    │   index.html
+    │   package.json
+    │   vite.config.js
+    │
+    ├───public
+    └───src
+        │   App.jsx
+        │   main.jsx
+        │
+        ├───api
+        │       applications.js
+        │
+        └───components
+                ApplicationForm.jsx
+                ApplicationTable.jsx
+                DeleteButton.jsx
+                EditModal.jsx
+                StatusDropdown.jsx
