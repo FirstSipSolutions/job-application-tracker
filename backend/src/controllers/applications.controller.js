@@ -19,11 +19,16 @@ const applicationSchema = z.object({
   notes: z.string().optional(),
 });
 
+// this hits the db and select every row from the applictions table
+// orders by newsest first
+// returns json format
+
 const getAllApplications = async (req, res, next) => {
   try {
-
-    // TODO: SELECT all applications ORDER BY created_at DESC
-    
+    const result = await pool.query(
+      "SELECT * FROM applications ORDER BY created_at DESC",
+    );
+    res.json(result.rows);
   } catch (err) {
     next(err);
   }
