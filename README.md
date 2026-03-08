@@ -11,7 +11,7 @@ The initial repository structure, database schema, and server boilerplate were s
 - **Frontend:** React (Vite)
 - **Backend:** Node.js + Express
 - **Database:** PostgreSQL
-- **Deployment:** Render or Railway (MVP) → AWS (Phase 2)
+- **Deployment:** AWS (RDS + deployment)
 
 ---
 
