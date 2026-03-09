@@ -36,8 +36,14 @@ const getAllApplications = async (req, res, next) => {
 
 const createApplication = async (req, res, next) => {
   try {
-    // TODO: Validate with applicationSchema.safeParse()
-    // TODO: INSERT and return new row with 201
+    // TODO: Validate with applicationSchema.safeParse() -- this is done!
+    // TODO: INSERT and return new row with 201 - in progress now
+
+    const parsed = applicationSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({ errors: parsed.error.errors });
+    }
   } catch (err) {
     next(err);
   }
