@@ -1,4 +1,7 @@
-import { useState } from "react";
+const fs = require('fs');
+const path = require('path');
+
+const content = `import { useState } from "react";
 
 const mockData = [
   { id: 1, company_name: "Shopify", job_title: "Junior Developer", status: "interviewing", date_applied: "2026-03-01", job_url: "#", notes: "3rd round — system design" },
@@ -33,7 +36,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0b0c0f", color: "#e8e4dc", fontFamily: "'IBM Plex Mono', monospace" }}>
-      <style>{`
+      <style>{\`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
         *:focus, *:focus-visible { outline: none !important; box-shadow: none !important; }
@@ -61,7 +64,7 @@ export default function App() {
         .form-label { font-size: 9px; letter-spacing: 0.16em; color: #555566; display: block; margin-bottom: 6px; text-transform: uppercase; }
         .cancel-btn { background: none; border: 1px solid #2a2b35; color: #555566; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.1em; padding: 9px 18px; cursor: pointer; outline: none; }
         .cancel-btn:focus { outline: none; box-shadow: none; }
-      `}</style>
+      \`}</style>
 
       {/* Ticker */}
       <div style={{ borderBottom: "1px solid #1a1b20", overflow: "hidden", height: 28, display: "flex", alignItems: "center" }}>
@@ -95,7 +98,7 @@ export default function App() {
         {/* Nav */}
         <div style={{ display: "flex", gap: 28 }}>
           {NAV_ITEMS.map((item) => (
-            <button key={item} className={`nav-item ${activeFilter === item ? "active" : ""}`} onClick={() => setActiveFilter(item)}>{item}</button>
+            <button key={item} className={\`nav-item \${activeFilter === item ? "active" : ""}\`} onClick={() => setActiveFilter(item)}>{item}</button>
           ))}
         </div>
       </div>
@@ -114,7 +117,7 @@ export default function App() {
               <div style={{ fontSize: 10, color: "#3a3a4a" }}>{String(i + 1).padStart(2, "0")}</div>
               <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: "-0.01em" }}>{app.company_name}</div>
               <div style={{ fontSize: 11, color: "#888899" }}>{app.job_title}</div>
-              <div><span className="status-pill" style={{ background: cfg.color + "22", color: cfg.color, border: `1px solid ${cfg.color}44` }}>{cfg.label}</span></div>
+              <div><span className="status-pill" style={{ background: cfg.color + "22", color: cfg.color, border: \`1px solid \${cfg.color}44\` }}>{cfg.label}</span></div>
               <div style={{ fontSize: 10, color: "#555566" }}>{app.date_applied || "—"}</div>
               <div style={{ fontSize: 10, color: "#555566", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{app.notes || "—"}</div>
             </div>
@@ -159,3 +162,9 @@ export default function App() {
     </div>
   );
 }
+`;
+
+const target = process.argv[2];
+if (!target) { console.error('Usage: node write_app.js <path/to/App.jsx>'); process.exit(1); }
+fs.writeFileSync(path.resolve(target), content, 'utf8');
+console.log('Written to', target);
