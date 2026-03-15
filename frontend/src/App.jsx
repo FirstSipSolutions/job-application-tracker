@@ -1,60 +1,20 @@
 import { useState } from "react";
 
 const mockData = [
-  {
-    id: 1,
-    company_name: "Shopify",
-    job_title: "Junior Developer",
-    status: "interviewing",
-    date_applied: "2026-03-01",
-    job_url: "#",
-    notes: "3rd round — system design",
-  },
-  {
-    id: 2,
-    company_name: "Cossette",
-    job_title: "Frontend Engineer",
-    status: "applied",
-    date_applied: "2026-03-04",
-    job_url: "#",
-    notes: "",
-  },
-  {
-    id: 3,
-    company_name: "Ubisoft",
-    job_title: "Web Developer",
-    status: "rejected",
-    date_applied: "2026-02-20",
-    job_url: "#",
-    notes: "No feedback given",
-  },
-  {
-    id: 4,
-    company_name: "FreshBooks",
-    job_title: "React Developer",
-    status: "draft",
-    date_applied: null,
-    job_url: "#",
-    notes: "Still writing cover letter",
-  },
-  {
-    id: 5,
-    company_name: "Wealthsimple",
-    job_title: "Software Engineer",
-    status: "offered",
-    date_applied: "2026-02-14",
-    job_url: "#",
-    notes: "Offer: $72k — deciding",
-  },
+  { id: 1, company_name: "Shopify", job_title: "Junior Developer", status: "interviewing", date_applied: "2026-03-01", job_url: "#", notes: "3rd round — system design" },
+  { id: 2, company_name: "Cossette", job_title: "Frontend Engineer", status: "applied", date_applied: "2026-03-04", job_url: "#", notes: "" },
+  { id: 3, company_name: "Ubisoft", job_title: "Web Developer", status: "rejected", date_applied: "2026-02-20", job_url: "#", notes: "No feedback given" },
+  { id: 4, company_name: "FreshBooks", job_title: "React Developer", status: "draft", date_applied: null, job_url: "#", notes: "Still writing cover letter" },
+  { id: 5, company_name: "Wealthsimple", job_title: "Software Engineer", status: "offered", date_applied: "2026-02-14", job_url: "#", notes: "Offer: $72k — deciding" },
 ];
 
 const STATUS_CONFIG = {
-  draft: { label: "DRAFT", color: "#4a4a5a" },
-  applied: { label: "APPLIED", color: "#2d6be4" },
+  draft:        { label: "DRAFT",        color: "#4a4a5a" },
+  applied:      { label: "APPLIED",      color: "#2d6be4" },
   interviewing: { label: "INTERVIEWING", color: "#d4a017" },
-  offered: { label: "OFFERED", color: "#1d9c5a" },
-  rejected: { label: "REJECTED", color: "#c0392b" },
-  withdrawn: { label: "WITHDRAWN", color: "#7f5af0" },
+  offered:      { label: "OFFERED",      color: "#1d9c5a" },
+  rejected:     { label: "REJECTED",     color: "#c0392b" },
+  withdrawn:    { label: "WITHDRAWN",    color: "#7f5af0" },
 };
 
 const NAV_ITEMS = ["ALL", "APPLIED", "INTERVIEWING", "OFFERED", "REJECTED"];
@@ -63,27 +23,16 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [showForm, setShowForm] = useState(false);
 
-  const filtered =
-    activeFilter === "ALL"
-      ? mockData
-      : mockData.filter((a) => a.status.toUpperCase() === activeFilter);
+  const filtered = activeFilter === "ALL"
+    ? mockData
+    : mockData.filter((a) => a.status.toUpperCase() === activeFilter);
 
   const counts = Object.fromEntries(
-    Object.keys(STATUS_CONFIG).map((s) => [
-      s,
-      mockData.filter((a) => a.status === s).length,
-    ]),
+    Object.keys(STATUS_CONFIG).map((s) => [s, mockData.filter((a) => a.status === s).length])
   );
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0b0c0f",
-        color: "#e8e4dc",
-        fontFamily: "'IBM Plex Mono', monospace",
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "#0b0c0f", color: "#e8e4dc", fontFamily: "'IBM Plex Mono', monospace" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@700;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -114,70 +63,31 @@ export default function App() {
         .cancel-btn:focus { outline: none; box-shadow: none; }
       `}</style>
 
+      {/* Ticker */}
+      <div style={{ borderBottom: "1px solid #1a1b20", overflow: "hidden", height: 28, display: "flex", alignItems: "center" }}>
+        <div className="ticker" style={{ fontSize: 9, letterSpacing: "0.2em", color: "#2a2b35", display: "flex", gap: 48 }}>
+          {Array(6).fill(null).map((_, i) => (
+            <span key={i}>JOB TRACKER v1.0 &nbsp;·&nbsp; {mockData.length} APPLICATIONS TRACKED &nbsp;·&nbsp; {counts.interviewing} IN PIPELINE &nbsp;·&nbsp; {counts.offered} OFFERS &nbsp;·&nbsp;</span>
+          ))}
+        </div>
+      </div>
+
       {/* Header */}
-      <div
-        style={{ padding: "28px 24px 0", borderBottom: "1px solid #1a1b20" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            marginBottom: 24,
-          }}
-        >
+      <div style={{ padding: "28px 24px 0", borderBottom: "1px solid #1a1b20" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
           <div>
-            <div
-              style={{
-                fontSize: 9,
-                letterSpacing: "0.2em",
-                color: "#555566",
-                marginBottom: 8,
-              }}
-            >
-              FIRST SIP SOLUTIONS &nbsp;/&nbsp; JOB APPLICATION TRACKER
-            </div>
-            <h1
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "clamp(32px, 5vw, 52px)",
-                fontWeight: 900,
-                lineHeight: 1,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              THE PIPELINE
-            </h1>
+            <div style={{ fontSize: 9, letterSpacing: "0.2em", color: "#555566", marginBottom: 8 }}>FIRST SIP SOLUTIONS &nbsp;/&nbsp; JOB APPLICATION TRACKER</div>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.02em" }}>THE PIPELINE</h1>
           </div>
-          <button className="add-btn" onClick={() => setShowForm(true)}>
-            + LOG APPLICATION
-          </button>
+          <button className="add-btn" onClick={() => setShowForm(true)}>+ LOG APPLICATION</button>
         </div>
 
         {/* Stats */}
         <div style={{ display: "flex", gap: 1, marginBottom: 24 }}>
           {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
             <div key={key} className="stat-block">
-              <div
-                style={{
-                  fontSize: 22,
-                  fontWeight: 600,
-                  color: cfg.color,
-                  lineHeight: 1,
-                }}
-              >
-                {counts[key] || 0}
-              </div>
-              <div
-                style={{
-                  fontSize: 8,
-                  letterSpacing: "0.14em",
-                  color: "#3a3a4a",
-                  marginTop: 4,
-                }}
-              >
-                {cfg.label}
-              </div>
+              <div style={{ fontSize: 22, fontWeight: 600, color: cfg.color, lineHeight: 1 }}>{counts[key] || 0}</div>
+              <div style={{ fontSize: 8, letterSpacing: "0.14em", color: "#3a3a4a", marginTop: 4 }}>{cfg.label}</div>
             </div>
           ))}
         </div>
@@ -185,13 +95,7 @@ export default function App() {
         {/* Nav */}
         <div style={{ display: "flex", gap: 28 }}>
           {NAV_ITEMS.map((item) => (
-            <button
-              key={item}
-              className={`nav-item ${activeFilter === item ? "active" : ""}`}
-              onClick={() => setActiveFilter(item)}
-            >
-              {item}
-            </button>
+            <button key={item} className={`nav-item ${activeFilter === item ? "active" : ""}`} onClick={() => setActiveFilter(item)}>{item}</button>
           ))}
         </div>
       </div>
@@ -200,130 +104,41 @@ export default function App() {
       <div>
         <div className="row" style={{ cursor: "default" }}>
           {["#", "COMPANY", "ROLE", "STATUS", "APPLIED", "NOTES"].map((h) => (
-            <div key={h} className="col-header">
-              {h}
-            </div>
+            <div key={h} className="col-header">{h}</div>
           ))}
         </div>
         {filtered.map((app, i) => {
           const cfg = STATUS_CONFIG[app.status];
           return (
             <div key={app.id} className="row">
-              <div style={{ fontSize: 10, color: "#3a3a4a" }}>
-                {String(i + 1).padStart(2, "0")}
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                {app.company_name}
-              </div>
-              <div style={{ fontSize: 11, color: "#888899" }}>
-                {app.job_title}
-              </div>
-              <div>
-                <span
-                  className="status-pill"
-                  style={{
-                    background: cfg.color + "22",
-                    color: cfg.color,
-                    border: `1px solid ${cfg.color}44`,
-                  }}
-                >
-                  {cfg.label}
-                </span>
-              </div>
-              <div style={{ fontSize: 10, color: "#555566" }}>
-                {app.date_applied || "—"}
-              </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "#555566",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {app.notes || "—"}
-              </div>
+              <div style={{ fontSize: 10, color: "#3a3a4a" }}>{String(i + 1).padStart(2, "0")}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: "-0.01em" }}>{app.company_name}</div>
+              <div style={{ fontSize: 11, color: "#888899" }}>{app.job_title}</div>
+              <div><span className="status-pill" style={{ background: cfg.color + "22", color: cfg.color, border: `1px solid ${cfg.color}44` }}>{cfg.label}</span></div>
+              <div style={{ fontSize: 10, color: "#555566" }}>{app.date_applied || "—"}</div>
+              <div style={{ fontSize: 10, color: "#555566", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{app.notes || "—"}</div>
             </div>
           );
         })}
         {filtered.length === 0 && (
-          <div
-            style={{
-              padding: "48px 24px",
-              textAlign: "center",
-              color: "#3a3a4a",
-              fontSize: 11,
-              letterSpacing: "0.1em",
-            }}
-          >
-            NO ENTRIES MATCH THIS FILTER
-          </div>
+          <div style={{ padding: "48px 24px", textAlign: "center", color: "#3a3a4a", fontSize: 11, letterSpacing: "0.1em" }}>NO ENTRIES MATCH THIS FILTER</div>
         )}
       </div>
 
       {/* Footer */}
-      <div
-        style={{
-          padding: "20px 24px",
-          borderTop: "1px solid #1a1b20",
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 40,
-        }}
-      >
-        <span
-          style={{ fontSize: 9, color: "#2a2b35", letterSpacing: "0.15em" }}
-        >
-          FSS · JOB-APPLICATION-TRACKER · MVP
-        </span>
-        <span
-          style={{ fontSize: 9, color: "#2a2b35", letterSpacing: "0.15em" }}
-        >
-          {new Date().toISOString().split("T")[0]}
-        </span>
+      <div style={{ padding: "20px 24px", borderTop: "1px solid #1a1b20", display: "flex", justifyContent: "space-between", marginTop: 40 }}>
+        <span style={{ fontSize: 9, color: "#2a2b35", letterSpacing: "0.15em" }}>FSS · JOB-APPLICATION-TRACKER · MVP</span>
+        <span style={{ fontSize: 9, color: "#2a2b35", letterSpacing: "0.15em" }}>{new Date().toISOString().split("T")[0]}</span>
       </div>
 
       {/* Form modal */}
       {showForm && (
-        <div
-          className="form-overlay"
-          onClick={(e) => e.target === e.currentTarget && setShowForm(false)}
-        >
+        <div className="form-overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
           <div className="form-panel">
-            <div
-              style={{
-                fontSize: 9,
-                letterSpacing: "0.2em",
-                color: "#c8ff00",
-                marginBottom: 4,
-              }}
-            >
-              NEW ENTRY
-            </div>
-            <h2
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: 28,
-                fontWeight: 900,
-                marginBottom: 28,
-              }}
-            >
-              Log Application
-            </h2>
+            <div style={{ fontSize: 9, letterSpacing: "0.2em", color: "#c8ff00", marginBottom: 4 }}>NEW ENTRY</div>
+            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 900, marginBottom: 28 }}>Log Application</h2>
             <div style={{ display: "grid", gap: 18 }}>
-              {[
-                ["COMPANY NAME", "e.g. Shopify"],
-                ["JOB TITLE", "e.g. Junior Developer"],
-                ["JOB URL", "https://..."],
-                ["DATE APPLIED", "YYYY-MM-DD"],
-              ].map(([label, ph]) => (
+              {[["COMPANY NAME", "e.g. Shopify"], ["JOB TITLE", "e.g. Junior Developer"], ["JOB URL", "https://..."], ["DATE APPLIED", "YYYY-MM-DD"]].map(([label, ph]) => (
                 <div key={label}>
                   <label className="form-label">{label}</label>
                   <input className="form-input" placeholder={ph} />
@@ -331,21 +146,12 @@ export default function App() {
               ))}
               <div>
                 <label className="form-label">NOTES</label>
-                <textarea
-                  className="form-input"
-                  rows={3}
-                  placeholder="Recruiter name, salary, anything..."
-                  style={{ resize: "vertical" }}
-                />
+                <textarea className="form-input" rows={3} placeholder="Recruiter name, salary, anything..." style={{ resize: "vertical" }} />
               </div>
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
-              <button className="add-btn" style={{ flex: 1 }}>
-                SAVE APPLICATION
-              </button>
-              <button className="cancel-btn" onClick={() => setShowForm(false)}>
-                CANCEL
-              </button>
+              <button className="add-btn" style={{ flex: 1 }}>SAVE APPLICATION</button>
+              <button className="cancel-btn" onClick={() => setShowForm(false)}>CANCEL</button>
             </div>
           </div>
         </div>
