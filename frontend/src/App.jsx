@@ -1,52 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createApplication, getApplications } from "./api/applications";
 
-const mockData = [
-  {
-    id: 1,
-    company_name: "Shopify",
-    job_title: "Junior Developer",
-    status: "interviewing",
-    date_applied: "2026-03-01",
-    job_url: "#",
-    notes: "3rd round — system design",
-  },
-  {
-    id: 2,
-    company_name: "Cossette",
-    job_title: "Frontend Engineer",
-    status: "applied",
-    date_applied: "2026-03-04",
-    job_url: "#",
-    notes: "",
-  },
-  {
-    id: 3,
-    company_name: "Ubisoft",
-    job_title: "Web Developer",
-    status: "rejected",
-    date_applied: "2026-02-20",
-    job_url: "#",
-    notes: "No feedback given",
-  },
-  {
-    id: 4,
-    company_name: "FreshBooks",
-    job_title: "React Developer",
-    status: "draft",
-    date_applied: null,
-    job_url: "#",
-    notes: "Still writing cover letter",
-  },
-  {
-    id: 5,
-    company_name: "Wealthsimple",
-    job_title: "Software Engineer",
-    status: "offered",
-    date_applied: "2026-02-14",
-    job_url: "#",
-    notes: "Offer: $72k — deciding",
-  },
-];
+// Mock data stays until issue #8 wires the GET endpoint
+// At that point this gets replaced with a useEffect that fetches from the DB
+// const mockData = [
+//   {
+//     id: 1,
+//     company_name: "Shopify",
+//     job_title: "Junior Developer",
+//     status: "interviewing",
+//     date_applied: "2026-03-01",
+//     job_url: "#",
+//     notes: "3rd round — system design",
+//   },
+//   {
+//     id: 2,
+//     company_name: "Cossette",
+//     job_title: "Frontend Engineer",
+//     status: "applied",
+//     date_applied: "2026-03-04",
+//     job_url: "#",
+//     notes: "",
+//   },
+//   {
+//     id: 3,
+//     company_name: "Ubisoft",
+//     job_title: "Web Developer",
+//     status: "rejected",
+//     date_applied: "2026-02-20",
+//     job_url: "#",
+//     notes: "No feedback given",
+//   },
+//   {
+//     id: 4,
+//     company_name: "FreshBooks",
+//     job_title: "React Developer",
+//     status: "draft",
+//     date_applied: null,
+//     job_url: "#",
+//     notes: "Still writing cover letter",
+//   },
+//   {
+//     id: 5,
+//     company_name: "Wealthsimple",
+//     job_title: "Software Engineer",
+//     status: "offered",
+//     date_applied: "2026-02-14",
+//     job_url: "#",
+//     notes: "Offer: $72k — deciding",
+//   },
+// ];
 
 const STATUS_CONFIG = {
   draft: { label: "DRAFT", color: "#3a3a4a" },
@@ -70,15 +73,48 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [showForm, setShowForm] = useState(false);
 
+  // applications holds the live list — starts with mockData, grows as you add real ones
+  const [applications, setApplications] = useState([]);
+
+  useEffect(() => {
+    getApplications().then((data) => setApplications(data));
+  }, []);
+
+  // form tracks exactly what's typed in each field right now
+  const [form, setForm] = useState({
+    company_name: "",
+    job_title: "",
+    job_url: "",
+    date_applied: "",
+    notes: "",
+  });
+
+  // handleSubmit fires when you click SAVE APPLICATION
+  // it sends the form data to your POST endpoint and adds the new row to the top of the table
+  const handleSubmit = async () => {
+    if (!form.company_name || !form.job_title) return; // don't submit if required fields are empty
+    const result = await createApplication(form);
+    setApplications([result, ...applications]); // prepend new row — newest first
+    setForm({
+      company_name: "",
+      job_title: "",
+      job_url: "",
+      date_applied: "",
+      notes: "",
+    }); // reset form
+    setShowForm(false); // close modal
+  };
+
+  // filtered and counts now use the live applications array instead of hardcoded mockData
   const filtered =
     activeFilter === "ALL"
-      ? mockData
-      : mockData.filter((a) => a.status.toUpperCase() === activeFilter);
+      ? applications
+      : applications.filter((a) => a.status.toUpperCase() === activeFilter);
 
   const counts = Object.fromEntries(
     Object.keys(STATUS_CONFIG).map((s) => [
       s,
-      mockData.filter((a) => a.status === s).length,
+      applications.filter((a) => a.status === s).length,
     ]),
   );
 
@@ -347,17 +383,51 @@ export default function App() {
               Log Application
             </h2>
             <div style={{ display: "grid", gap: 20 }}>
-              {[
-                ["COMPANY NAME", "e.g. Shopify"],
-                ["JOB TITLE", "e.g. Junior Developer"],
-                ["JOB URL", "https://..."],
-                ["DATE APPLIED", "YYYY-MM-DD"],
-              ].map(([label, ph]) => (
-                <div key={label}>
-                  <label className="field-label">{label}</label>
-                  <input className="field" placeholder={ph} />
-                </div>
-              ))}
+              {/* Each input is controlled — it reads from form state and updates it on every keystroke */}
+              <div>
+                <label className="field-label">COMPANY NAME</label>
+                <input
+                  className="field"
+                  placeholder="e.g. Shopify"
+                  value={form.company_name}
+                  onChange={(e) =>
+                    setForm({ ...form, company_name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="field-label">JOB TITLE</label>
+                <input
+                  className="field"
+                  placeholder="e.g. Junior Developer"
+                  value={form.job_title}
+                  onChange={(e) =>
+                    setForm({ ...form, job_title: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="field-label">JOB URL</label>
+                <input
+                  className="field"
+                  placeholder="https://..."
+                  value={form.job_url}
+                  onChange={(e) =>
+                    setForm({ ...form, job_url: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="field-label">DATE APPLIED</label>
+                <input
+                  className="field"
+                  placeholder="YYYY-MM-DD"
+                  value={form.date_applied}
+                  onChange={(e) =>
+                    setForm({ ...form, date_applied: e.target.value })
+                  }
+                />
+              </div>
               <div>
                 <label className="field-label">NOTES</label>
                 <textarea
@@ -365,11 +435,16 @@ export default function App() {
                   rows={3}
                   placeholder="Recruiter, salary, anything..."
                   style={{ resize: "none", width: "100%" }}
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 />
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 32 }}>
-              <button className="save-btn">SAVE APPLICATION</button>
+              {/* onClick calls handleSubmit which hits the POST endpoint */}
+              <button className="save-btn" onClick={handleSubmit}>
+                SAVE APPLICATION
+              </button>
               <button className="close-btn" onClick={() => setShowForm(false)}>
                 CANCEL
               </button>
