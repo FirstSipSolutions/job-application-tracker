@@ -1,55 +1,55 @@
-import { useState } from "react";
-import { createApplication } from "./api/applications";
+import { useState, useEffect } from "react";
+import { createApplication, getApplications } from "./api/applications";
 
 // Mock data stays until issue #8 wires the GET endpoint
 // At that point this gets replaced with a useEffect that fetches from the DB
-const mockData = [
-  {
-    id: 1,
-    company_name: "Shopify",
-    job_title: "Junior Developer",
-    status: "interviewing",
-    date_applied: "2026-03-01",
-    job_url: "#",
-    notes: "3rd round — system design",
-  },
-  {
-    id: 2,
-    company_name: "Cossette",
-    job_title: "Frontend Engineer",
-    status: "applied",
-    date_applied: "2026-03-04",
-    job_url: "#",
-    notes: "",
-  },
-  {
-    id: 3,
-    company_name: "Ubisoft",
-    job_title: "Web Developer",
-    status: "rejected",
-    date_applied: "2026-02-20",
-    job_url: "#",
-    notes: "No feedback given",
-  },
-  {
-    id: 4,
-    company_name: "FreshBooks",
-    job_title: "React Developer",
-    status: "draft",
-    date_applied: null,
-    job_url: "#",
-    notes: "Still writing cover letter",
-  },
-  {
-    id: 5,
-    company_name: "Wealthsimple",
-    job_title: "Software Engineer",
-    status: "offered",
-    date_applied: "2026-02-14",
-    job_url: "#",
-    notes: "Offer: $72k — deciding",
-  },
-];
+// const mockData = [
+//   {
+//     id: 1,
+//     company_name: "Shopify",
+//     job_title: "Junior Developer",
+//     status: "interviewing",
+//     date_applied: "2026-03-01",
+//     job_url: "#",
+//     notes: "3rd round — system design",
+//   },
+//   {
+//     id: 2,
+//     company_name: "Cossette",
+//     job_title: "Frontend Engineer",
+//     status: "applied",
+//     date_applied: "2026-03-04",
+//     job_url: "#",
+//     notes: "",
+//   },
+//   {
+//     id: 3,
+//     company_name: "Ubisoft",
+//     job_title: "Web Developer",
+//     status: "rejected",
+//     date_applied: "2026-02-20",
+//     job_url: "#",
+//     notes: "No feedback given",
+//   },
+//   {
+//     id: 4,
+//     company_name: "FreshBooks",
+//     job_title: "React Developer",
+//     status: "draft",
+//     date_applied: null,
+//     job_url: "#",
+//     notes: "Still writing cover letter",
+//   },
+//   {
+//     id: 5,
+//     company_name: "Wealthsimple",
+//     job_title: "Software Engineer",
+//     status: "offered",
+//     date_applied: "2026-02-14",
+//     job_url: "#",
+//     notes: "Offer: $72k — deciding",
+//   },
+// ];
 
 const STATUS_CONFIG = {
   draft: { label: "DRAFT", color: "#3a3a4a" },
@@ -74,7 +74,11 @@ export default function App() {
   const [showForm, setShowForm] = useState(false);
 
   // applications holds the live list — starts with mockData, grows as you add real ones
-  const [applications, setApplications] = useState(mockData);
+  const [applications, setApplications] = useState([]);
+
+  useEffect(() => {
+    getApplications().then((data) => setApplications(data));
+  }, []);
 
   // form tracks exactly what's typed in each field right now
   const [form, setForm] = useState({
