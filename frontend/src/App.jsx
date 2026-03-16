@@ -1,56 +1,11 @@
 import { useState, useEffect } from "react";
 import { createApplication, getApplications } from "./api/applications";
+import ApplicationTable from "./components/ApplicationTable";
 
-// Mock data stays until issue #8 wires the GET endpoint
-// At that point this gets replaced with a useEffect that fetches from the DB
-// const mockData = [
-//   {
-//     id: 1,
-//     company_name: "Shopify",
-//     job_title: "Junior Developer",
-//     status: "interviewing",
-//     date_applied: "2026-03-01",
-//     job_url: "#",
-//     notes: "3rd round — system design",
-//   },
-//   {
-//     id: 2,
-//     company_name: "Cossette",
-//     job_title: "Frontend Engineer",
-//     status: "applied",
-//     date_applied: "2026-03-04",
-//     job_url: "#",
-//     notes: "",
-//   },
-//   {
-//     id: 3,
-//     company_name: "Ubisoft",
-//     job_title: "Web Developer",
-//     status: "rejected",
-//     date_applied: "2026-02-20",
-//     job_url: "#",
-//     notes: "No feedback given",
-//   },
-//   {
-//     id: 4,
-//     company_name: "FreshBooks",
-//     job_title: "React Developer",
-//     status: "draft",
-//     date_applied: null,
-//     job_url: "#",
-//     notes: "Still writing cover letter",
-//   },
-//   {
-//     id: 5,
-//     company_name: "Wealthsimple",
-//     job_title: "Software Engineer",
-//     status: "offered",
-//     date_applied: "2026-02-14",
-//     job_url: "#",
-//     notes: "Offer: $72k — deciding",
-//   },
-// ];
-
+// STATUS_CONFIG is the single source of truth for how each status looks across the app.
+// The key matches what's stored in the DB (lowercase ENUM value).
+// label = what gets displayed in the UI
+// color = the hex used for the badge background, text, and border
 const STATUS_CONFIG = {
   draft: { label: "DRAFT", color: "#3a3a4a" },
   applied: { label: "APPLIED", color: "#2d6be4" },
@@ -60,6 +15,8 @@ const STATUS_CONFIG = {
   withdrawn: { label: "WITHDRAWN", color: "#8888aa" },
 };
 
+// NAV_ITEMS drives the filter buttons at the top of the dashboard.
+// "ALL" is a special case handled in the filter logic below — it's not a DB status.
 const NAV_ITEMS = [
   "ALL",
   "APPLIED",
@@ -70,17 +27,29 @@ const NAV_ITEMS = [
 ];
 
 export default function App() {
+  // activeFilter tracks which nav button is selected.
+  // Defaults to "ALL" so everything shows on first load.
   const [activeFilter, setActiveFilter] = useState("ALL");
+
+  // showForm controls whether the "Log Application" modal is visible.
+  // true = modal open, false = modal closed.
   const [showForm, setShowForm] = useState(false);
 
-  // applications holds the live list — starts with mockData, grows as you add real ones
+  // applications is the live array of job applications pulled from the DB.
+  // Starts empty — the useEffect below populates it on mount.
   const [applications, setApplications] = useState([]);
 
+  // useEffect with an empty dependency array [] runs once when the component mounts.
+  // It calls getApplications() which hits GET /api/applications on the backend.
+  // When the data comes back, it sets the applications state — which triggers a re-render
+  // and populates the table with real DB rows.
   useEffect(() => {
     getApplications().then((data) => setApplications(data));
   }, []);
 
-  // form tracks exactly what's typed in each field right now
+  // form tracks the current value of every field in the "Log Application" modal.
+  // Each key maps directly to a column in the applications table.
+  // This is a controlled form — every keystroke updates state here.
   const [form, setForm] = useState({
     company_name: "",
     job_title: "",
@@ -89,28 +58,45 @@ export default function App() {
     notes: "",
   });
 
-  // handleSubmit fires when you click SAVE APPLICATION
-  // it sends the form data to your POST endpoint and adds the new row to the top of the table
+  // handleSubmit fires when the user clicks SAVE APPLICATION.
+  // It validates the required fields, sends the data to the backend via POST,
+  // prepends the new row to the top of the table, resets the form, and closes the modal.
   const handleSubmit = async () => {
-    if (!form.company_name || !form.job_title) return; // don't submit if required fields are empty
+    // Guard: don't submit if the two required fields are empty
+    if (!form.company_name || !form.job_title) return;
+
+    // createApplication sends POST /api/applications with the form data as JSON.
+    // The backend inserts the row and returns the full new row including id and created_at.
     const result = await createApplication(form);
-    setApplications([result, ...applications]); // prepend new row — newest first
+
+    // Prepend the new row to the top of the list (newest first — matches DB order)
+    setApplications([result, ...applications]);
+
+    // Reset all form fields back to empty strings
     setForm({
       company_name: "",
       job_title: "",
       job_url: "",
       date_applied: "",
       notes: "",
-    }); // reset form
-    setShowForm(false); // close modal
+    });
+
+    // Close the modal
+    setShowForm(false);
   };
 
-  // filtered and counts now use the live applications array instead of hardcoded mockData
+  // filtered is what actually gets rendered in the table.
+  // If activeFilter is "ALL", show everything.
+  // Otherwise, compare each application's status (uppercased) against the active filter.
+  // This runs on every render — no extra state needed.
   const filtered =
     activeFilter === "ALL"
       ? applications
       : applications.filter((a) => a.status.toUpperCase() === activeFilter);
 
+  // counts builds an object like { draft: 2, applied: 5, interviewing: 1, ... }
+  // Used to show the count numbers in the stats bar at the top.
+  // Object.fromEntries turns an array of [key, value] pairs back into an object.
   const counts = Object.fromEntries(
     Object.keys(STATUS_CONFIG).map((s) => [
       s,
@@ -127,6 +113,9 @@ export default function App() {
         fontFamily: "'IBM Plex Mono', monospace",
       }}
     >
+      {/* All CSS lives here as a single injected style block.
+          This keeps the component self-contained — no external CSS file needed.
+          CSS classes like .row, .nav-btn, .status-tag are used throughout the JSX below. */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,900;1,700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -157,7 +146,7 @@ export default function App() {
         .close-btn:hover { border-color: #3a3a4a; color: #666677; }
       `}</style>
 
-      {/* Header */}
+      {/* ── HEADER ───────────────────────────────────────────────────────────── */}
       <div
         style={{ padding: "32px 32px 0", borderBottom: "1px solid #13141a" }}
       >
@@ -197,12 +186,16 @@ export default function App() {
               </em>
             </h1>
           </div>
+          {/* Clicking this sets showForm to true, which renders the modal below */}
           <button className="log-btn" onClick={() => setShowForm(true)}>
             + LOG APPLICATION
           </button>
         </div>
 
-        {/* Stats */}
+        {/* ── STATS BAR ──────────────────────────────────────────────────────── */}
+        {/* Iterates over STATUS_CONFIG to render one stat block per status.
+            Each block shows the count of applications with that status.
+            counts[key] comes from the derived counts object calculated above. */}
         <div
           style={{
             display: "flex",
@@ -236,7 +229,9 @@ export default function App() {
           ))}
         </div>
 
-        {/* Nav */}
+        {/* ── FILTER NAV ─────────────────────────────────────────────────────── */}
+        {/* Each button sets activeFilter, which updates the filtered array above.
+            The "active" class on the matching button adds the underline highlight. */}
         <div style={{ display: "flex", gap: 24, marginTop: 20 }}>
           {NAV_ITEMS.map((item) => (
             <button
@@ -250,7 +245,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* Table header */}
+      {/* ── TABLE HEADER ─────────────────────────────────────────────────────── */}
+      {/* Static column labels — must match the grid-template-columns in .row CSS */}
       <div className="row" style={{ marginTop: 2 }}>
         {["", "COMPANY", "ROLE", "STATUS", "DATE", "NOTES"].map((h) => (
           <div
@@ -267,72 +263,15 @@ export default function App() {
         ))}
       </div>
 
-      {/* Rows */}
-      {filtered.map((app, i) => {
-        const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG["draft"];
-        return (
-          <div key={app.id} className="row clickable">
-            <div style={{ fontSize: 9, color: "#555566", fontWeight: 300 }}>
-              {String(i + 1).padStart(2, "0")}
-            </div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                letterSpacing: "-0.01em",
-                color: "#e8e4dc",
-              }}
-            >
-              {app.company_name}
-            </div>
-            <div style={{ fontSize: 10, color: "#8888aa", fontWeight: 300 }}>
-              {app.job_title}
-            </div>
-            <div>
-              <span
-                className="status-tag"
-                style={{
-                  background: cfg.color + "18",
-                  color: cfg.color,
-                  border: `1px solid ${cfg.color}30`,
-                }}
-              >
-                {cfg.label}
-              </span>
-            </div>
-            <div style={{ fontSize: 9, color: "#555566" }}>
-              {app.date_applied || "—"}
-            </div>
-            <div
-              style={{
-                fontSize: 9,
-                color: "#555566",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {app.notes || "—"}
-            </div>
-          </div>
-        );
-      })}
+      {/* ── TABLE ROWS ───────────────────────────────────────────────────────── */}
+      {/* ApplicationTable receives the filtered array and STATUS_CONFIG as props.
+          It handles rendering each row and the empty state.
 
-      {filtered.length === 0 && (
-        <div
-          style={{
-            padding: "60px 32px",
-            textAlign: "center",
-            fontSize: 9,
-            letterSpacing: "0.2em",
-            color: "#1e1f28",
-          }}
-        >
-          NO ENTRIES
-        </div>
-      )}
+          this is where DeleteButton, EditModal, and StatusDropdown in here. */}
 
-      {/* Footer */}
+      <ApplicationTable applications={filtered} STATUS_CONFIG={STATUS_CONFIG} />
+
+      {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
       <div
         style={{
           padding: "24px 32px",
@@ -347,6 +286,7 @@ export default function App() {
         >
           FSS · JOB-APPLICATION-TRACKER · MVP
         </span>
+        {/* Dynamically renders today's date in YYYY-MM-DD format */}
         <span
           style={{ fontSize: 8, color: "#1e1f28", letterSpacing: "0.18em" }}
         >
@@ -354,7 +294,10 @@ export default function App() {
         </span>
       </div>
 
-      {/* Form modal */}
+      {/* ── FORM MODAL ───────────────────────────────────────────────────────── */}
+      {/* Only renders when showForm is true.
+          Clicking the overlay background (not the panel itself) closes the modal.
+          e.target === e.currentTarget checks that the click was on the overlay, not a child. */}
       {showForm && (
         <div
           className="overlay"
@@ -383,7 +326,10 @@ export default function App() {
               Log Application
             </h2>
             <div style={{ display: "grid", gap: 20 }}>
-              {/* Each input is controlled — it reads from form state and updates it on every keystroke */}
+              {/* Each input is a controlled component.
+                  value reads from form state, onChange writes back to it.
+                  The spread { ...form } keeps all other fields intact when one changes. */}
+
               <div>
                 <label className="field-label">COMPANY NAME</label>
                 <input
@@ -395,6 +341,7 @@ export default function App() {
                   }
                 />
               </div>
+
               <div>
                 <label className="field-label">JOB TITLE</label>
                 <input
@@ -406,17 +353,31 @@ export default function App() {
                   }
                 />
               </div>
+
               <div>
                 <label className="field-label">JOB URL</label>
                 <input
                   className="field"
                   placeholder="https://..."
                   value={form.job_url}
-                  onChange={(e) =>
-                    setForm({ ...form, job_url: e.target.value })
-                  }
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    // Auto-prefix: if the user types anything that doesn't already
+                    // start with http:// or https://, prepend https:// automatically.
+                    // This prevents Zod or the browser from rejecting bare URLs like
+                    // "www.shopify.com" or "linkedin.com/jobs/123".
+                    if (
+                      val &&
+                      !val.startsWith("http://") &&
+                      !val.startsWith("https://")
+                    ) {
+                      val = "https://" + val;
+                    }
+                    setForm({ ...form, job_url: val });
+                  }}
                 />
               </div>
+
               <div>
                 <label className="field-label">DATE APPLIED</label>
                 <input
@@ -428,6 +389,7 @@ export default function App() {
                   }
                 />
               </div>
+
               <div>
                 <label className="field-label">NOTES</label>
                 <textarea
@@ -440,11 +402,13 @@ export default function App() {
                 />
               </div>
             </div>
+
             <div style={{ display: "flex", gap: 10, marginTop: 32 }}>
-              {/* onClick calls handleSubmit which hits the POST endpoint */}
+              {/* SAVE triggers handleSubmit — validates, posts to backend, updates table */}
               <button className="save-btn" onClick={handleSubmit}>
                 SAVE APPLICATION
               </button>
+              {/* CANCEL just closes the modal without saving anything */}
               <button className="close-btn" onClick={() => setShowForm(false)}>
                 CANCEL
               </button>
