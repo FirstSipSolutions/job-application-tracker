@@ -269,7 +269,7 @@ export default function App() {
 
       {/* Rows */}
       {filtered.map((app, i) => {
-        const cfg = STATUS_CONFIG[app.status];
+        const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG["draft"];
         return (
           <div key={app.id} className="row clickable">
             <div style={{ fontSize: 9, color: "#555566", fontWeight: 300 }}>
