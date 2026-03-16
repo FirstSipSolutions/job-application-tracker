@@ -58,7 +58,7 @@ const createApplication = async (req, res, next) => {
         parsed.data.job_title,
         parsed.data.job_url,
         parsed.data.date_applied,
-        parsed.data.status,
+        parsed.data.status || "draft",
         parsed.data.notes,
       ],
     );
