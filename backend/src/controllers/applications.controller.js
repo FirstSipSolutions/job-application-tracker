@@ -1,3 +1,4 @@
+const { request } = require("express");
 const pool = require("../db/pool");
 const { z, safeParse } = require("zod");
 
@@ -74,7 +75,7 @@ const updateApplication = async (request, response, next) => {
   const parsedData = applicationSchema.safeParse(request.body);
 
   try {
-    // checking if parsedDate is true or false with .success. returns an error if false
+    // checking if parsedDate is true or false with .success, returns an error if false
     if (!parsedData.success) {
       return response.status(400).json({ errors: parsedData.error.errors });
     }
@@ -96,20 +97,41 @@ const updateApplication = async (request, response, next) => {
     );
     // if rowCount is less then 1 return an error
     if (result.rowCount < 1) {
+      s;
       return response
         .status(404)
-        .json({ error: `No application with id ${id} found.` });
+        .json({ error: `No application with that id found.` });
     }
-    // if all parameters are met return a status(200) request seccessfuly.
+    // if all parameters are met return a status code 200, request seccessful.
     return response.status(200).json(result.rows[0]);
   } catch (err) {
     next(err);
   }
 };
 
-const deleteApplication = async (req, res, next) => {
+const deleteApplication = async (request, response, next) => {
+  const { id } = request.params;
+  // checking to make sure the ID is in a valid UUID format.
+  const parsedId = z.string().uuid().safeParse(id);
+
+  // checkin g if parsedId is true or false with .success, return an error if false.
+  if (!parsedId.success) {
+    return response.status(400).json({ error: "Invalid Id format" });
+  }
+
   try {
-    // TODO: DELETE by req.params.id, return 404 if not found, 204 on success
+    // DELETE query to remove the selected POSTED application form the app.
+    const result = await pool.query("DELETE FROM applications WHERE id = $1", [
+      id,
+    ]);
+    // if rowCount  is less then 1 return an error, "Aplication not found."
+    if (result.rowCount < 1) {
+      return response.status(404).json({ error: "Aplication not found." });
+    }
+    // if all parameters are met return a status code 200, request successful.
+    return response
+      .status(200)
+      .json({ message: "Application deleted seccueefully" });
   } catch (err) {
     next(err);
   }
