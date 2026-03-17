@@ -1,22 +1,21 @@
-import { useState, useEffect } from "react";
-import { createApplication, getApplications } from "./api/applications";
+import { useState, useMemo, useEffect } from "react";
+import {
+  createApplication,
+  getApplications,
+  deleteApplication,
+} from "./api/applications";
 import ApplicationTable from "./components/ApplicationTable";
+import "./index.css";
 
-// STATUS_CONFIG is the single source of truth for how each status looks across the app.
-// The key matches what's stored in the DB (lowercase ENUM value).
-// label = what gets displayed in the UI
-// color = the hex used for the badge background, text, and border
 const STATUS_CONFIG = {
-  draft: { label: "DRAFT", color: "#3a3a4a" },
-  applied: { label: "APPLIED", color: "#2d6be4" },
-  interviewing: { label: "INTERVIEWING", color: "#d4a017" },
-  offered: { label: "OFFERED", color: "#1d9c5a" },
-  rejected: { label: "REJECTED", color: "#c0392b" },
-  withdrawn: { label: "WITHDRAWN", color: "#8888aa" },
+  draft: { label: "DRAFT", color: "#9e9e9e" },
+  applied: { label: "APPLIED", color: "#5b9bd5" },
+  interviewing: { label: "INTERVIEWING", color: "#e0a84b" },
+  offered: { label: "OFFERED", color: "#4cad7c" },
+  rejected: { label: "REJECTED", color: "#d96b6b" },
+  withdrawn: { label: "WITHDRAWN", color: "#a0a0b0" },
 };
 
-// NAV_ITEMS drives the filter buttons at the top of the dashboard.
-// "ALL" is a special case handled in the filter logic below — it's not a DB status.
 const NAV_ITEMS = [
   "ALL",
   "APPLIED",
@@ -26,30 +25,24 @@ const NAV_ITEMS = [
   "DRAFT",
 ];
 
+function timeAgo(dateStr) {
+  if (!dateStr) return "—";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
 export default function App() {
-  // activeFilter tracks which nav button is selected.
-  // Defaults to "ALL" so everything shows on first load.
   const [activeFilter, setActiveFilter] = useState("ALL");
-
-  // showForm controls whether the "Log Application" modal is visible.
-  // true = modal open, false = modal closed.
   const [showForm, setShowForm] = useState(false);
-
-  // applications is the live array of job applications pulled from the DB.
-  // Starts empty — the useEffect below populates it on mount.
   const [applications, setApplications] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  // useEffect with an empty dependency array [] runs once when the component mounts.
-  // It calls getApplications() which hits GET /api/applications on the backend.
-  // When the data comes back, it sets the applications state — which triggers a re-render
-  // and populates the table with real DB rows.
-  useEffect(() => {
-    getApplications().then((data) => setApplications(data));
-  }, []);
-
-  // form tracks the current value of every field in the "Log Application" modal.
-  // Each key maps directly to a column in the applications table.
-  // This is a controlled form — every keystroke updates state here.
   const [form, setForm] = useState({
     company_name: "",
     job_title: "",
@@ -58,21 +51,16 @@ export default function App() {
     notes: "",
   });
 
-  // handleSubmit fires when the user clicks SAVE APPLICATION.
-  // It validates the required fields, sends the data to the backend via POST,
-  // prepends the new row to the top of the table, resets the form, and closes the modal.
+  useEffect(() => {
+    getApplications()
+      .then((data) => setApplications(data))
+      .finally(() => setIsLoading(false));
+  }, []);
+
   const handleSubmit = async () => {
-    // Guard: don't submit if the two required fields are empty
     if (!form.company_name || !form.job_title) return;
-
-    // createApplication sends POST /api/applications with the form data as JSON.
-    // The backend inserts the row and returns the full new row including id and created_at.
     const result = await createApplication(form);
-
-    // Prepend the new row to the top of the list (newest first — matches DB order)
     setApplications([result, ...applications]);
-
-    // Reset all form fields back to empty strings
     setForm({
       company_name: "",
       job_title: "",
@@ -80,23 +68,30 @@ export default function App() {
       date_applied: "",
       notes: "",
     });
-
-    // Close the modal
     setShowForm(false);
   };
 
-  // filtered is what actually gets rendered in the table.
-  // If activeFilter is "ALL", show everything.
-  // Otherwise, compare each application's status (uppercased) against the active filter.
-  // This runs on every render — no extra state needed.
-  const filtered =
-    activeFilter === "ALL"
-      ? applications
-      : applications.filter((a) => a.status.toUpperCase() === activeFilter);
+  const handleDelete = async (id) => {
+    await deleteApplication(id);
+    setApplications(applications.filter((a) => a.id !== id));
+  };
 
-  // counts builds an object like { draft: 2, applied: 5, interviewing: 1, ... }
-  // Used to show the count numbers in the stats bar at the top.
-  // Object.fromEntries turns an array of [key, value] pairs back into an object.
+  const filtered = useMemo(() => {
+    let list =
+      activeFilter === "ALL"
+        ? applications
+        : applications.filter((a) => a.status.toUpperCase() === activeFilter);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (a) =>
+          a.job_title?.toLowerCase().includes(q) ||
+          a.company_name?.toLowerCase().includes(q),
+      );
+    }
+    return list;
+  }, [applications, activeFilter, searchQuery]);
+
   const counts = Object.fromEntries(
     Object.keys(STATUS_CONFIG).map((s) => [
       s,
@@ -104,313 +99,659 @@ export default function App() {
     ]),
   );
 
+  const thisMonth = applications.filter((a) => {
+    if (!a.created_at) return false;
+    const d = new Date(a.created_at);
+    const now = new Date();
+    return (
+      d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    );
+  }).length;
+
+  const recentApplications = applications.slice(0, 5);
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0b0c0f",
-        color: "#e8e4dc",
-        fontFamily: "'IBM Plex Mono', monospace",
-      }}
-    >
-      {/* All CSS lives here as a single injected style block.
-          This keeps the component self-contained — no external CSS file needed.
-          CSS classes like .row, .nav-btn, .status-tag are used throughout the JSX below. */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,900;1,700&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        *:focus, *:focus-visible { outline: none !important; box-shadow: none !important; }
-        body { margin: 0; background: #0b0c0f; }
-        ::-webkit-scrollbar { width: 3px; }
-        ::-webkit-scrollbar-track { background: #0b0c0f; }
-        ::-webkit-scrollbar-thumb { background: #555566; }
-        .nav-btn { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; color: #3a3a4a; cursor: pointer; padding: 8px 0; background: none; border: none; border-bottom: 1px solid transparent; transition: color 0.12s; outline: none; -webkit-appearance: none; }
-        .nav-btn:hover { color: #666677; }
-        .nav-btn.active { color: #e8e4dc; border-bottom: 1px solid #e8e4dc; }
-        .row { display: grid; grid-template-columns: 32px 1.8fr 1.4fr 120px 100px 1fr; gap: 0 20px; padding: 13px 32px; border-bottom: 1px solid #13141a; align-items: center; transition: background 0.08s; }
-        .row.clickable:hover { background: #0f1015; }
-        .status-tag { display: inline-block; font-size: 8px; letter-spacing: 0.16em; font-weight: 600; padding: 2px 7px; border-radius: 1px; }
-        .log-btn { background: #e8e4dc; color: #0b0c0f; border: none; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; padding: 8px 16px; cursor: pointer; transition: background 0.12s; outline: none; -webkit-appearance: none; }
-        .log-btn:hover { background: #ccc9c0; }
-        .stat-block { flex: 1; padding: 14px 18px; border-right: 1px solid #13141a; }
-        .stat-block:last-child { border-right: none; }
-        .overlay { position: fixed; inset: 0; background: rgba(7,8,10,0.94); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(6px); }
-        .panel { background: #0f1015; border: 1px solid #1e1f28; padding: 40px; width: 500px; max-width: 95vw; }
-        .field { width: 100%; background: #0b0c0f; border: none; border-bottom: 1px solid #1e1f28; color: #e8e4dc; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 8px 0; outline: none; transition: border-color 0.12s; }
-        .field:focus { border-bottom-color: #3a3a55; }
-        .field::placeholder { color: #555566; }
-        .field-label { font-size: 8px; letter-spacing: 0.18em; color: #2a2b35; display: block; margin-bottom: 4px; text-transform: uppercase; }
-        .save-btn { flex: 1; background: #e8e4dc; color: #0b0c0f; border: none; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; padding: 10px; cursor: pointer; outline: none; transition: background 0.12s; }
-        .save-btn:hover { background: #ccc9c0; }
-        .close-btn { background: none; border: 1px solid #1e1f28; color: #3a3a4a; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; padding: 10px 18px; cursor: pointer; outline: none; transition: border-color 0.12s; }
-        .close-btn:hover { border-color: #3a3a4a; color: #666677; }
-      `}</style>
-
-      {/* ── HEADER ───────────────────────────────────────────────────────────── */}
-      <div
-        style={{ padding: "32px 32px 0", borderBottom: "1px solid #13141a" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 28,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 8,
-                letterSpacing: "0.22em",
-                color: "#555566",
-                marginBottom: 10,
-              }}
-            >
-              FIRST SIP SOLUTIONS / JOB APPLICATION TRACKER
-            </div>
-            <h1
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "clamp(36px, 5vw, 56px)",
-                fontWeight: 900,
-                lineHeight: 0.95,
-                letterSpacing: "-0.02em",
-                color: "#e8e4dc",
-              }}
-            >
-              The
-              <br />
-              <em style={{ fontStyle: "italic", color: "#8888aa" }}>
-                Pipeline
-              </em>
-            </h1>
-          </div>
-          {/* Clicking this sets showForm to true, which renders the modal below */}
-          <button className="log-btn" onClick={() => setShowForm(true)}>
-            + LOG APPLICATION
-          </button>
-        </div>
-
-        {/* ── STATS BAR ──────────────────────────────────────────────────────── */}
-        {/* Iterates over STATUS_CONFIG to render one stat block per status.
-            Each block shows the count of applications with that status.
-            counts[key] comes from the derived counts object calculated above. */}
-        <div
-          style={{
-            display: "flex",
-            borderTop: "1px solid #13141a",
-            borderLeft: "1px solid #13141a",
-          }}
-        >
-          {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-            <div key={key} className="stat-block">
-              <div
-                style={{
-                  fontSize: 26,
-                  fontWeight: 300,
-                  color: cfg.color,
-                  lineHeight: 1,
-                }}
-              >
-                {counts[key] || 0}
-              </div>
-              <div
-                style={{
-                  fontSize: 7,
-                  letterSpacing: "0.18em",
-                  color: "#555566",
-                  marginTop: 5,
-                }}
-              >
-                {cfg.label}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── FILTER NAV ─────────────────────────────────────────────────────── */}
-        {/* Each button sets activeFilter, which updates the filtered array above.
-            The "active" class on the matching button adds the underline highlight. */}
-        <div style={{ display: "flex", gap: 24, marginTop: 20 }}>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item}
-              className={`nav-btn ${activeFilter === item ? "active" : ""}`}
-              onClick={() => setActiveFilter(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── TABLE HEADER ─────────────────────────────────────────────────────── */}
-      {/* Static column labels — must match the grid-template-columns in .row CSS */}
-      <div className="row" style={{ marginTop: 2 }}>
-        {["", "COMPANY", "ROLE", "STATUS", "DATE", "NOTES"].map((h) => (
-          <div
-            key={h}
-            style={{
-              fontSize: 7,
-              letterSpacing: "0.2em",
-              color: "#555566",
-              fontWeight: 600,
-            }}
-          >
-            {h}
-          </div>
-        ))}
-      </div>
-
-      {/* ── TABLE ROWS ───────────────────────────────────────────────────────── */}
-      {/* ApplicationTable receives the filtered array and STATUS_CONFIG as props.
-          It handles rendering each row and the empty state.
-
-          this is where DeleteButton, EditModal, and StatusDropdown in here. */}
-
-      <ApplicationTable applications={filtered} STATUS_CONFIG={STATUS_CONFIG} />
-
-      {/* ── FOOTER ───────────────────────────────────────────────────────────── */}
-      <div
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "32px 24px" }}>
+      {/* ── HEADER ── */}
+      <header
         style={{
-          padding: "24px 32px",
-          borderTop: "1px solid #13141a",
           display: "flex",
           justifyContent: "space-between",
-          marginTop: 48,
+          alignItems: "center",
+          marginBottom: 48,
         }}
       >
-        <span
-          style={{ fontSize: 8, color: "#1e1f28", letterSpacing: "0.18em" }}
+        <h1
+          style={{
+            fontSize: "clamp(22px, 4vw, 32px)",
+            fontWeight: 300,
+            letterSpacing: "0.4em",
+            textTransform: "uppercase",
+            color: "#e8e2d9",
+            margin: 0,
+          }}
         >
-          FSS · JOB-APPLICATION-TRACKER · MVP
-        </span>
-        {/* Dynamically renders today's date in YYYY-MM-DD format */}
-        <span
-          style={{ fontSize: 8, color: "#1e1f28", letterSpacing: "0.18em" }}
-        >
-          {new Date().toISOString().split("T")[0]}
-        </span>
+          JOB <span style={{ color: "#c9a96e", fontWeight: 500 }}>TRACKER</span>
+        </h1>
+        <button className="glow-button" onClick={() => setShowForm(true)}>
+          + Log Application
+        </button>
+      </header>
+
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 32 }}
+      >
+        {/* ── LEFT COLUMN ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+          {/* Stats */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 1fr)",
+              gap: 16,
+            }}
+          >
+            {[
+              {
+                label: "This Month",
+                value: `+${thisMonth}`,
+                sub: "Applications",
+              },
+              { label: "Total", value: applications.length, sub: "Life-time" },
+              {
+                label: "Interviews",
+                value: counts.interviewing || 0,
+                sub: "Active Stage",
+              },
+              { label: "Offers", value: counts.offered || 0, sub: "Received" },
+            ].map((s) => (
+              <div key={s.label} className="glass-card" style={{ padding: 24 }}>
+                <div
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: "0.18em",
+                    color: "rgba(212,175,55,0.5)",
+                    textTransform: "uppercase",
+                    marginBottom: 8,
+                  }}
+                >
+                  {s.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: 32,
+                    fontWeight: 300,
+                    color: "white",
+                    lineHeight: 1,
+                  }}
+                >
+                  {s.value}
+                </div>
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: "rgba(255,255,255,0.3)",
+                    marginTop: 6,
+                  }}
+                >
+                  {s.sub}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Search + filter tabs */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <input
+              type="text"
+              placeholder="Search companies or job titles..."
+              className="glass-card"
+              style={{
+                padding: "12px 16px",
+                fontSize: 13,
+                color: "white",
+                background: "transparent",
+                outline: "none",
+                width: "100%",
+              }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div
+              style={{
+                display: "flex",
+                gap: 24,
+                borderBottom: "1px solid rgba(212,175,55,0.05)",
+              }}
+            >
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setActiveFilter(item)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    borderBottom:
+                      activeFilter === item
+                        ? "1px solid white"
+                        : "1px solid transparent",
+                    color:
+                      activeFilter === item ? "white" : "rgba(255,255,255,0.3)",
+                    fontSize: 10,
+                    letterSpacing: "0.14em",
+                    paddingBottom: 12,
+                    cursor: "pointer",
+                    transition: "color 0.12s",
+                  }}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="glass-card" style={{ overflow: "hidden" }}>
+            <div
+              style={{
+                padding: "20px 32px",
+                borderBottom: "1px solid rgba(212,175,55,0.05)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "rgba(212,175,55,0.9)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Active Applications
+              </span>
+              <span
+                style={{
+                  fontSize: 9,
+                  color: "rgba(212,175,55,0.4)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Total: {filtered.length}
+              </span>
+            </div>
+            <div className="row">
+              {["", "COMPANY", "ROLE", "STATUS", "DATE", ""].map((h, i) => (
+                <div
+                  key={i}
+                  style={{
+                    fontSize: 7,
+                    letterSpacing: "0.2em",
+                    color: "rgba(255,255,255,0.2)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {h}
+                </div>
+              ))}
+            </div>
+            {isLoading ? (
+              <div
+                style={{
+                  padding: "48px 32px",
+                  textAlign: "center",
+                  fontSize: 9,
+                  letterSpacing: "0.2em",
+                  color: "rgba(255,255,255,0.1)",
+                }}
+              >
+                LOADING...
+              </div>
+            ) : (
+              <ApplicationTable
+                applications={filtered}
+                STATUS_CONFIG={STATUS_CONFIG}
+                onDelete={handleDelete}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          {/* Pipeline breakdown */}
+          <div className="glass-card" style={{ overflow: "hidden" }}>
+            <div
+              style={{
+                padding: "20px 24px",
+                borderBottom: "1px solid rgba(212,175,55,0.05)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "rgba(212,175,55,0.9)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Pipeline
+              </span>
+            </div>
+            <div
+              style={{
+                padding: 24,
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
+                const count = counts[key] || 0;
+                const pct = applications.length
+                  ? Math.round((count / applications.length) * 100)
+                  : 0;
+                return (
+                  <div key={key}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: 9,
+                          letterSpacing: "0.16em",
+                          color: "rgba(255,255,255,0.3)",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {cfg.label}
+                      </span>
+                      <span
+                        style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}
+                      >
+                        {count}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        height: 2,
+                        background: "rgba(255,255,255,0.05)",
+                        borderRadius: 4,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${pct}%`,
+                          background: cfg.color,
+                          borderRadius: 4,
+                          transition: "width 0.7s ease",
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick stats */}
+          <div className="glass-card" style={{ padding: 24 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "rgba(212,175,55,0.9)",
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                marginBottom: 20,
+              }}
+            >
+              Quick Stats
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                {
+                  label: "Response Rate",
+                  value: applications.length
+                    ? `${Math.round(((counts.interviewing || 0) / applications.length) * 100)}%`
+                    : "0%",
+                },
+                {
+                  label: "Offer Rate",
+                  value: applications.length
+                    ? `${Math.round(((counts.offered || 0) / applications.length) * 100)}%`
+                    : "0%",
+                },
+                {
+                  label: "Active Pipeline",
+                  value: (counts.applied || 0) + (counts.interviewing || 0),
+                },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <span
+                    style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}
+                  >
+                    {s.label}
+                  </span>
+                  <span
+                    style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}
+                  >
+                    {s.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent — git-style activity feed */}
+          <div className="glass-card" style={{ overflow: "hidden" }}>
+            <div
+              style={{
+                padding: "20px 24px",
+                borderBottom: "1px solid rgba(212,175,55,0.05)",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "rgba(212,175,55,0.9)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Recent
+              </span>
+            </div>
+            <div
+              style={{
+                padding: "16px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 0,
+              }}
+            >
+              {recentApplications.length === 0 ? (
+                <div
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: "0.16em",
+                    color: "rgba(255,255,255,0.1)",
+                    textTransform: "uppercase",
+                    padding: "16px 0",
+                  }}
+                >
+                  No entries yet
+                </div>
+              ) : (
+                recentApplications.map((app, idx) => {
+                  const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.draft;
+                  const isLast = idx === recentApplications.length - 1;
+                  return (
+                    <div
+                      key={app.id}
+                      style={{
+                        display: "flex",
+                        gap: 12,
+                        position: "relative",
+                        paddingBottom: isLast ? 0 : 20,
+                      }}
+                    >
+                      {!isLast && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 6,
+                            top: 16,
+                            bottom: 0,
+                            width: 1,
+                            background: "rgba(255,255,255,0.06)",
+                          }}
+                        />
+                      )}
+                      <div
+                        style={{
+                          width: 13,
+                          height: 13,
+                          borderRadius: "50%",
+                          background: idx === 0 ? cfg.color : "transparent",
+                          border: `1px solid ${cfg.color}`,
+                          flexShrink: 0,
+                          marginTop: 2,
+                          boxShadow:
+                            idx === 0 ? `0 0 6px ${cfg.color}60` : "none",
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            gap: 8,
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 500,
+                              color: "rgba(255,255,255,0.8)",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {app.company_name}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 9,
+                              color: "rgba(255,255,255,0.2)",
+                              flexShrink: 0,
+                            }}
+                          >
+                            {timeAgo(app.created_at)}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: "rgba(255,255,255,0.35)",
+                            marginTop: 2,
+                          }}
+                        >
+                          {app.job_title}
+                        </div>
+                        <div style={{ marginTop: 4 }}>
+                          <span
+                            style={{
+                              fontSize: 7,
+                              fontWeight: 700,
+                              letterSpacing: "0.12em",
+                              padding: "2px 6px",
+                              borderRadius: 3,
+                              background: `${cfg.color}18`,
+                              color: cfg.color,
+                              border: `1px solid ${cfg.color}30`,
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {cfg.label}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ── FORM MODAL ───────────────────────────────────────────────────────── */}
-      {/* Only renders when showForm is true.
-          Clicking the overlay background (not the panel itself) closes the modal.
-          e.target === e.currentTarget checks that the click was on the overlay, not a child. */}
+      {/* ── FOOTER ── */}
+      <footer style={{ marginTop: 64, paddingBottom: 32, textAlign: "center" }}>
+        <span
+          style={{
+            fontSize: 9,
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "rgba(232,226,217,0.25)",
+          }}
+        >
+          FSS 2026
+        </span>
+      </footer>
+
+      {/* ── FORM MODAL ── */}
       {showForm && (
         <div
-          className="overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.9)",
+            backdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+          }}
           onClick={(e) => e.target === e.currentTarget && setShowForm(false)}
         >
-          <div className="panel">
+          <div
+            className="glass-card"
+            style={{ padding: 40, width: 500, maxWidth: "95vw" }}
+          >
             <div
               style={{
                 fontSize: 8,
                 letterSpacing: "0.22em",
-                color: "#555566",
-                marginBottom: 6,
+                color: "rgba(255,255,255,0.2)",
+                marginBottom: 8,
+                textTransform: "uppercase",
               }}
             >
-              NEW ENTRY
+              New Entry
             </div>
             <h2
               style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: 26,
-                fontWeight: 900,
+                fontSize: 22,
+                fontWeight: 600,
+                color: "white",
                 marginBottom: 32,
-                color: "#e8e4dc",
+                marginTop: 0,
               }}
             >
               Log Application
             </h2>
             <div style={{ display: "grid", gap: 20 }}>
-              {/* Each input is a controlled component.
-                  value reads from form state, onChange writes back to it.
-                  The spread { ...form } keeps all other fields intact when one changes. */}
-
+              {[
+                {
+                  label: "Company Name *",
+                  key: "company_name",
+                  placeholder: "e.g. Shopify",
+                },
+                {
+                  label: "Job Title *",
+                  key: "job_title",
+                  placeholder: "e.g. Junior Developer",
+                },
+                {
+                  label: "Job URL",
+                  key: "job_url",
+                  placeholder: "https://...",
+                },
+                {
+                  label: "Date Applied",
+                  key: "date_applied",
+                  placeholder: "YYYY-MM-DD",
+                },
+              ].map(({ label, key, placeholder }) => (
+                <div key={key}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: 8,
+                      letterSpacing: "0.18em",
+                      color: "rgba(255,255,255,0.2)",
+                      textTransform: "uppercase",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {label}
+                  </label>
+                  <input
+                    className="field"
+                    placeholder={placeholder}
+                    value={form[key]}
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (key === "job_url" && val && !val.startsWith("http"))
+                        val = "https://" + val;
+                      setForm({ ...form, [key]: val });
+                    }}
+                  />
+                </div>
+              ))}
               <div>
-                <label className="field-label">COMPANY NAME</label>
-                <input
-                  className="field"
-                  placeholder="e.g. Shopify"
-                  value={form.company_name}
-                  onChange={(e) =>
-                    setForm({ ...form, company_name: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="field-label">JOB TITLE</label>
-                <input
-                  className="field"
-                  placeholder="e.g. Junior Developer"
-                  value={form.job_title}
-                  onChange={(e) =>
-                    setForm({ ...form, job_title: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="field-label">JOB URL</label>
-                <input
-                  className="field"
-                  placeholder="https://..."
-                  value={form.job_url}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    // Auto-prefix: if the user types anything that doesn't already
-                    // start with http:// or https://, prepend https:// automatically.
-                    // This prevents Zod or the browser from rejecting bare URLs like
-                    // "www.shopify.com" or "linkedin.com/jobs/123".
-                    if (
-                      val &&
-                      !val.startsWith("http://") &&
-                      !val.startsWith("https://")
-                    ) {
-                      val = "https://" + val;
-                    }
-                    setForm({ ...form, job_url: val });
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: 8,
+                    letterSpacing: "0.18em",
+                    color: "rgba(255,255,255,0.2)",
+                    textTransform: "uppercase",
+                    marginBottom: 6,
                   }}
-                />
-              </div>
-
-              <div>
-                <label className="field-label">DATE APPLIED</label>
-                <input
-                  className="field"
-                  placeholder="YYYY-MM-DD"
-                  value={form.date_applied}
-                  onChange={(e) =>
-                    setForm({ ...form, date_applied: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label className="field-label">NOTES</label>
+                >
+                  Notes
+                </label>
                 <textarea
                   className="field"
                   rows={3}
-                  placeholder="Recruiter, salary, anything..."
-                  style={{ resize: "none", width: "100%" }}
+                  placeholder="Recruiter, salary, interview prep..."
+                  style={{ resize: "none" }}
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 />
               </div>
             </div>
-
             <div style={{ display: "flex", gap: 10, marginTop: 32 }}>
-              {/* SAVE triggers handleSubmit — validates, posts to backend, updates table */}
-              <button className="save-btn" onClick={handleSubmit}>
-                SAVE APPLICATION
+              <button
+                className="glow-button"
+                style={{ flex: 1 }}
+                onClick={handleSubmit}
+              >
+                Save Application
               </button>
-              {/* CANCEL just closes the modal without saving anything */}
-              <button className="close-btn" onClick={() => setShowForm(false)}>
-                CANCEL
+              <button
+                onClick={() => setShowForm(false)}
+                style={{
+                  background: "none",
+                  border: "1px solid rgba(212,175,55,0.1)",
+                  color: "rgba(255,255,255,0.3)",
+                  borderRadius: 12,
+                  padding: "10px 20px",
+                  fontSize: 10,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
               </button>
             </div>
           </div>

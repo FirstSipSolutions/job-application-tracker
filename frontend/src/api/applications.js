@@ -4,18 +4,24 @@
 
 // Calls GET /api/applications
 // Returns all saved applications as an array, newest first
+
+// api/applications.js
+// All fetch calls live here — components never call fetch directly.
+
 export async function getApplications() {
   const res = await fetch("/api/applications");
   return res.json();
 }
 
-// Calls POST /api/applications
-// Sends a new application object to the backend and returns the created row
 export async function createApplication(data) {
   const res = await fetch("/api/applications", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data), // converts JS object to JSON string for the request
+    body: JSON.stringify(data),
   });
   return res.json();
+}
+
+export async function deleteApplication(id) {
+  await fetch(`/api/applications/${id}`, { method: "DELETE" });
 }
