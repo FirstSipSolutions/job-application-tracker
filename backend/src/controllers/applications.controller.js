@@ -1,5 +1,5 @@
 const pool = require("../db/pool");
-const { z } = require("zod");
+const { z, safeParse } = require("zod");
 
 const applicationSchema = z.object({
   company_name: z.string().min(1, "Company name is required"),
@@ -69,10 +69,39 @@ const createApplication = async (req, res, next) => {
   }
 };
 
-const updateApplication = async (req, res, next) => {
+const updateApplication = async (request, response, next) => {
+  const { id } = request.params;
+  const parsedData = applicationSchema.safeParse(request.body);
+
   try {
-    // TODO: Validate with applicationSchema.safeParse()
-    // TODO: UPDATE by req.params.id, return 404 if not found
+    // checking if parsedDate is true or false with .success. returns an error if false
+    if (!parsedData.success) {
+      return response.status(400).json({ errors: parsedData.error.errors });
+    }
+
+    // update query to change/update data on an application
+    const result = await pool.query(
+      `UPDATE applications 
+       SET company_name = $1, job_title = $2, job_url = $3, date_applied = $4, status = $5, notes = $6 
+       WHERE id = $7 RETURNING *`,
+      [
+        parsedData.data.company_name,
+        parsedData.data.job_title,
+        parsedData.data.job_url,
+        parsedData.data.date_applied,
+        parsedData.data.status || "draft",
+        parsedData.data.notes,
+        id,
+      ],
+    );
+    // if rowCount is less then 1 return an error
+    if (result.rowCount < 1) {
+      return response
+        .status(404)
+        .json({ error: `No application with id ${id} found.` });
+    }
+    // if all parameters are met return a status(200) request seccessfuly.
+    return response.status(200).json(result.rows[0]);
   } catch (err) {
     next(err);
   }
