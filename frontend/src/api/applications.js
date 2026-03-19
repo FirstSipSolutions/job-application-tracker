@@ -8,13 +8,15 @@
 // api/applications.js
 // All fetch calls live here — components never call fetch directly.
 
+const BASE = import.meta.env.VITE_API_URL || "";
+
 export async function getApplications() {
-  const res = await fetch("/api/applications");
+  const res = await fetch(`${BASE}/api/applications`);
   return res.json();
 }
 
 export async function createApplication(data) {
-  const res = await fetch("/api/applications", {
+  const res = await fetch(`${BASE}/api/applications`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -23,5 +25,5 @@ export async function createApplication(data) {
 }
 
 export async function deleteApplication(id) {
-  await fetch(`/api/applications/${id}`, { method: "DELETE" });
+  await fetch(`${BASE}/api/applications/${id}`, { method: "DELETE" });
 }
