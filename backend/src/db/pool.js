@@ -1,9 +1,9 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-// here is where hosting the back end got held up
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
 
-// SSL issue
+// SSL issue fixed for Supabase
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
