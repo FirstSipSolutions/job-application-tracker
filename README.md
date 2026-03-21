@@ -1,127 +1,120 @@
-# Job Application Tracker
+# The PipeLine
+### Job Application Tracker — MVP Live
 
-## Overview
+A full-stack job application tracker built to manage and visualize a job search pipeline. Designed and shipped as a two-person team project under First Sip Solutions.
 
-A lean, full-stack application designed to organize and track job applications and interview statuses. This project prioritizes a fast, functional Minimum Viable Product (MVP) over premature optimization, using a single-table database architecture to ship quickly.
+**Live:** https://first-sip-application-tracker.netlify.app/
+**Org:** https://github.com/FirstSipSolutions
 
-The initial repository structure, database schema, and server boilerplate were scaffolded using AI to establish a standardized baseline and accelerate development.
+---
 
 ## Tech Stack
 
-- **Frontend:** React (Vite)
-- **Backend:** Node.js + Express
-- **Database:** PostgreSQL
-- **Deployment:** AWS (RDS + deployment)
+- **Frontend:** React + Vite, deployed on Netlify
+- **Backend:** Node.js + Express v5, deployed on Render
+- **Database:** PostgreSQL hosted on Supabase
+- **Validation:** Zod
+- **Styling:** Pure CSS, glass morphism aesthetic
+
+---
+
+## Features
+
+- Log job applications with company, title, URL, date, and notes
+- Track status across six stages: Draft, Applied, Interviewing, Offered, Rejected, Withdrawn
+- Pipeline breakdown sidebar with live counts and progress bars
+- Recent applications activity feed
+- Search and filter by status
+- Delete with confirmation guard
+- Form modal with URL auto-prefix
+
+---
+
+## Status
+
+| Feature | Status |
+|---|---|
+| GET /api/applications | Live |
+| POST /api/applications | Live |
+| DELETE /api/applications/:id | Live |
+| PUT /api/applications/:id | In Progress |
+| StatusDropdown UI | In Progress |
+| EditModal UI | In Progress |
+| Mobile responsive | Backlog |
+| Auth / per-user data | Phase 2 |
+
+---
+
+## Team
+
+This project was built by two developers working vertical feature slices — each developer owned a full slice of the stack from database to UI rather than splitting frontend and backend responsibilities.
+
+**Chris** owned the Create and Read slice, building the POST and GET endpoints, wiring the form and dashboard table to live data, and handling the full deployment pipeline across Supabase, Render, and Netlify.
+
+**Justin** owned the Update and Delete slice, building the PUT and DELETE endpoints and the corresponding UI components including the edit modal and status dropdown.
+
+Day to day we ran a lightweight standup structure — checking in on blockers, syncing on integration points where our slices touched, and reviewing each other's PRs before merging. The goal was to keep both developers moving independently without stepping on each other, while staying aligned on the shared schema and API contracts. When bugs came up we worked through them together, treating each one as a learning opportunity rather than just a fix — understanding why something broke before patching it.
 
 ---
 
 ## Project Management
 
-Tracked via **GitHub Projects (Team Planning board)**.
+Tracked via **GitHub Projects**.
 
-- **Backlog** — all planned and future tickets not yet in active development
-- **Ready** — scoped, assigned, and ready to pick up
+- **Backlog** — planned, not yet started
+- **Ready** — scoped and assigned
 - **In Progress** — actively being built
 - **In Review** — PR open, awaiting approval
 - **Done** — merged and closed
 
 ### Workflow
 
-1. Create an Issue for every piece of work before any code is written
-2. Assign the Issue to a developer and move it to **Ready**
-3. Developer creates a branch using the naming convention below
-4. Developer opens a PR linked to the Issue using `Closes #[issue number]`
-5. Move Issue to **In Review** — other dev reviews and approves
-6. Merge PR → Issue closes automatically → **Done**
-
-### Branch Naming
-
-- `feat/short-description` → new feature
-- `fix/short-description` → bug fix
-- `chore/short-description` → config, setup, cleanup
-
-### Rules
-
-- No direct commits to `main` or `dev`
-- Every PR requires one approval before merging
-- PRs merge into `dev` — only `dev` merges into `main` on releases
+1. Create an Issue before writing any code
+2. Assign and move to Ready
+3. Create a branch — `feat/`, `fix/`, or `chore/`
+4. Open a PR linked with `Closes #[issue number]`
+5. Other dev reviews and approves
+6. Merge into `development` — `development` merges into `main` on release
 
 ---
 
-## Workflow & Task Delegation
-
-To maintain high velocity and avoid integration bottlenecks, development is divided into **vertical feature slices**. Both developers work across the database, API, and UI for their specific features.
-
-### Phase 0: Foundation (Completed)
-
-- AI-assisted scaffolding of the frontend (React/Vite) and backend (Node/Express) directories
-- Generation of the `applications` PostgreSQL schema
-- Establishment of the baseline API request/response contracts
-
-### Developer A: The "Create & Read" Slice
-
-_Focus: Data ingestion and primary display._
-
-- [ ] **DB/API:** Build `POST /api/applications` to accept new entries
-- [ ] **DB/API:** Build `GET /api/applications` to retrieve all entries
-- [ ] **UI:** Build the "Add Application" form component and wire it to the POST route
-- [ ] **UI:** Build the main Dashboard table component to fetch and map the GET data
-
-### Developer B: The "Update & Delete" Slice
-
-_Focus: State mutation and data management._
-
-- [ ] **DB/API:** Build `PUT /api/applications/:id` to handle status changes and note updates
-- [ ] **DB/API:** Build `DELETE /api/applications/:id` to remove entries
-- [ ] **UI:** Add an inline status dropdown to the Dashboard table to trigger the PUT route
-- [ ] **UI:** Build an "Edit Details" modal for modifying notes, URLs, etc.
-- [ ] **UI:** Add a "Delete" action to the table rows with a confirmation prompt
-
+## Structure
+```
+job-application-tracker/
+├── backend/
+│   ├── docs/
+│   ├── node_modules/
+│   ├── src/
+│   ├── .env
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── schema.sql
+│   └── server.js
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── README.md
+│   └── vite.config.js
+├── node_modules/
+├── .gitignore
+├── package-lock.json
+├── package.json
+├── README.md
+└── server.js
+```
 ---
 
-Volume serial number is D2CB-DDB6
+## Phase 2 Backlog
 
-```
-
-C:.
-│   .gitignore
-│   README.md
-│
-├───backend
-│   │   .env
-│   │   package.json
-│   │   schema.sql
-│   │   server.js
-│   │
-│   └───src
-│       │   app.js
-│       │
-│       ├───controllers
-│       │       applications.controller.js
-│       │
-│       ├───db
-│       │       pool.js
-│       │
-│       └───routes
-│               applications.routes.js
-│
-└───frontend
-    │   index.html
-    │   package.json
-    │   vite.config.js
-    │
-    ├───public
-    └───src
-        │   App.jsx
-        │   main.jsx
-        │
-        ├───api
-        │       applications.js
-        │
-        └───components
-                ApplicationForm.jsx
-                ApplicationTable.jsx
-                DeleteButton.jsx
-                EditModal.jsx
-                StatusDropdown.jsx
-```
+- Auth — JWT/sessions, per-user data isolation
+- TypeScript migration
+- Email reminders for follow-ups
+- Analytics dashboard
+- Chrome extension to scrape job postings
+- AWS migration — RDS, Elastic Beanstalk, CloudFront
