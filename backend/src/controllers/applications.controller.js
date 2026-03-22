@@ -20,14 +20,24 @@ const applicationSchema = z.object({
   notes: z.string().optional(),
 });
 
+// adding new  line here
+// this reads the x-device-id header sent by the frontend on every request.
+
+// this identifies the user's device so each user only sees their own rows.
+// falls back to "unknown" if no header is present so the app doesn't crash.
+
+const getDeviceId = (req) => req.headers["x-device-id"] || "unknown";
+
 // this hits the db and select every row from the applictions table
 // orders by newsest first
 // returns json format
 
 const getAllApplications = async (req, res, next) => {
   try {
+    const deviceId = getDeviceId(req);
     const result = await pool.query(
-      "SELECT * FROM applications ORDER BY created_at DESC",
+      "SELECT * FROM applications WHERE device_id = $1 ORDER BY created_at DESC",
+      [deviceId],
     );
     res.json(result.rows);
   } catch (err) {
@@ -50,9 +60,10 @@ const createApplication = async (req, res, next) => {
     // the dollar sign stuff is a secruity habit
     // this all using zod - pdf in docs to explain better
 
+    const deviceId = getDeviceId(req);
     const result = await pool.query(
-      `INSERT INTO applications (company_name, job_title, job_url, date_applied, status, notes)
-   VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO applications (company_name, job_title, job_url, date_applied, status, notes, device_id)
+   VALUES ($1, $2, $3, $4, $5, $6, $7)
    RETURNING *`,
       [
         parsed.data.company_name,
@@ -61,6 +72,7 @@ const createApplication = async (req, res, next) => {
         parsed.data.date_applied,
         parsed.data.status || "draft",
         parsed.data.notes,
+        deviceId,
       ],
     );
 
@@ -81,10 +93,11 @@ const updateApplication = async (request, response, next) => {
     }
 
     // update query to change/update data on an application
+    const deviceId = getDeviceId(request);
     const result = await pool.query(
       `UPDATE applications 
-       SET company_name = $1, job_title = $2, job_url = $3, date_applied = $4, status = $5, notes = $6 
-       WHERE id = $7 RETURNING *`,
+   SET company_name = $1, job_title = $2, job_url = $3, date_applied = $4, status = $5, notes = $6 
+   WHERE id = $7 AND device_id = $8 RETURNING *`,
       [
         parsedData.data.company_name,
         parsedData.data.job_title,
@@ -93,6 +106,7 @@ const updateApplication = async (request, response, next) => {
         parsedData.data.status || "draft",
         parsedData.data.notes,
         id,
+        deviceId,
       ],
     );
     // if rowCount is less then 1 return an error
@@ -121,9 +135,11 @@ const deleteApplication = async (request, response, next) => {
 
   try {
     // DELETE query to remove the selected POSTED application form the app.
-    const result = await pool.query("DELETE FROM applications WHERE id = $1", [
-      id,
-    ]);
+    const deviceId = getDeviceId(request);
+    const result = await pool.query(
+      "DELETE FROM applications WHERE id = $1 AND device_id = $2",
+      [id, deviceId],
+    );
     // if rowCount  is less then 1 return an error, "Aplication not found."
     if (result.rowCount < 1) {
       return response.status(404).json({ error: "Aplication not found." });
