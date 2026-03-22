@@ -1,14 +1,15 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-
-// SSL issue fixed for Supabase
+console.log("DATABASE_URL:", process.env.DATABASE_URL ? "SET" : "NOT SET");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: process.env.DATABASE_URL?.includes("supabase")
+    ? { rejectUnauthorized: false }
+    : false,
 });
+
 pool.on("connect", () => console.log("Connected to PostgreSQL"));
 pool.on("error", (err) => {
   console.error("Unexpected database error", err);
