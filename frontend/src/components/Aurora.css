@@ -7,3 +7,7 @@
   z-index: -1;
   pointer-events: none;
 }
+.glass-card {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

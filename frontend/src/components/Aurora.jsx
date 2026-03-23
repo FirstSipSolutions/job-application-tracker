@@ -135,11 +135,12 @@ export default function Aurora(props) {
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.canvas.style.backgroundColor = "transparent";
 
+    const dpr = window.devicePixelRatio || 1;
+
     let program;
 
     function resize() {
       if (!ctn) return;
-      const dpr = window.devicePixelRatio || 1;
       const width = ctn.offsetWidth;
       const height = ctn.offsetHeight;
       renderer.setSize(width * dpr, height * dpr);
@@ -168,12 +169,13 @@ export default function Aurora(props) {
         uTime: { value: 0 },
         uAmplitude: { value: amplitude },
         uColorStops: { value: colorStopsArray },
-        uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
+        uResolution: { value: [ctn.offsetWidth * dpr, ctn.offsetHeight * dpr] },
         uBlend: { value: blend },
       },
     });
 
     const mesh = new Mesh(gl, { geometry, program });
+
     ctn.appendChild(gl.canvas);
 
     let animateId = 0;

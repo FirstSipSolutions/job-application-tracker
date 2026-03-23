@@ -42,7 +42,6 @@ export default function App() {
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [showForm, setShowForm] = useState(false);
   const [applications, setApplications] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const [form, setForm] = useState({
@@ -85,21 +84,12 @@ export default function App() {
     setApplications(applications.filter((a) => a.id !== id));
   };
 
+  // removed search bar to clean up UI
   const filtered = useMemo(() => {
-    let list =
-      activeFilter === "ALL"
-        ? applications
-        : applications.filter((a) => a.status.toUpperCase() === activeFilter);
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(
-        (a) =>
-          a.job_title?.toLowerCase().includes(q) ||
-          a.company_name?.toLowerCase().includes(q),
-      );
-    }
-    return list;
-  }, [applications, activeFilter, searchQuery]);
+    return activeFilter === "ALL"
+      ? applications
+      : applications.filter((a) => a.status.toUpperCase() === activeFilter);
+  }, [applications, activeFilter]);
 
   const counts = Object.fromEntries(
     Object.keys(STATUS_CONFIG).map((s) => [
@@ -147,7 +137,8 @@ export default function App() {
             margin: 0,
           }}
         >
-          JOB <span style={{ color: "#c9a96e", fontWeight: 500 }}>TRACKER</span>
+          APPLICATION{" "}
+          <span style={{ color: "#c9a96e", fontWeight: 500 }}>TRACKER</span>
         </h1>
         <button className="glow-button" onClick={() => setShowForm(true)}>
           + Log
@@ -228,21 +219,6 @@ export default function App() {
 
           {/* Search + filter tabs */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <input
-              type="text"
-              placeholder="Search companies or job titles..."
-              className="glass-card"
-              style={{
-                padding: "10px 14px",
-                fontSize: 13,
-                color: "#e8e2d9",
-                background: "transparent",
-                outline: "none",
-                width: "100%",
-              }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
             <div
               style={{
                 display: "flex",
