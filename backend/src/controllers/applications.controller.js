@@ -111,7 +111,7 @@ const updateApplication = async (request, response, next) => {
     );
     // if rowCount is less then 1 return an error
     if (result.rowCount < 1) {
-      s;
+      
       return response
         .status(404)
         .json({ error: `No application with that id found.` });
