@@ -126,7 +126,7 @@ export default function App() {
 
   const AURORA_COLORS = {
     ALL: ["#0a2a3a", "#0d6e8a", "#1a3a4a"],
-    APPLIED: ["#0d2a4a", "#1a4a8a", "#0d1f3a"],
+    APPLIED: ["#1a0a3a", "#7b2fff", "#0a0a2a"],
     INTERVIEWING: ["#3a2a0d", "#6b4a1a", "#4a3a0d"],
     OFFERED: ["#0d3a1a", "#1a6b2a", "#0d2a14"],
     REJECTED: ["#3a0d0d", "#6b1a1a", "#2a0d0d"],
@@ -359,7 +359,7 @@ export default function App() {
           className="right-col"
           style={{ display: "flex", flexDirection: "column", gap: 20 }}
         >
-          {/* Pipeline breakdown */}
+          {/*  breakdown */}
           <div className="glass-card" style={{ overflow: "hidden" }}>
             <div
               style={{
@@ -376,7 +376,7 @@ export default function App() {
                   textTransform: "uppercase",
                 }}
               >
-                Pipeline
+                Overview
               </span>
             </div>
             <div
@@ -470,7 +470,7 @@ export default function App() {
                     : "0%",
                 },
                 {
-                  label: "Active Pipeline",
+                  label: "Active Applications",
                   value: (counts.applied || 0) + (counts.interviewing || 0),
                 },
               ].map((s) => (

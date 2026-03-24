@@ -187,10 +187,16 @@ export default function Aurora(props) {
       program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0;
       program.uniforms.uBlend.value = propsRef.current.blend ?? blend;
       const stops = propsRef.current.colorStops ?? colorStops;
-      program.uniforms.uColorStops.value = stops.map((hex) => {
+      const targetStops = stops.map((hex) => {
         const c = new Color(hex);
         return [c.r, c.g, c.b];
       });
+
+      // lerp current colors toward target each frame for slow color transition
+      program.uniforms.uColorStops.value =
+        program.uniforms.uColorStops.value.map((current, i) =>
+          current.map((v, j) => v + (targetStops[i][j] - v) * 0.007),
+        );
       renderer.render({ scene: mesh });
     };
     animateId = requestAnimationFrame(update);
