@@ -1,4 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
+import { Bug } from "lucide-react";
+
 import {
   createApplication,
   getApplications,
@@ -8,6 +10,19 @@ import ApplicationTable from "./components/ApplicationTable";
 import Aurora from "./components/Aurora";
 
 import "./App.css";
+
+import GlassIcons from "./components/GlassIcons";
+
+const BUG_REPORT_URL =
+  "https://github.com/FirstSipSolutions/job-application-tracker/issues/new?title=[BUG]%20&labels=bug&body=**Describe%20the%20bug**%0A%0A**Steps%20to%20reproduce**%0A1.%20%0A2.%20%0A3.%20%0A%0A**Expected%20behaviour**%0A%0A**Actual%20behaviour**%0A%0A**Browser%20%2F%20Device**";
+<div
+  style={{
+    position: "fixed",
+    bottom: 32,
+    right: 32,
+    zIndex: 50,
+  }}
+></div>;
 
 const STATUS_CONFIG = {
   draft: { label: "DRAFT", color: "#9e9e9e" },
@@ -109,12 +124,22 @@ export default function App() {
 
   const recentApplications = applications.slice(0, 5);
 
+  const AURORA_COLORS = {
+    ALL: ["#0a2a3a", "#0d6e8a", "#1a3a4a"],
+    APPLIED: ["#0d2a4a", "#1a4a8a", "#0d1f3a"],
+    INTERVIEWING: ["#3a2a0d", "#6b4a1a", "#4a3a0d"],
+    OFFERED: ["#0d3a1a", "#1a6b2a", "#0d2a14"],
+    REJECTED: ["#3a0d0d", "#6b1a1a", "#2a0d0d"],
+    DRAFT: ["#1a1a2e", "#2a2a4a", "#0d0d1e"],
+    WITHDRAWN: ["#1a1a1a", "#2a2a2a", "#0d0d0d"],
+  };
+
   return (
     <div style={{ maxWidth: 1400, margin: "0 auto", padding: "24px 16px" }}>
       <Aurora
-        colorStops={["#0d1f1a", "#2a4a6b", "#1a1a2e"]}
-        blend={0.3}
-        amplitude={0.8}
+        colorStops={AURORA_COLORS[activeFilter]}
+        blend={0.4}
+        amplitude={1.2}
         speed={0.5}
       />
 
@@ -246,7 +271,7 @@ export default function App() {
                     letterSpacing: "0.14em",
                     paddingBottom: 10,
                     cursor: "pointer",
-                    transition: "color 0.12s",
+                    transition: "color 0.18s",
                     whiteSpace: "nowrap",
                     flexShrink: 0,
                   }}
@@ -613,6 +638,39 @@ export default function App() {
         </div>
       </div>
 
+      {/* ── BUG REPORT BUTTON ── */}
+      {/* Fixed bottom right — opens a pre-filled GitHub issue */}
+      {/* ── BUG REPORT BUTTON ── */}
+      <button
+        onClick={() => window.open(BUG_REPORT_URL, "_blank")}
+        style={{
+          position: "fixed",
+          bottom: 28,
+          right: 28,
+          zIndex: 50,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "rgba(232,226,217,0.25)",
+          fontSize: 10,
+          letterSpacing: "0.1em",
+          transition: "color 0.2s",
+          padding: 0,
+        }}
+        onMouseEnter={(e) =>
+          (e.currentTarget.style.color = "rgba(232,226,217,0.7)")
+        }
+        onMouseLeave={(e) =>
+          (e.currentTarget.style.color = "rgba(232,226,217,0.25)")
+        }
+      >
+        <Bug size={13} />
+        Found a bug? Report it here
+      </button>
+
       {/* ── FOOTER ── */}
       <footer style={{ marginTop: 48, paddingBottom: 24, textAlign: "center" }}>
         <span
@@ -623,7 +681,7 @@ export default function App() {
             color: "rgba(232,226,217,0.15)",
           }}
         >
-          FSS 2026
+          © 2026 First Sip Solutions{" "}
         </span>
       </footer>
 
@@ -633,7 +691,7 @@ export default function App() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.9)",
+            background: "rgba(0,0,0,0.6)",
             backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
