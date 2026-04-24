@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 // this can change but should be at the top of the card
 
 const STATUS_COLORS = {
-  saved: "#9e9e9e",
-  applied: "#5b9bd5",
-  interview: "#e0a84b",
-  offer: "#4cad7c",
+  draft: "#9e9e9e", // grey
+  outgoing: "#5b9bd5", // blue
+  pending: "#e0a84b", // amber
+  interview: "#c9a96e", // copper
+  offer: "#4cad7c", // green
+  rejected: "#d96b6b", // red
 };
 
 // 3. THE COMPONENT — PascalCase name matches filename, props destructured in the signature
@@ -20,16 +22,44 @@ export default function RoleCard({ role, onClick }) {
     onClick?.(role.id);
   };
 
-  // 3d. RETURN — the JSX
+  // RETURN feedback after hovering
+
   return (
-    <article onClick={handleClick} style={cardStyle}>
+    <article
+      onClick={handleClick}
+      style={cardStyle}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "#c9a96e";
+        e.currentTarget.style.transform = "translateY(-2px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "rgba(255, 235, 200, 0.08)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
+    >
       <h3>{role.title}</h3>
       <p>{totalJobs} jobs</p>
+      <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+        {Object.entries(role.statusCounts ?? {}).map(([s, n]) => (
+          <span
+            key={s}
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: STATUS_COLORS[s],
+              opacity: n ? 1 : 0.3,
+            }}
+          >
+            {n} {s}
+          </span>
+        ))}
+      </div>
     </article>
   );
 }
 
-// here are all the styling params for the card itsself 
+// here are all the styling params for the card itsself
 
 const cardStyle = {
   width: "240px",
@@ -42,4 +72,3 @@ const cardStyle = {
   border: "1px solid rgba(255, 235, 200, 0.08)",
   color: "#e8e2d9",
 };
-
