@@ -14,7 +14,11 @@
   border: 1px solid rgba(180, 130, 70, 0.35);
   border-radius: 10px;
   color: #c9a96e;
-  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .aurora-glow:hover,
@@ -30,9 +34,15 @@
 }
 
 @keyframes aurora-shift {
-  0%   { box-shadow: 0 0 14px rgba(180, 130, 70, 0.18); }
-  50%  { box-shadow: 0 0 22px rgba(91, 155, 213, 0.22); }
-  100% { box-shadow: 0 0 14px rgba(180, 130, 70, 0.18); }
+  0% {
+    box-shadow: 0 0 14px rgba(180, 130, 70, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(91, 155, 213, 0.22);
+  }
+  100% {
+    box-shadow: 0 0 14px rgba(180, 130, 70, 0.18);
+  }
 }
 
 .aurora-glow.is-active {
