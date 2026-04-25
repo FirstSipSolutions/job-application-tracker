@@ -13,10 +13,10 @@ export default function Landing() {
   return (
     <>
       <Aurora
-        colorStops={["#0a2a3a", "#0d6e8a", "#1a3a4a"]}
-        blend={0.4}
-        amplitude={1.2}
-        speed={0.5}
+        colorStops={["#080808", "#242424", "#131314"]}
+        blend={.9}
+        amplitude={3.2}
+        speed={0.3}
       />
 
       <main
@@ -49,7 +49,10 @@ export default function Landing() {
               margin: 0,
             }}
           >
-            App<span style={{ color: PALETTE.accent, fontWeight: 500 }}>Track</span>
+            App
+            <span style={{ color: PALETTE.accent, fontWeight: 500 }}>
+              Track
+            </span>
           </h1>
           <p style={{ color: PALETTE.textDim, marginTop: 12, fontSize: 16 }}>
             Your job hunt, organized.
@@ -57,16 +60,18 @@ export default function Landing() {
 
           <Section title="What it does">
             <p>
-              Run your job search like a project. Spin up a role card for
-              every kind of position you're chasing, log each application
-              under it, and move them through your pipeline from saved to
-              offer.
+              Run your job search like a project. Spin up a role card for every
+              kind of position you're chasing, log each application under it,
+              and move them through your pipeline from saved to offer.
             </p>
           </Section>
 
           <Section title="Features">
             <ul style={listStyle}>
-              <li>One role card per target — Frontend, Full Stack, Backend, anything</li>
+              <li>
+                One role card per target — Frontend, Full Stack, Backend,
+                anything
+              </li>
               <li>Run as many role cards in parallel as you need</li>
               <li>Kanban pipeline: Saved → Applied → Interview → Offer</li>
               <li>Notes, contacts, and dates on every application</li>
@@ -78,7 +83,9 @@ export default function Landing() {
               <li>Sign up and land on your dashboard</li>
               <li>Hit + to create a role card for a role you're chasing</li>
               <li>Open the role and add jobs as you apply</li>
-              <li>Drag job cards through Saved → Applied → Interview → Offer</li>
+              <li>
+                Drag job cards through Saved → Applied → Interview → Offer
+              </li>
             </ol>
           </Section>
 
@@ -86,7 +93,9 @@ export default function Landing() {
             <p style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               <CTA to="/app">Try the demo</CTA>
               <CTA to="/signup">Sign up</CTA>
-              <CTA to="/login" subtle>Sign in</CTA>
+              <CTA to="/login" subtle>
+                Sign in
+              </CTA>
             </p>
           </Section>
 

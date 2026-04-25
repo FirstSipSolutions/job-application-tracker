@@ -17,16 +17,13 @@ export default function RoleCard({ role, onClick }) {
   // 3b. DERIVED VALUES — computed from props/state
   const totalJobs = role.jobs?.length ?? 0;
 
-  // 3c. EVENT HANDLERS
-  const handleClick = () => {
-    onClick?.(role.id);
-  };
+
 
   // RETURN feedback after hovering
 
   return (
+<Link to={`/app/role/${role.id}`} style={{ textDecoration: "none", color: "inherit" }}>
     <article
-      onClick={handleClick}
       style={cardStyle}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = "#c9a96e";
@@ -56,6 +53,7 @@ export default function RoleCard({ role, onClick }) {
         ))}
       </div>
     </article>
+    </Link>
   );
 }
 
