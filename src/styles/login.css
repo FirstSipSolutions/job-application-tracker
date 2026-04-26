@@ -1,0 +1,19 @@
+@import "./aurora.css";
+
+/* This is the parent container covering the whole screen */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* This is the actual form div */
+.login-card {
+  background-color: #1a211f;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px; /* Prevents the form from stretching too wide */
+  /* Let's add a bright border temporarily so we can find it! */
+  border: 2px solid red;
+}

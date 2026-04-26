@@ -7,7 +7,8 @@ import JobDetailPage from "./pages/JobDetailPage.jsx";
 
 function ProtectedRoute({ children }) {
   // TODO: gate via useAuth() — redirect to /login when unauthenticated
-  const isAuthed = true;
+  // const isAuthed = true;
+  const isAuthed = !!localStorage.getItem("token");
   return isAuthed ? children : <Navigate to="/login" replace />;
 }
 
