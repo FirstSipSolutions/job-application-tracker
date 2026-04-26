@@ -61,10 +61,17 @@ components/
 
 That's the whole shape. Pages are the assembly; components are the parts; hooks are the data; data flows down through props.
 
-## What's NOT in here yet (by design)
+## User flow
 
-- **No real auth** — `useAuth()` returns a placeholder. Will hook into Supabase later.
-- **No real persistence** — every component will use `data/demoData.js` until Supabase is wired.
-- **No styling system locked in** — Tailwind was removed; use plain CSS in `styles/` or inline styles for now.
+```mermaid
+flowchart LR
+  Landing[/Landing<br/>/]:::public --> Login[/Login<br/>/login/]:::public
+  Landing --> Signup[/Signup<br/>/signup/]:::public
+  Login --> Dashboard[Dashboard<br/>/app]:::auth
+  Signup --> Dashboard
+  Dashboard -->|click role card| Role[Role View<br/>/app/role/:id]:::auth
+  Role -->|click job card| Job[Job Detail<br/>/app/role/:id/job/:id]:::auth
 
-## First time touching this repo? See `STARTER-TASKS.md` at the root.
+  classDef public fill:#1a3a4a,stroke:#0d6e8a,color:#fff
+  classDef auth fill:#3a2a0d,stroke:#c9a96e,color:#fff
+```
