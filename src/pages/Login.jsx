@@ -136,7 +136,7 @@ export default function Login() {
 
               <div className="login-container-buttons">
                 <CTA to="/">Sign in</CTA>
-                <CTA to="/">Create Account</CTA>
+                <CTA to="/signup">Create Account</CTA>
                 <CTA to="/">Go back</CTA>
               </div>
             </form>
