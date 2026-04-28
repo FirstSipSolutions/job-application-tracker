@@ -12,17 +12,27 @@ const PALETTE = {
   panelBorder: "rgba(255, 235, 200, 0.08)",
 };
 
-export default function Login() {
+export default function Signup() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   // const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleSignup = (e) => {
     e.preventDefault(); // Prevents the page from refreshing
 
-    console.log("Attempting login with:", { email, password });
+    console.log("Attempting sign up with:", {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+    });
 
-    // TODO: Logic to verify user and save token will go here
+    // TODO: Logic to Sign up new users
   };
 
   return (
@@ -43,9 +53,9 @@ export default function Login() {
           lineHeight: 1.6,
         }}
       >
-        <div className="login-page">
+        <div className="signup-page">
           <div
-            className="login-container"
+            className="signup-container"
             style={{
               background: PALETTE.panel,
               backdropFilter: "blur(20px)",
@@ -55,7 +65,7 @@ export default function Login() {
               padding: "48px 40px",
             }}
           >
-            <div className="login-header">
+            <div className="signup-header">
               <h1
                 style={{
                   fontSize: 36,
@@ -83,11 +93,67 @@ export default function Login() {
                   margin: "10px",
                 }}
               >
-                Access your dashboard
+                Sign up below!
               </p>
             </div>
 
-            <form onSubmit={handleLogin} className="login-form">
+            <form onSubmit={handleSignup} className="signup-form">
+              <div className="form-first-name">
+                <label
+                  htmlFor="firstName"
+                  style={{
+                    margin: "10px",
+                  }}
+                >
+                  First
+                  <span
+                    style={{
+                      color: PALETTE.accent,
+                      fontWeight: 500,
+                      margin: "10px",
+                    }}
+                  >
+                    Name
+                  </span>
+                </label>
+                <input
+                  className="firstName"
+                  id="firstName"
+                  type="firstName"
+                  placeholder="EX: John"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-last-name">
+                <label
+                  htmlFor="lastName"
+                  style={{
+                    margin: "10px",
+                  }}
+                >
+                  Last
+                  <span
+                    style={{
+                      color: PALETTE.accent,
+                      fontWeight: 500,
+                      margin: "10px",
+                    }}
+                  >
+                    Name
+                  </span>
+                </label>
+                <input
+                  className="lastName"
+                  id="lastName"
+                  type="lastName"
+                  placeholder="EX: Smith"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                />
+              </div>
               <div className="form-email">
                 <label
                   htmlFor="email"
@@ -96,7 +162,13 @@ export default function Login() {
                   }}
                 >
                   Email
-                  <span style={{ color: PALETTE.accent, fontWeight: 500 }}>
+                  <span
+                    style={{
+                      color: PALETTE.accent,
+                      fontWeight: 500,
+                      margin: "10px",
+                    }}
+                  >
                     Address
                   </span>
                 </label>
@@ -129,15 +201,37 @@ export default function Login() {
                   required
                 />
               </div>
+              <div className="form-confirm-password">
+                <label
+                  htmlFor="confirmPassword"
+                  style={{
+                    margin: "10px",
+                  }}
+                >
+                  Confirm{" "}
+                  <span
+                    style={{
+                      color: PALETTE.accent,
+                      fontWeight: 500,
+                      margin: "10px",
+                    }}
+                  >
+                    Password
+                  </span>
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="confirmPassword"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-              {/* <button type="submit" className="login-submit-btn">
-                Sign in
-              </button> */}
-
-              <div className="login-container-buttons">
-                <CTA to="/">Sign in</CTA>
-                <CTA to="/signup">Create Account</CTA>
+              <div className="signup-container-buttons">
                 <CTA to="/">Go back</CTA>
+                <CTA to="/Login">Log In</CTA>
               </div>
             </form>
           </div>
