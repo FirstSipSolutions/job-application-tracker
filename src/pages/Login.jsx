@@ -2,7 +2,8 @@ import Aurora from "../components/effects/Aurora.jsx";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/login.css";
-// import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase.js";
+import { useNavigate } from "react-router-dom";
 
 const PALETTE = {
   text: "#e8e2d9",
@@ -15,14 +16,27 @@ const PALETTE = {
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const navigate = useNavigate();
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleLogin = (e) => {
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
     e.preventDefault(); // Prevents the page from refreshing
+    setErrorMsg("");
 
-    console.log("Attempting login with:", { email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-    // TODO: Logic to verify user and save token will go here
+    if (error) {
+      setErrorMsg(error.message);
+      console.error(error);
+      return;
+    }
+
+    console.log("Login successful! Attempting to navigate...");
+    navigate("/app");
   };
 
   return (
@@ -88,7 +102,7 @@ export default function Login() {
             </div>
 
             <form onSubmit={handleLogin} className="login-form">
-              <div className="form-email">
+              <div className="form-input-row">
                 <label
                   htmlFor="email"
                   style={{
@@ -111,7 +125,7 @@ export default function Login() {
                 />
               </div>
 
-              <div className="form-password">
+              <div className="form-input-row">
                 <label
                   htmlFor="password"
                   style={{
@@ -135,9 +149,9 @@ export default function Login() {
               </button> */}
 
               <div className="login-container-buttons">
-                <CTA to="/">Sign in</CTA>
-                <CTA to="/signup">Create Account</CTA>
                 <CTA to="/">Go back</CTA>
+                <CTA to="/signup">Create Account</CTA>
+                <SubmitButton>Log In!</SubmitButton>
               </div>
             </form>
           </div>
@@ -145,29 +159,54 @@ export default function Login() {
       </main>
     </>
   );
-}
+  function SubmitButton({ children, subtle }) {
+    return (
+      <button
+        type="submit"
+        onSubmit={handleLogin}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          margin: "5px",
+          padding: "10px 20px",
+          borderRadius: 10,
+          border: `1px solid ${subtle ? "rgba(201,169,110,0.2)" : PALETTE.accent}`,
+          color: subtle ? PALETTE.textDim : PALETTE.accent,
+          background: subtle ? "transparent" : "rgba(180, 130, 70, 0.08)",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          cursor: "pointer",
+        }}
+      >
+        {children}
+      </button>
+    );
+  }
 
-function CTA({ to, children, subtle }) {
-  return (
-    <Link
-      to={to}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        margin: "5px",
-        padding: "10px 20px",
-        borderRadius: 10,
-        border: `1px solid ${subtle ? "rgba(201,169,110,0.2)" : PALETTE.accent}`,
-        color: subtle ? PALETTE.textDim : PALETTE.accent,
-        background: subtle ? "transparent" : "rgba(180, 130, 70, 0.08)",
-        textDecoration: "none",
-        fontSize: 11,
-        fontWeight: 600,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-      }}
-    >
-      {children}
-    </Link>
-  );
+  function CTA({ to, children, subtle }) {
+    return (
+      <Link
+        to={to}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          margin: "5px",
+          padding: "10px 20px",
+          borderRadius: 10,
+          border: `1px solid ${subtle ? "rgba(201,169,110,0.2)" : PALETTE.accent}`,
+          color: subtle ? PALETTE.textDim : PALETTE.accent,
+          background: subtle ? "transparent" : "rgba(180, 130, 70, 0.08)",
+          textDecoration: "none",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+        }}
+      >
+        {children}
+      </Link>
+    );
+  }
 }

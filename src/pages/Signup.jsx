@@ -2,7 +2,8 @@ import Aurora from "../components/effects/Aurora.jsx";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/login.css";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase.js";
 
 const PALETTE = {
   text: "#e8e2d9",
@@ -18,23 +19,39 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const handleSignup = (e) => {
-    e.preventDefault(); // Prevents the page from refreshing
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setErrorMsg(" ");
 
-    console.log("Attempting sign up with:", {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
+    if (password !== confirmPassword) {
+      setErrorMsg("Passwords do not match");
+      console.error("Signup: Passwords do not match");
+      return;
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+      },
     });
 
-    // TODO: Logic to Sign up new users
-  };
+    if (error) {
+      setErrorMsg("Error signup: User could not be created.");
+      console.error(error);
+      return;
+    }
 
+    navigate("/app");
+  };
   return (
     <>
       <Aurora
@@ -72,7 +89,7 @@ export default function Signup() {
                   fontWeight: 300,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
-                  margin: "10px",
+                  margin: "8px",
                 }}
               >
                 Job
@@ -80,7 +97,6 @@ export default function Signup() {
                   style={{
                     color: PALETTE.accent,
                     fontWeight: 500,
-                    margin: "10px",
                   }}
                 >
                   Tracker
@@ -90,7 +106,7 @@ export default function Signup() {
                 style={{
                   color: PALETTE.accent,
                   fontWeight: 500,
-                  margin: "10px",
+                  margin: "8px",
                 }}
               >
                 Sign up below!
@@ -98,11 +114,12 @@ export default function Signup() {
             </div>
 
             <form onSubmit={handleSignup} className="signup-form">
-              <div className="form-first-name">
+              {/* First name input */}
+              <div className="form-input-row">
                 <label
                   htmlFor="firstName"
                   style={{
-                    margin: "10px",
+                    margin: "8px",
                   }}
                 >
                   First
@@ -110,7 +127,7 @@ export default function Signup() {
                     style={{
                       color: PALETTE.accent,
                       fontWeight: 500,
-                      margin: "10px",
+                      margin: "8px",
                     }}
                   >
                     Name
@@ -120,17 +137,19 @@ export default function Signup() {
                   className="firstName"
                   id="firstName"
                   type="firstName"
-                  placeholder="EX: John"
+                  placeholder="John"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                 />
               </div>
-              <div className="form-last-name">
+
+              {/* Last name input */}
+              <div className="form-input-row">
                 <label
                   htmlFor="lastName"
                   style={{
-                    margin: "10px",
+                    margin: "8px",
                   }}
                 >
                   Last
@@ -138,7 +157,6 @@ export default function Signup() {
                     style={{
                       color: PALETTE.accent,
                       fontWeight: 500,
-                      margin: "10px",
                     }}
                   >
                     Name
@@ -148,17 +166,19 @@ export default function Signup() {
                   className="lastName"
                   id="lastName"
                   type="lastName"
-                  placeholder="EX: Smith"
+                  placeholder="Doe"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
                 />
               </div>
-              <div className="form-email">
+
+              {/* Email input */}
+              <div className="form-input-row">
                 <label
                   htmlFor="email"
                   style={{
-                    margin: "10px",
+                    margin: "8px",
                   }}
                 >
                   Email
@@ -166,7 +186,6 @@ export default function Signup() {
                     style={{
                       color: PALETTE.accent,
                       fontWeight: 500,
-                      margin: "10px",
                     }}
                   >
                     Address
@@ -183,11 +202,12 @@ export default function Signup() {
                 />
               </div>
 
-              <div className="form-password">
+              {/* Password input */}
+              <div className="form-input-row">
                 <label
                   htmlFor="password"
                   style={{
-                    margin: "10px",
+                    margin: "8px",
                   }}
                 >
                   Password
@@ -201,11 +221,13 @@ export default function Signup() {
                   required
                 />
               </div>
-              <div className="form-confirm-password">
+
+              {/* Confine password input  */}
+              <div className="form-input-row">
                 <label
                   htmlFor="confirmPassword"
                   style={{
-                    margin: "10px",
+                    margin: "8px",
                   }}
                 >
                   Confirm{" "}
@@ -213,7 +235,6 @@ export default function Signup() {
                     style={{
                       color: PALETTE.accent,
                       fontWeight: 500,
-                      margin: "10px",
                     }}
                   >
                     Password
@@ -229,9 +250,11 @@ export default function Signup() {
                 />
               </div>
 
+              {/* Signup button container */}
               <div className="signup-container-buttons">
                 <CTA to="/">Go back</CTA>
                 <CTA to="/Login">Log In</CTA>
+                <SubmitButton>Sign up!</SubmitButton>
               </div>
             </form>
           </div>
@@ -239,8 +262,36 @@ export default function Signup() {
       </main>
     </>
   );
+
+  // Submit button function
+  function SubmitButton({ children, subtle }) {
+    return (
+      <button
+        type="submit"
+        onSubmit={handleSignup}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          margin: "5px",
+          padding: "10px 20px",
+          borderRadius: 10,
+          border: `1px solid ${subtle ? "rgba(201,169,110,0.2)" : PALETTE.accent}`,
+          color: subtle ? PALETTE.textDim : PALETTE.accent,
+          background: subtle ? "transparent" : "rgba(180, 130, 70, 0.08)",
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          cursor: "pointer",
+        }}
+      >
+        {children}
+      </button>
+    );
+  }
 }
 
+// Link function
 function CTA({ to, children, subtle }) {
   return (
     <Link

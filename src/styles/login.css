@@ -1,32 +1,40 @@
 @import "./aurora.css";
 
-/* This is the parent container covering the whole screen */
 .login-page {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* This is the actual form div */
 .login-card {
   background-color: #1a211f;
   padding: 2rem;
   border-radius: 8px;
   width: 100%;
-  max-width: 400px; /* Prevents the form from stretching too wide */
-  /* Let's add a bright border temporarily so we can find it! */
-  /* border: 2px solid red; */
+  max-width: 400px;
 }
 
-.form-email,
-.form-password {
+.form-input-row {
   display: grid;
   grid-template-columns: 140px 1fr;
   align-items: center;
 }
 
-.form-email input,
-.form-password input {
+.form-input-row input {
   width: 100%;
   box-sizing: border-box;
+}
+
+.signup-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup-card {
+  background-color: #1a211f;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
 }
