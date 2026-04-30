@@ -1,18 +1,22 @@
-// Dashboard — what users see after signing in. URL: /app
-// Will show a grid of RoleCards (one per role they're hunting) plus a "+" button to create a new role.
+import AppLayout from "../components/layout/AppLayout.jsx";
 import RoleCard from "../components/role-and-job/RoleCard.jsx";
 
-// mock data added to dashboard every " {} " is a job - so the entry says 3 jobs
+const MOCK_ROLES = [
+  { id: "1", title: "Frontend Developer", jobs: [{}, {}, {}, {}], statusCounts: { outgoing: 4, draft: 1, pending: 2 } },
+  { id: "2", title: "Fullstack Engineer", jobs: [{}, {}, {}, {}, {}, {}], statusCounts: { outgoing: 3, interview: 2, offer: 1 } },
+  { id: "3", title: "Product Designer", jobs: [{}, {}], statusCounts: { draft: 1, rejected: 1 } },
+];
+
 export default function Dashboard() {
-  const mock = {
-    id: "1",
-    title: "Frontend Developer",
-    jobs: [{}, {}, {}, {}],
-    statusCounts: { outgoing: 4, draft: 1, pending: 2 },
-  };
   return (
-    <div style={{ padding: 40 }}>
-      <RoleCard role={mock} />
-    </div>
+    <AppLayout breadcrumb={<span>Active Roles</span>}>
+      <div style={{ padding: 32 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+          {MOCK_ROLES.map((role) => (
+            <RoleCard key={role.id} role={role} />
+          ))}
+        </div>
+      </div>
+    </AppLayout>
   );
 }

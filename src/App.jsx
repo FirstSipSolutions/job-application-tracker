@@ -5,12 +5,12 @@ import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import RoleView from "./pages/RoleView.jsx";
 import JobDetailPage from "./pages/JobDetailPage.jsx";
+import { useAuth } from "./hooks/useAuth.js";
 
 function ProtectedRoute({ children }) {
-  // TODO: gate via useAuth() — redirect to /login when unauthenticated
-  // const isAuthed = true;
-  const isAuthed = !!localStorage.getItem("token");
-  return isAuthed ? children : <Navigate to="/login" replace />;
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {

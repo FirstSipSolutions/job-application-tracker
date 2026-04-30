@@ -1,72 +1,68 @@
 import { Link } from "react-router-dom";
 
-// this can change but should be at the top of the card
-
 const STATUS_COLORS = {
-  draft: "#9e9e9e", // grey
-  outgoing: "#5b9bd5", // blue
-  pending: "#e0a84b", // amber
-  interview: "#c9a96e", // copper
-  offer: "#4cad7c", // green
-  rejected: "#d96b6b", // red
+  draft:     "#9e9e9e",
+  outgoing:  "#5b9bd5",
+  pending:   "#e0a84b",
+  interview: "#c9a96e",
+  offer:     "#4cad7c",
+  rejected:  "#d96b6b",
 };
 
-// 3. THE COMPONENT — PascalCase name matches filename, props destructured in the signature
-export default function RoleCard({ role, onClick }) {
-  // 3a. HOOKS first (useState, useEffect, useMemo) — none here yet
-  // 3b. DERIVED VALUES — computed from props/state
+export default function RoleCard({ role }) {
   const totalJobs = role.jobs?.length ?? 0;
-
-
-
-  // RETURN feedback after hovering
+  const statuses = Object.entries(role.statusCounts ?? {}).filter(([, n]) => n > 0);
 
   return (
-<Link to={`/app/role/${role.id}`} style={{ textDecoration: "none", color: "inherit" }}>
-    <article
-      style={cardStyle}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "#c9a96e";
-        e.currentTarget.style.transform = "translateY(-2px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "rgba(255, 235, 200, 0.08)";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
-    >
-      <h3>{role.title}</h3>
-      <p>{totalJobs} jobs</p>
-      <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
-        {Object.entries(role.statusCounts ?? {}).map(([s, n]) => (
-          <span
-            key={s}
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: STATUS_COLORS[s],
-              opacity: n ? 1 : 0.3,
-            }}
-          >
-            {n} {s}
-          </span>
-        ))}
-      </div>
-    </article>
+    <Link to={`/app/role/${role.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+      <article
+        style={cardStyle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = "#c9a96e";
+          e.currentTarget.style.transform = "translateY(-2px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = "rgba(255, 235, 200, 0.08)";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        {/* top */}
+        <div>
+          <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>{role.title}</h3>
+          <p style={{ fontSize: 11, color: "rgba(232,226,217,0.5)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            {totalJobs} {totalJobs === 1 ? "job" : "jobs"}
+          </p>
+        </div>
+
+        {/* status rows — fixed layout, no wrapping */}
+        <div style={{ borderTop: "1px solid rgba(255,235,200,0.08)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
+          {statuses.slice(0, 4).map(([s, n]) => (
+            <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: STATUS_COLORS[s], textTransform: "capitalize" }}>{s}</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(232,226,217,0.9)" }}>{n}</span>
+            </div>
+          ))}
+          {statuses.length === 0 && (
+            <p style={{ fontSize: 12, color: "rgba(232,226,217,0.25)" }}>No applications yet</p>
+          )}
+        </div>
+      </article>
     </Link>
   );
 }
 
-// here are all the styling params for the card itsself
-
 const cardStyle = {
-  width: "240px",
-  padding: 24,
-  borderRadius: 4,
+  width: "220px",
+  height: "180px",
+  padding: "20px",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
   cursor: "pointer",
   background: "rgba(20, 16, 12, 0.55)",
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(10px)",
   border: "1px solid rgba(255, 235, 200, 0.08)",
   color: "#e8e2d9",
+  transition: "border-color 0.2s, transform 0.2s",
 };
