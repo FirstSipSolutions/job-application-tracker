@@ -1,5 +1,4 @@
-/* Global styles for the app. Import any new global CSS files below. */
-
+@import "./theme.css";
 @import "./aurora.css";
 
 /* this will add an outline to each card */

@@ -136,7 +136,7 @@ export default function Signup() {
                 <input
                   className="firstName"
                   id="firstName"
-                  type="firstName"
+                  type="text"
                   placeholder="John"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
@@ -165,7 +165,7 @@ export default function Signup() {
                 <input
                   className="lastName"
                   id="lastName"
-                  type="lastName"
+                  type="text"
                   placeholder="Doe"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
@@ -242,13 +242,19 @@ export default function Signup() {
                 </label>
                 <input
                   id="confirmPassword"
-                  type="confirmPassword"
+                  type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
               </div>
+
+              {errorMsg && (
+                <p style={{ color: "#d96b6b", fontSize: 13, margin: "8px 0" }}>
+                  {errorMsg}
+                </p>
+              )}
 
               {/* Signup button container */}
               <div className="signup-container-buttons">

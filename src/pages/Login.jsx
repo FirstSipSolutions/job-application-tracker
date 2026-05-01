@@ -1,4 +1,4 @@
-import Aurora from "../components/effects/Aurora.jsx";
+ import Aurora from "../components/effects/Aurora.jsx";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/login.css";
@@ -144,9 +144,11 @@ export default function Login() {
                 />
               </div>
 
-              {/* <button type="submit" className="login-submit-btn">
-                Sign in
-              </button> */}
+              {errorMsg && (
+                <p style={{ color: "#d96b6b", fontSize: 13, margin: "8px 0" }}>
+                  {errorMsg}
+                </p>
+              )}
 
               <div className="login-container-buttons">
                 <CTA to="/">Go back</CTA>

@@ -1,0 +1,121 @@
+/*
+  Single source of truth for all colors and layout dimensions.
+  Set data-theme="dark" or "light" on <html>.
+  Never use hardcoded colors in components — always var().
+*/
+
+:root,
+[data-theme="dark"] {
+  /* backgrounds */
+  --bg:        #16130f;
+  --surface:   #1e1b17;
+  --surface-2: #221f1b;
+  --surface-3: #2d2925;
+
+  /* borders */
+  --border:       #2d2925;
+  --border-subtle: #1e1b17;
+
+  /* text */
+  --text:       #e9e1da;
+  --text-dim:   #998f81;
+  --text-faint: #4d463a;
+
+  /* accent — amber */
+  --accent:       #c9a96e;
+  --accent-bright: #e4c285;
+  --accent-dim:   rgba(201, 169, 110, 0.12);
+  --accent-border: rgba(201, 169, 110, 0.25);
+
+  /* status */
+  --s-draft:     #6b6b6b;
+  --s-outgoing:  #5b9bd5;
+  --s-pending:   #e0a84b;
+  --s-interview: #c9a96e;
+  --s-offer:     #4cad7c;
+  --s-rejected:  #d96b6b;
+
+  /* layout */
+  --sidebar-w:     220px;
+  --right-panel-w: 260px;
+  --topbar-h:      48px;
+}
+
+[data-theme="light"] {
+  --bg:        #f5f0e8;
+  --surface:   #faf7f2;
+  --surface-2: #ffffff;
+  --surface-3: #ede8df;
+
+  --border:        #e0d9ce;
+  --border-subtle: #ede8df;
+
+  --text:       #1a1612;
+  --text-dim:   #7a7068;
+  --text-faint: #b8b0a4;
+
+  --accent:        #9a6e30;
+  --accent-bright: #7a5420;
+  --accent-dim:    rgba(154, 110, 48, 0.1);
+  --accent-border: rgba(154, 110, 48, 0.3);
+
+  /* status stays semantic — readable on light too */
+  --s-draft:     #888888;
+  --s-outgoing:  #3a7bc8;
+  --s-pending:   #c47e10;
+  --s-interview: #9a6e30;
+  --s-offer:     #2e8a58;
+  --s-rejected:  #c04040;
+}
+
+/* ── Base resets ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: "Manrope", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+#root {
+  height: 100%;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: none;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
