@@ -10,7 +10,6 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X, Plus } from "lucide-react";
 
-// widget definitions — each has a label, color, and value function over apps array
 const DEFS = {
   "total-apps":    { label: "Total Applications", color: "var(--db-blue)",  val: a => a.length },
   "interviews":    { label: "Active Interviews",  color: "var(--db-green)", val: a => a.filter(x => x.status === "Interview").length },
@@ -27,8 +26,6 @@ function load() {
   catch { return DEFAULT; }
 }
 function save(order) { localStorage.setItem("wg-order", JSON.stringify(order)); }
-
-// ── Single sortable card ─────────────────────────────────────────────────────
 
 function Card({ id, apps, editing, vertical, onRemove }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -65,8 +62,6 @@ function Ghost({ id, apps, vertical }) {
     </div>
   );
 }
-
-// ── Grid ────────────────────────────────────────────────────────────────────
 
 export default function WidgetGrid({ apps, vertical = false }) {
   const [order, setOrder]     = useState(load);
@@ -108,7 +103,6 @@ export default function WidgetGrid({ apps, vertical = false }) {
         <DragOverlay>{activeId ? <Ghost id={activeId} apps={apps} vertical={vertical} /> : null}</DragOverlay>
       </DndContext>
 
-      {/* single button, different style class based on layout */}
       <button
         className={`${vertical ? "wg-edit-inline" : "wg-edit-btn"}${editing ? " wg-edit-active" : ""}`}
         onClick={() => setEditing(e => !e)}

@@ -19,7 +19,7 @@ export default function ApplicationsCard({ apps, loading, updateStatus, removeAp
       <div className="db-card-sub">{loading ? "Loading..." : `${apps.length} tracked`}</div>
 
       {loading ? null : apps.length === 0 ? (
-        <p className="db-app-empty">No applications yet — hit + Add Application to start.</p>
+        <p className="db-app-empty">No applications yet. Hit + Add Application to start.</p>
       ) : (
         <div className="db-app-list">
           <div className="db-app-row db-app-header">
@@ -34,7 +34,6 @@ export default function ApplicationsCard({ apps, loading, updateStatus, removeAp
             <div key={id} className="db-app-row">
               <span className="db-app-company">{company}</span>
               <span className="db-app-role">{role}</span>
-              {/* appearance:none on the select in CSS strips the native arrow — color only */}
               <select
                 className="db-app-status-col"
                 value={status}

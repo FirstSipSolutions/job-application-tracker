@@ -1,4 +1,4 @@
-/* Dashboard — bento layout */
+/* Dashboard */
 
 :root,
 [data-theme="dark"] {
@@ -172,7 +172,7 @@
 
 .db-app-row:last-child { border-bottom: none; }
 
-/* header row — dimmer text, smaller size */
+/* header row */
 .db-app-header { padding: 0 0 8px; }
 .db-app-header span { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--db-text-faint); }
 
@@ -180,7 +180,7 @@
 .db-app-role       { font-size: 13px; color: var(--db-text-dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .db-app-date       { font-size: 11px; color: var(--db-text-faint); white-space: nowrap; flex-shrink: 0; }
 
-/* status select — appearance:none strips native arrow, inline style supplies just the text color */
+/* appearance:none strips native arrow; color comes from inline style */
 .db-app-status-col {
   font-size: 11px;
   font-weight: 600;

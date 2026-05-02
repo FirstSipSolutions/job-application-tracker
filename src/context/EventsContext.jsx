@@ -33,7 +33,7 @@ export function EventsProvider({ children }) {
     if (!error) setEvents(prev => [...prev, row]);
   }
 
-  // dismissed events stay in localStorage — it's a UI preference, not critical data
+  // dismissed stays in localStorage, it's a UI preference not worth syncing to DB
   function dismissEvent(key) {
     setDismissed(prev => {
       const next = new Set(prev);

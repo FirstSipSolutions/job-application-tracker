@@ -19,7 +19,7 @@ export default function PipelineCard() {
   const { theme } = useTheme();
   const dark = theme === "dark";
 
-  // raw hex required — CSS vars can't be used in recharts props
+  // raw hex required: CSS vars don't work in recharts props
   const c = {
     applied:    "#abc4ff",
     interviews: dark ? "#4cad7c" : "#2e8a58",
@@ -43,7 +43,6 @@ export default function PipelineCard() {
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={DATA} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
           <defs>
-            {/* gradients fade to transparent so overlapping series stay readable */}
             <linearGradient id="g-applied"    x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor={c.applied}    stopOpacity={0.25} />
               <stop offset="95%" stopColor={c.applied}    stopOpacity={0} />

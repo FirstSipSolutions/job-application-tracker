@@ -5,7 +5,6 @@ export function useApplications() {
   const [apps, setApps]       = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // fetch this user's applications on mount, newest first
   useEffect(() => {
     supabase
       .from("applications")
@@ -17,7 +16,6 @@ export function useApplications() {
       });
   }, []);
 
-  // insert and prepend the returned row (server assigns id + created_at)
   async function addApp(fields) {
     const { data: row, error } = await supabase
       .from("applications")
@@ -27,7 +25,6 @@ export function useApplications() {
     if (!error) setApps(prev => [row, ...prev]);
   }
 
-  // optimistic — update local state immediately, sync to DB in background
   async function updateStatus(id, status) {
     setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     await supabase.from("applications").update({ status }).eq("id", id);

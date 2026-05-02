@@ -69,7 +69,7 @@ export default function AddApplicationModal({ onClose, onAdd }) {
         <form onSubmit={handleSubmit}>
           <div className="modal-field">
             <label className="modal-label">
-              Job URL <span className="modal-label-opt">— optional, auto-fills company</span>
+              Job URL <span className="modal-label-opt">(optional, auto-fills company)</span>
             </label>
             <div className="modal-url-wrap">
               <input
@@ -111,7 +111,7 @@ export default function AddApplicationModal({ onClose, onAdd }) {
           </div>
 
           <div className="modal-field">
-            <label className="modal-label">Notes <span className="modal-label-opt">— optional</span></label>
+            <label className="modal-label">Notes <span className="modal-label-opt">(optional)</span></label>
             <textarea className="modal-input" rows={2}
               placeholder="Referral from Alex · Senior role · Strong culture fit"
               value={notes} onChange={(e) => setNotes(e.target.value)} />

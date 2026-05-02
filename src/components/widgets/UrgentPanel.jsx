@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import { useEvents } from "../../context/EventsContext.jsx";
 
-// single source for type display — color + label together
 const TYPE = {
   interview: { color: "#6366f1", label: "Interview" },
   applied:   { color: "#34d399", label: "Applied"   },
@@ -16,7 +15,6 @@ export default function UrgentPanel() {
   const { events, dismissed, dismissEvent } = useEvents();
   const today = new Date().toISOString().slice(0, 10);
 
-  // only missed events — past today, not yet dismissed
   const missed = events
     .filter(e => e.date < today && !dismissed.has(`${e.date}::${e.label}`))
     .sort((a, b) => a.date.localeCompare(b.date));

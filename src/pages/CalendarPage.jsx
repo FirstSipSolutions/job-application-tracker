@@ -48,7 +48,7 @@ export default function CalendarPage() {
   const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); setSelected(null); };
   const nextMonth = () => { if (month === 11) { setMonth(0);  setYear(y => y + 1); } else setMonth(m => m + 1); setSelected(null); };
 
-  // rebuild lookup whenever events change — ??= adds key on first use
+  // ??= creates the key array on first use
   const byDate = events.reduce((acc, e) => {
     (acc[e.date] ??= []).push(e);
     return acc;
@@ -58,7 +58,6 @@ export default function CalendarPage() {
   const selectedKey   = selected ? fmtKey(year, month, selected) : null;
   const selectedEvents = selectedKey ? (byDate[selectedKey] ?? []) : [];
 
-  // pre-fill with the selected day if one is highlighted, otherwise today
   const defaultDate = selected ? fmtKey(year, month, selected) : todayISO();
 
   function addEvent(ev) {
