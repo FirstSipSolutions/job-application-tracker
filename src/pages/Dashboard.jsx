@@ -7,10 +7,19 @@ import ApplicationsCard from "../components/dashboard/ApplicationsCard.jsx";
 import UrgentPanel from "../components/widgets/UrgentPanel.jsx";
 import WidgetGrid from "../components/widgets/WidgetGrid.jsx";
 import { useApplications } from "../hooks/useApplications.js";
+import { useProfile } from "../context/ProfileContext.jsx";
 import "../styles/dashboard.css";
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export default function Dashboard() {
   const { apps, loading, addApp, updateStatus, removeApp } = useApplications();
+  const { displayName } = useProfile();
   const [showModal, setShowModal] = useState(false);
 
   // when user returns from a Hire Hub job board click, open Add Application
@@ -31,8 +40,8 @@ export default function Dashboard() {
 
       <main className="db-main">
         <div className="db-greeting">
-          <h1>Good morning</h1>
-          <p>You have 2 upcoming interviews this week.</p>
+          <h1>{greeting()}{displayName ? `, ${displayName}` : ""}</h1>
+          <p>{apps.filter(a => a.status === "Interview").length} active interview{apps.filter(a => a.status === "Interview").length !== 1 ? "s" : ""} in your pipeline.</p>
         </div>
 
         <div className="db-bento">
