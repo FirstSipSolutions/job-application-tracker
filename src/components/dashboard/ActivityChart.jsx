@@ -20,13 +20,13 @@ function buildChartData(apps) {
   });
 }
 
-export default function PipelineCard({ apps = [] }) {
+export default function ActivityChart({ apps = [] }) {
   const { theme } = useTheme();
   const dark = theme === "dark";
   const data = buildChartData(apps);
 
   // raw hex required: CSS vars don't work in recharts props
-  const c = {
+  const colors = {
     applied:    "#abc4ff",
     interviews: dark ? "#4cad7c" : "#2e8a58",
     grid:       dark ? "rgba(255,255,255,0.05)" : "rgba(171,196,255,0.15)",
@@ -35,36 +35,36 @@ export default function PipelineCard({ apps = [] }) {
   };
 
   return (
-    <div className="db-card db-pipeline">
+    <div className="db-card db-activity-chart">
       <div className="db-card-title">Application Overview</div>
       <div className="db-card-sub">last 8 weeks</div>
 
       <div className="db-chart-legend">
-        <div className="db-legend-dot"><div className="db-dot" style={{ background: c.applied }} />Applied</div>
-        <div className="db-legend-dot"><div className="db-dot" style={{ background: c.interviews }} />Interviews</div>
+        <div className="db-legend-dot"><div className="db-dot" style={{ background: colors.applied }} />Applied</div>
+        <div className="db-legend-dot"><div className="db-dot" style={{ background: colors.interviews }} />Interviews</div>
       </div>
 
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
           <defs>
             <linearGradient id="g-applied" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%"  stopColor={c.applied}    stopOpacity={0.25} />
-              <stop offset="95%" stopColor={c.applied}    stopOpacity={0} />
+              <stop offset="5%"  stopColor={colors.applied}    stopOpacity={0.25} />
+              <stop offset="95%" stopColor={colors.applied}    stopOpacity={0} />
             </linearGradient>
             <linearGradient id="g-interviews" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%"  stopColor={c.interviews} stopOpacity={0.25} />
-              <stop offset="95%" stopColor={c.interviews} stopOpacity={0} />
+              <stop offset="5%"  stopColor={colors.interviews} stopOpacity={0.25} />
+              <stop offset="95%" stopColor={colors.interviews} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke={c.grid} />
-          <XAxis dataKey="day" tick={{ fontSize: 11, fill: c.axis }} tickLine={false} axisLine={false} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: c.axis }} tickLine={false} axisLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+          <XAxis dataKey="day" tick={{ fontSize: 11, fill: colors.axis }} tickLine={false} axisLine={false} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: colors.axis }} tickLine={false} axisLine={false} />
           <Tooltip
-            contentStyle={{ background: c.tooltip, border: "1px solid var(--db-border)", borderRadius: 4, fontSize: 12 }}
+            contentStyle={{ background: colors.tooltip, border: "1px solid var(--db-border)", borderRadius: 4, fontSize: 12 }}
             labelStyle={{ color: "var(--db-text)", fontWeight: 600 }}
           />
-          <Area type="monotone" dataKey="applied"    stroke={c.applied}    strokeWidth={2} fill="url(#g-applied)"    dot={false} />
-          <Area type="monotone" dataKey="interviews" stroke={c.interviews} strokeWidth={2} fill="url(#g-interviews)" dot={false} />
+          <Area type="monotone" dataKey="applied"    stroke={colors.applied}    strokeWidth={2} fill="url(#g-applied)"    dot={false} />
+          <Area type="monotone" dataKey="interviews" stroke={colors.interviews} strokeWidth={2} fill="url(#g-interviews)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
