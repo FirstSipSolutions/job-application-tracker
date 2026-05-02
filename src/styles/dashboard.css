@@ -448,8 +448,6 @@
   border-radius: 4px;
 }
 
-/* red-tinted background for overdue rows */
-.upcoming-overdue { background: rgba(229,152,155,0.06); border-color: rgba(229,152,155,0.2); }
 
 .upcoming-body  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 .upcoming-type  { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
