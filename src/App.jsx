@@ -3,6 +3,8 @@ import Landing from "./pages/Landing.jsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import CalendarPage from "./pages/CalendarPage.jsx";
+import Settings from "./pages/Settings.jsx";
 import RoleView from "./pages/RoleView.jsx";
 import JobDetailPage from "./pages/JobDetailPage.jsx";
 import { useAuth } from "./hooks/useAuth.js";
@@ -27,6 +29,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/calendar"
+        element={
+          <ProtectedRoute>
+            <CalendarPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/app/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />
