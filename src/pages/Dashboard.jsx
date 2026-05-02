@@ -3,7 +3,7 @@ import AppNav from "../components/layout/AppNav.jsx";
 import AddApplicationModal from "../components/modals/AddApplicationModal.jsx";
 import ProfileCard from "../components/dashboard/ProfileCard.jsx";
 import PipelineCard from "../components/dashboard/PipelineCard.jsx";
-import ApplicationsCard from "../components/dashboard/ApplicationsCard.jsx";
+import JobApplicationBoard from "../components/dashboard/JobApplicationBoard.jsx";
 import UrgentPanel from "../components/widgets/UrgentPanel.jsx";
 import WidgetGrid from "../components/widgets/WidgetGrid.jsx";
 import { useApplications } from "../hooks/useApplications.js";
@@ -59,7 +59,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <ApplicationsCard
+          <JobApplicationBoard
             apps={apps}
             loading={loading}
             updateStatus={updateStatus}

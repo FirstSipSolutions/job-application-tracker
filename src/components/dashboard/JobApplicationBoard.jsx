@@ -15,7 +15,7 @@ const STATUS_COLOR = {
 export default function ApplicationsCard({ apps, loading, updateStatus, removeApp, onEdit }) {
   return (
     <div className="db-card db-actions">
-      <div className="db-card-title">Applications</div>
+      <div className="db-card-title">Job Application Board</div>
       <div className="db-card-sub">{loading ? "Loading..." : `${apps.length} tracked`}</div>
 
       {loading ? null : apps.length === 0 ? (
