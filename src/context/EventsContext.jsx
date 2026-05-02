@@ -12,7 +12,6 @@ export function EventsProvider({ children }) {
   const [events,    setEvents]    = useState([]);
   const [dismissed, setDismissed] = useState(loadDismissed);
 
-  // fetch this user's events on mount, sorted by date
   useEffect(() => {
     supabase
       .from("events")
@@ -23,7 +22,6 @@ export function EventsProvider({ children }) {
       });
   }, []);
 
-  // insert and append the returned row
   async function addEvent(fields) {
     const { data: row, error } = await supabase
       .from("events")

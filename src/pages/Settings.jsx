@@ -6,7 +6,7 @@ import "../styles/dashboard.css";
 export default function Settings() {
   const { displayName, jobTitle, updateProfile } = useProfile();
 
-  // local draft state so changes only apply on save, not live as you type
+  // draft state — applies on save only
   const [name,  setName]  = useState(displayName);
   const [title, setTitle] = useState(jobTitle);
   const [saved, setSaved] = useState(false);
