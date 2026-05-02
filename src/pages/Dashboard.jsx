@@ -18,11 +18,11 @@ function greeting() {
 }
 
 export default function Dashboard() {
-  const { apps, loading, addApp, updateStatus, removeApp } = useApplications();
+  const { apps, loading, addApp, updateApp, updateStatus, removeApp } = useApplications();
   const { displayName } = useProfile();
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal]   = useState(false);
+  const [editingApp, setEditingApp] = useState(null);
 
-  // when user returns from a Hire Hub job board click, open Add Application
   useEffect(() => {
     function onVisible() {
       if (document.visibilityState === "visible" && sessionStorage.getItem("job-hunt")) {
@@ -46,7 +46,7 @@ export default function Dashboard() {
 
         <div className="db-bento">
           <ProfileCard />
-          <PipelineCard />
+          <PipelineCard apps={apps} />
 
           <div className="db-card db-sidebar">
             <div className="db-sidebar-section">
@@ -59,12 +59,25 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <ApplicationsCard apps={apps} loading={loading} updateStatus={updateStatus} removeApp={removeApp} />
+          <ApplicationsCard
+            apps={apps}
+            loading={loading}
+            updateStatus={updateStatus}
+            removeApp={removeApp}
+            onEdit={setEditingApp}
+          />
         </div>
       </main>
 
       {showModal && (
         <AddApplicationModal onClose={() => setShowModal(false)} onAdd={addApp} />
+      )}
+      {editingApp && (
+        <AddApplicationModal
+          initial={editingApp}
+          onClose={() => setEditingApp(null)}
+          onAdd={(fields) => updateApp(editingApp.id, fields)}
+        />
       )}
     </div>
   );

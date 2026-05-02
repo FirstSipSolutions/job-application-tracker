@@ -25,6 +25,11 @@ export function useApplications() {
     if (!error) setApps(prev => [row, ...prev]);
   }
 
+  async function updateApp(id, fields) {
+    setApps(prev => prev.map(a => a.id === id ? { ...a, ...fields } : a));
+    await supabase.from("applications").update(fields).eq("id", id);
+  }
+
   async function updateStatus(id, status) {
     setApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     await supabase.from("applications").update({ status }).eq("id", id);
@@ -35,5 +40,5 @@ export function useApplications() {
     await supabase.from("applications").delete().eq("id", id);
   }
 
-  return { apps, loading, addApp, updateStatus, removeApp };
+  return { apps, loading, addApp, updateApp, updateStatus, removeApp };
 }

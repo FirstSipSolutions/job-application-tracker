@@ -24,17 +24,17 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function AddApplicationModal({ onClose, onAdd }) {
-  const [url, setUrl]         = useState("");
-  const [company, setCompany] = useState("");
-  const [role, setRole]       = useState("");
-  const [status, setStatus]   = useState("Applied");
-  const [date, setDate]       = useState(todayISO());
-  const [notes, setNotes]     = useState("");
+export default function AddApplicationModal({ onClose, onAdd, initial }) {
+  const [url, setUrl]         = useState(initial?.url     || "");
+  const [company, setCompany] = useState(initial?.company || "");
+  const [role, setRole]       = useState(initial?.role    || "");
+  const [status, setStatus]   = useState(initial?.status  || "Applied");
+  const [date, setDate]       = useState(initial?.date    || todayISO());
+  const [notes, setNotes]     = useState(initial?.notes   || "");
   const [parsed, setParsed]   = useState(false);
 
   // ref so updates never trigger a re-render
-  const autoFilledRef = useRef("");
+  const autoFilledRef = useRef(initial?.company || "");
 
   useEffect(() => {
     const domain = extractDomain(url);
@@ -62,7 +62,7 @@ export default function AddApplicationModal({ onClose, onAdd }) {
     <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal-box">
         <div className="modal-header">
-          <span className="modal-title">Add Application</span>
+          <span className="modal-title">{initial ? "Edit Application" : "Add Application"}</span>
           <button className="modal-close" onClick={onClose} type="button"><X size={14} /></button>
         </div>
 
@@ -119,7 +119,7 @@ export default function AddApplicationModal({ onClose, onAdd }) {
 
           <div className="modal-footer">
             <button type="button" className="modal-btn-cancel" onClick={onClose}>Cancel</button>
-            <button type="submit" className="modal-btn-submit" disabled={!canSubmit}>Add Application</button>
+            <button type="submit" className="modal-btn-submit" disabled={!canSubmit}>{initial ? "Save Changes" : "Add Application"}</button>
           </div>
         </form>
       </div>

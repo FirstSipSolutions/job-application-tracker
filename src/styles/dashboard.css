@@ -195,17 +195,25 @@
   padding: 0;
 }
 
-.db-app-del {
-  font-size: 15px;
+.db-app-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.db-app-edit, .db-app-del {
+  font-size: 13px;
   line-height: 1;
   color: var(--db-text-faint);
-  padding: 2px 4px;
+  padding: 2px 5px;
   border-radius: 4px;
   flex-shrink: 0;
   transition: color 0.12s, background 0.12s;
 }
 
-.db-app-del:hover { color: var(--db-alert); background: rgba(229,152,155,0.1); }
+.db-app-edit:hover { color: var(--db-blue);  background: rgba(91,163,255,0.1); }
+.db-app-del:hover  { color: var(--db-alert); background: rgba(229,152,155,0.1); }
 
 .db-app-empty { font-size: 13px; color: var(--db-text-faint); padding: 16px 0; }
 
