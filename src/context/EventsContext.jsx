@@ -34,6 +34,7 @@ export function EventsProvider({ children }) {
   }
 
   // dismissed stays in localStorage, it's a UI preference not worth syncing to DB
+  // key format: "2026-05-08::Google Interview" — unique per event
   function dismissEvent(key) {
     setDismissed(prev => {
       const next = new Set(prev);

@@ -24,8 +24,8 @@ export default function Landing() {
       <section className="land-hero">
         <h1 className="land-headline">Your Job Hunt,<br />Simplified.</h1>
         <p className="land-sub">
-          Track every application, stay on top of interviews,<br />
-          and follow up on time. Built for job seekers who mean business.
+          Track your applications, stay on top of interviews,<br />
+          and follow up on time. Built for the determined. 
         </p>
         <div className="land-cta-row">
           <Link to="/signup" className="land-cta-primary">Get Started Free</Link>

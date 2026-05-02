@@ -33,7 +33,7 @@ export default function AddApplicationModal({ onClose, onAdd, initial }) {
   const [notes, setNotes]     = useState(initial?.notes   || "");
   const [parsed, setParsed]   = useState(false);
 
-  // ref so updates never trigger a re-render
+  // ref not state — tracking last auto-filled value without causing a re-render
   const autoFilledRef = useRef(initial?.company || "");
 
   useEffect(() => {

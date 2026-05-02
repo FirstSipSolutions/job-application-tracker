@@ -39,7 +39,7 @@ function Card({ id, apps, editing, vertical, onRemove }) {
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0 : 1 }}
       className={cls}
-      {...(editing ? { ...attributes, ...listeners } : {})}
+      {...(editing ? { ...attributes, ...listeners } : {})} // drag handles only active in edit mode
     >
       {editing && <span className="wg-grip"><GripVertical size={13} /></span>}
       <span className={vertical ? "wg-val-v" : "wg-val"} style={{ color: def.color }}>{def.val(apps)}</span>
@@ -53,6 +53,7 @@ function Card({ id, apps, editing, vertical, onRemove }) {
   );
 }
 
+// floating clone rendered during drag — keeps original slot visible
 function Ghost({ id, apps, vertical }) {
   const def = DEFS[id];
   return (

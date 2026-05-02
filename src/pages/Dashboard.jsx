@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [showModal, setShowModal]   = useState(false);
   const [editingApp, setEditingApp] = useState(null);
 
+  // tab-return: HireHub sets a sessionStorage flag before opening a job board,
+  // this catches when the user switches back and auto-opens the add modal
   useEffect(() => {
     function onVisible() {
       if (document.visibilityState === "visible" && sessionStorage.getItem("job-hunt")) {
