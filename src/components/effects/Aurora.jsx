@@ -116,6 +116,7 @@ export default function Aurora(props) {
     blend = 0.5,
   } = props;
   const propsRef = useRef(props);
+  // eslint-disable-next-line react-hooks/refs
   propsRef.current = props;
 
   const ctnDom = useRef(null);
@@ -211,7 +212,6 @@ export default function Aurora(props) {
       }
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amplitude]);
 
   return <div ref={ctnDom} className="aurora-container" />;
