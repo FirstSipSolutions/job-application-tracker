@@ -3,14 +3,14 @@ import Landing from "./pages/Landing.jsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import RoleView from "./pages/RoleView.jsx";
-import JobDetailPage from "./pages/JobDetailPage.jsx";
+import CalendarPage from "./pages/CalendarPage.jsx";
+import Settings from "./pages/Settings.jsx";
+import { useAuth } from "./hooks/useAuth.js";
 
 function ProtectedRoute({ children }) {
-  // TODO: gate via useAuth() — redirect to /login when unauthenticated
-  // const isAuthed = true;
-  const isAuthed = !!localStorage.getItem("token");
-  return isAuthed ? children : <Navigate to="/login" replace />;
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return user ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -31,18 +31,18 @@ export default function App() {
         }
       />
       <Route
-        path="/app/role/:roleId"
+        path="/app/calendar"
         element={
           <ProtectedRoute>
-            <RoleView />
+            <CalendarPage />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/app/role/:roleId/job/:jobId"
+        path="/app/settings"
         element={
           <ProtectedRoute>
-            <JobDetailPage />
+            <Settings />
           </ProtectedRoute>
         }
       />

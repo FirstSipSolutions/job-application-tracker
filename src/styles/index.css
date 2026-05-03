@@ -1,7 +1,1 @@
-/* Global styles for the app. Import any new global CSS files below. */
-
-@import "./aurora.css";
-
-/* this will add an outline to each card */
-
-/* * { outline: 1px solid rgba(225, 43, 43, 0.15); } this was causing the red outline on the pages*/
+@import "./theme.css";

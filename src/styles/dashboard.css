@@ -1,0 +1,497 @@
+/* Dashboard */
+
+:root,
+[data-theme="dark"] {
+  --db-bg:          #0c0c14;
+  --db-surface:     #13131f;
+  --db-surface-2:   #1a1a2e;
+  --db-border:      rgba(171,196,255,0.08);
+  --db-text:        #f0f0f5;
+  --db-text-dim:    #888;
+  --db-text-faint:  #555;
+  --db-blue:        #5ba3ff;
+  --db-blue-dim:    rgba(91,163,255,0.14);
+  --db-blue-text:   #ffffff;
+  --db-green:       #4cad7c;
+  --db-alert:       #e5989b;
+  --db-nav-bg:      rgba(12,12,20,0.72);
+  --db-cell-border: rgba(255,255,255,0.1);
+}
+
+[data-theme="light"] {
+  --db-bg:          #f8f9ff;
+  --db-surface:     #ffffff;
+  --db-surface-2:   #edf2fb;
+  --db-border:      rgba(171,196,255,0.3);
+  --db-text:        #1a1a1a;
+  --db-text-dim:    #666;
+  --db-text-faint:  #bbb;
+  --db-blue:        #abc4ff;
+  --db-blue-dim:    rgba(171,196,255,0.18);
+  --db-blue-text:   #1a1a1a;
+  --db-green:       #2e8a58;
+  --db-alert:       #e5989b;
+  --db-nav-bg:      rgba(248,249,255,0.78);
+  --db-cell-border: rgba(0,0,0,0.1);
+}
+
+/* ── Root ── */
+
+.db-root {
+  min-height: 100vh;
+  background: var(--db-bg);
+  color: var(--db-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ── Floating nav ── */
+
+.db-nav {
+  position: sticky;
+  top: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 16px auto 0;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--db-nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+}
+
+.db-nav-brand {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--db-blue);
+  text-decoration: none;
+}
+
+.db-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.db-nav-link {
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: color 0.15s, background 0.15s;
+  text-decoration: none;
+}
+
+.db-nav-link:hover  { color: var(--db-text); background: var(--db-blue-dim); }
+.db-nav-link.active { color: var(--db-blue-text); background: var(--db-blue); }
+
+/* ── Main ── */
+
+.db-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.db-greeting        { margin-bottom: 20px; }
+.db-greeting h1     { font-size: 22px; font-weight: 700; color: var(--db-text); }
+.db-greeting p      { font-size: 13px; color: var(--db-text-dim); margin-top: 2px; }
+
+/* ── Bento grid ── */
+
+.db-bento {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  grid-template-rows: auto auto;
+  gap: 16px;
+}
+
+.db-card {
+  background: var(--db-surface);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.db-profile  { grid-column: 1;     grid-row: 1; }
+.db-activity-chart { grid-column: 2;     grid-row: 1; }
+.db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
+.db-app-board  { grid-column: 1 / 4; grid-row: 2; }
+
+
+/* ── Profile card ── */
+
+.db-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--db-blue-dim);
+  border: 2px solid var(--db-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--db-blue-text);
+  margin-bottom: 12px;
+}
+
+.db-profile-name { font-size: 15px; font-weight: 700; color: var(--db-text); }
+.db-profile-role { font-size: 12px; color: var(--db-blue); font-weight: 500; margin-top: 2px; margin-bottom: 20px; }
+
+/* ── Activity chart ── */
+
+.db-card-title { font-size: 14px; font-weight: 600; color: var(--db-text); margin-bottom: 4px; }
+.db-card-sub   { font-size: 12px; color: var(--db-text-dim); margin-bottom: 20px; }
+
+.db-chart-legend { display: flex; gap: 16px; margin-bottom: 12px; }
+.db-legend-dot   { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--db-text-dim); }
+.db-dot          { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Applications list ── */
+
+.db-app-list  { display: flex; flex-direction: column; }
+
+.db-app-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--db-border);
+}
+
+.db-app-row:last-child { border-bottom: none; }
+
+/* header row */
+.db-app-header { padding: 0 0 8px; }
+.db-app-header span { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--db-text-faint); }
+
+.db-app-company    { font-size: 13px; font-weight: 600; color: var(--db-text);     width: 130px; flex-shrink: 0; }
+.db-app-role       { font-size: 13px; color: var(--db-text-dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.db-app-date       { font-size: 11px; color: var(--db-text-faint); white-space: nowrap; flex-shrink: 0; }
+
+/* appearance:none strips native arrow; color comes from inline style */
+.db-app-status-col {
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: 90px;
+  padding: 0;
+}
+
+.db-app-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.db-app-edit, .db-app-del {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--db-text-faint);
+  padding: 2px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color 0.12s, background 0.12s;
+}
+
+.db-app-edit:hover { color: var(--db-blue);  background: rgba(91,163,255,0.1); }
+.db-app-del:hover  { color: var(--db-alert); background: rgba(229,152,155,0.1); }
+
+.db-app-empty { font-size: 13px; color: var(--db-text-faint); padding: 16px 0; }
+
+/* ── Nav action buttons ── */
+
+/* fixed width keeps the nav right-side stable no matter which button is showing */
+.db-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.db-nav-add {
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--db-blue);
+  color: var(--db-blue-text);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.db-nav-add:hover          { opacity: 0.85; }
+.db-nav-add-green          { background: #4cad7c; color: #fff; }
+.db-nav-add-red            { background: #e5989b; color: #fff; }
+
+/* ── Settings input ── */
+
+.settings-input {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--db-text);
+  transition: border-color 0.15s;
+}
+
+.settings-input:focus        { outline: none; border-color: var(--db-blue); }
+.settings-input::placeholder { color: var(--db-text-faint); }
+
+/* ── Hire Hub ── */
+
+.hire-hub       { padding-top: 16px; border-top: 1px solid var(--db-border); margin-top: 16px; }
+.hire-hub-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--db-text-faint); margin-bottom: 10px; }
+
+.hire-boards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.hire-board-chip {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  font-size: 11px; font-weight: 500; color: var(--db-text-dim);
+  text-decoration: none; text-align: center;
+  transition: color 0.15s, border-color 0.15s;
+}
+.hire-board-chip:hover { color: var(--db-blue); border-color: var(--db-blue); }
+
+.hire-chip-wrap    { position: relative; display: flex; }
+.hire-chip-remove  {
+  display: none;
+  position: absolute; top: -5px; right: -5px;
+  width: 14px; height: 14px; border-radius: 50%;
+  border: none; background: var(--db-alert); color: #fff;
+  font-size: 9px; line-height: 1; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+.hire-chip-wrap:hover .hire-chip-remove { display: flex; }
+
+.hire-add-btn {
+  margin-top: 8px;
+  width: 100%; padding: 6px;
+  border: 1px dashed var(--db-border); border-radius: 4px;
+  background: transparent; color: var(--db-text-faint);
+  font-size: 11px; cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.hire-add-btn:hover { color: var(--db-text); border-color: var(--db-text-dim); }
+
+.hire-add-form  { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.hire-add-input {
+  width: 100%; padding: 7px 10px;
+  background: var(--db-surface-2); border: 1px solid var(--db-border);
+  border-radius: 4px; font-size: 12px; color: var(--db-text);
+}
+.hire-add-input:focus        { outline: none; border-color: var(--db-blue); }
+.hire-add-input::placeholder { color: var(--db-text-faint); }
+
+.hire-add-row   { display: flex; gap: 6px; justify-content: flex-end; }
+.hire-cancel    { padding: 5px 10px; border: 1px solid var(--db-border); border-radius: 4px; background: transparent; color: var(--db-text-dim); font-size: 12px; cursor: pointer; }
+.hire-save      { padding: 5px 12px; border: none; border-radius: 4px; background: var(--db-blue); color: var(--db-blue-text); font-size: 12px; font-weight: 600; cursor: pointer; }
+.hire-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Settings label ── */
+.settings-label {
+  display: block;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--db-text-dim); margin-bottom: 6px;
+}
+
+/* ── Widget grid ── */
+
+.wg-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.wg-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.wg-card {
+  position: relative;
+  background: var(--db-surface);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  padding: 14px 18px;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: none;
+  cursor: default;
+}
+
+/* dashed border + grab cursor signals drag mode */
+.wg-editing { border-style: dashed; cursor: grab; padding-left: 28px; }
+.wg-editing:active { cursor: grabbing; }
+
+/* shadow lifts the ghost card above everything else */
+.wg-overlay { box-shadow: 0 8px 28px rgba(0,0,0,0.35); cursor: grabbing; }
+
+.wg-val   { font-size: 22px; font-weight: 700; line-height: 1; }
+.wg-label { font-size: 11px; color: var(--db-text-dim); }
+
+.wg-grip {
+  position: absolute;
+  top: 50%; left: 8px;
+  transform: translateY(-50%);
+  color: var(--db-text-faint);
+  display: flex; align-items: center;
+  pointer-events: none;
+}
+
+.wg-remove {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 18px; height: 18px;
+  border-radius: 3px; border: none;
+  background: transparent;
+  color: var(--db-text-faint);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.12s, background 0.12s;
+}
+
+.wg-remove:hover { color: var(--db-alert); background: rgba(229,152,155,0.1); }
+
+.wg-add-chip {
+  display: flex; align-items: center; gap: 5px;
+  padding: 14px 16px;
+  border: 1px dashed var(--db-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--db-text-faint);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.wg-add-chip:hover { color: var(--db-text); border-color: var(--db-text-dim); }
+
+.wg-edit-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--db-border);
+  background: transparent;
+  color: var(--db-text-dim);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.wg-edit-btn:hover               { color: var(--db-text); border-color: var(--db-text-dim); }
+.wg-edit-active                  { background: var(--db-blue); color: var(--db-blue-text); border-color: var(--db-blue); }
+.wg-edit-active:hover            { opacity: 0.85; }
+
+/* ── Sidebar sections ── */
+
+.db-sidebar-section { margin-bottom: 20px; }
+.db-sidebar-section:last-child   { margin-bottom: 0; }
+
+.db-sidebar-title {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--db-text-faint);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--db-border);
+}
+
+/* ── Urgent panel ── */
+
+.upcoming-list  { display: flex; flex-direction: column; gap: 6px; }
+.upcoming-empty { font-size: 12px; color: var(--db-text-faint); padding: 4px 0; }
+
+.upcoming-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px;
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+}
+
+
+.upcoming-body  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.upcoming-type  { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.upcoming-label { font-size: 12px; color: var(--db-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upcoming-date  { font-size: 11px; color: var(--db-text-faint); }
+
+.upcoming-dismiss {
+  flex-shrink: 0; width: 18px; height: 18px;
+  border: none; border-radius: 3px; background: transparent;
+  color: var(--db-text-faint); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.12s, background 0.12s;
+}
+.upcoming-dismiss:hover { color: var(--db-alert); background: rgba(229,152,155,0.1); }
+
+/* ── Vertical widget layout (sidebar) ── */
+
+.wg-wrap-v    { display: flex; flex-direction: column; gap: 6px; }
+.wg-bar-v     { display: flex; flex-direction: column; gap: 6px; }
+
+.wg-card-v {
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  user-select: none; cursor: default;
+}
+
+.wg-editing-v { border-style: dashed; cursor: grab; padding-left: 26px; }
+.wg-editing-v:active { cursor: grabbing; }
+
+.wg-val-v   { font-size: 18px; font-weight: 700; min-width: 32px; line-height: 1; }
+.wg-label-v { font-size: 12px; color: var(--db-text-dim); flex: 1; }
+
+/* inline "Customize" link under the stats list */
+.wg-edit-inline {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 0;
+  border: none; background: transparent;
+  font-size: 11px; color: var(--db-text-faint);
+  cursor: pointer; transition: color 0.15s;
+}
+.wg-edit-inline:hover  { color: var(--db-text); }
+.wg-edit-inline.wg-edit-active { color: var(--db-blue); font-weight: 600; }
