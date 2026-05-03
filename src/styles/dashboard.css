@@ -124,9 +124,9 @@
 }
 
 .db-profile  { grid-column: 1;     grid-row: 1; }
-.db-pipeline { grid-column: 2;     grid-row: 1; }
+.db-activity-chart { grid-column: 2;     grid-row: 1; }
 .db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
-.db-actions  { grid-column: 1 / 4; grid-row: 2; }
+.db-app-board  { grid-column: 1 / 4; grid-row: 2; }
 
 
 /* ── Profile card ── */
@@ -149,7 +149,7 @@
 .db-profile-name { font-size: 15px; font-weight: 700; color: var(--db-text); }
 .db-profile-role { font-size: 12px; color: var(--db-blue); font-weight: 500; margin-top: 2px; margin-bottom: 20px; }
 
-/* ── Pipeline card ── */
+/* ── Activity chart ── */
 
 .db-card-title { font-size: 14px; font-weight: 600; color: var(--db-text); margin-bottom: 4px; }
 .db-card-sub   { font-size: 12px; color: var(--db-text-dim); margin-bottom: 20px; }
@@ -437,10 +437,10 @@
 
 /* ── Urgent panel ── */
 
-.urgent-list  { display: flex; flex-direction: column; gap: 6px; }
-.urgent-empty { font-size: 12px; color: var(--db-text-faint); padding: 4px 0; }
+.upcoming-list  { display: flex; flex-direction: column; gap: 6px; }
+.upcoming-empty { font-size: 12px; color: var(--db-text-faint); padding: 4px 0; }
 
-.urgent-row {
+.upcoming-row {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 8px 10px;
   background: var(--db-surface-2);
@@ -448,22 +448,20 @@
   border-radius: 4px;
 }
 
-/* red-tinted background for overdue rows */
-.urgent-overdue { background: rgba(229,152,155,0.06); border-color: rgba(229,152,155,0.2); }
 
-.urgent-body  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-.urgent-type  { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-.urgent-label { font-size: 12px; color: var(--db-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.urgent-date  { font-size: 11px; color: var(--db-text-faint); }
+.upcoming-body  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.upcoming-type  { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.upcoming-label { font-size: 12px; color: var(--db-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upcoming-date  { font-size: 11px; color: var(--db-text-faint); }
 
-.urgent-dismiss {
+.upcoming-dismiss {
   flex-shrink: 0; width: 18px; height: 18px;
   border: none; border-radius: 3px; background: transparent;
   color: var(--db-text-faint); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: color 0.12s, background 0.12s;
 }
-.urgent-dismiss:hover { color: var(--db-alert); background: rgba(229,152,155,0.1); }
+.upcoming-dismiss:hover { color: var(--db-alert); background: rgba(229,152,155,0.1); }
 
 /* ── Vertical widget layout (sidebar) ── */
 

@@ -5,8 +5,6 @@ import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
 import Settings from "./pages/Settings.jsx";
-import RoleView from "./pages/RoleView.jsx";
-import JobDetailPage from "./pages/JobDetailPage.jsx";
 import { useAuth } from "./hooks/useAuth.js";
 
 function ProtectedRoute({ children }) {
@@ -45,22 +43,6 @@ export default function App() {
         element={
           <ProtectedRoute>
             <Settings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/app/role/:roleId"
-        element={
-          <ProtectedRoute>
-            <RoleView />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/app/role/:roleId/job/:jobId"
-        element={
-          <ProtectedRoute>
-            <JobDetailPage />
           </ProtectedRoute>
         }
       />

@@ -12,7 +12,6 @@ export function EventsProvider({ children }) {
   const [events,    setEvents]    = useState([]);
   const [dismissed, setDismissed] = useState(loadDismissed);
 
-  // fetch this user's events on mount, sorted by date
   useEffect(() => {
     supabase
       .from("events")
@@ -23,7 +22,6 @@ export function EventsProvider({ children }) {
       });
   }, []);
 
-  // insert and append the returned row
   async function addEvent(fields) {
     const { data: row, error } = await supabase
       .from("events")
@@ -34,6 +32,7 @@ export function EventsProvider({ children }) {
   }
 
   // dismissed stays in localStorage, it's a UI preference not worth syncing to DB
+  // key format: "2026-05-08::Google Interview" — unique per event
   function dismissEvent(key) {
     setDismissed(prev => {
       const next = new Set(prev);

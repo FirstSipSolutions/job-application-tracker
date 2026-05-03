@@ -277,7 +277,6 @@ export default function Signup() {
     </>
   );
 
-  // Submit button function
   function SubmitButton({ children, subtle }) {
     return (
       <button
@@ -305,7 +304,6 @@ export default function Signup() {
   }
 }
 
-// Link function
 function CTA({ to, children, subtle }) {
   return (
     <Link

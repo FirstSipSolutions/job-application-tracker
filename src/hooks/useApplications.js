@@ -16,6 +16,7 @@ export function useApplications() {
       });
   }, []);
 
+  // waits for server row — needs the DB-generated UUID back
   async function addApp(fields) {
     const { data: row, error } = await supabase
       .from("applications")
@@ -25,6 +26,7 @@ export function useApplications() {
     if (!error) setApps(prev => [row, ...prev]);
   }
 
+  // optimistic: state updates instantly, DB syncs in background
   async function updateApp(id, fields) {
     setApps(prev => prev.map(a => a.id === id ? { ...a, ...fields } : a));
     await supabase.from("applications").update(fields).eq("id", id);

@@ -12,9 +12,9 @@ const STATUS_COLOR = {
   Rejected:  "#e5989b",
 };
 
-export default function ApplicationsCard({ apps, loading, updateStatus, removeApp, onEdit }) {
+export default function JobApplicationBoard({ apps, loading, updateStatus, removeApp, onEdit }) {
   return (
-    <div className="db-card db-actions">
+    <div className="db-card db-app-board">
       <div className="db-card-title">Job Application Board</div>
       <div className="db-card-sub">{loading ? "Loading..." : `${apps.length} tracked`}</div>
 

@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import AppNav from "../components/layout/AppNav.jsx";
 import AddApplicationModal from "../components/modals/AddApplicationModal.jsx";
 import ProfileCard from "../components/dashboard/ProfileCard.jsx";
-import PipelineCard from "../components/dashboard/PipelineCard.jsx";
+import ActivityChart from "../components/dashboard/ActivityChart.jsx";
 import JobApplicationBoard from "../components/dashboard/JobApplicationBoard.jsx";
-import UrgentPanel from "../components/widgets/UrgentPanel.jsx";
+import UpcomingPanel from "../components/widgets/UpcomingPanel.jsx";
 import WidgetGrid from "../components/widgets/WidgetGrid.jsx";
 import { useApplications } from "../hooks/useApplications.js";
 import { useProfile } from "../context/ProfileContext.jsx";
@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [showModal, setShowModal]   = useState(false);
   const [editingApp, setEditingApp] = useState(null);
 
+  // HireHub sets a sessionStorage flag before opening a job board; catches tab-return
   useEffect(() => {
     function onVisible() {
       if (document.visibilityState === "visible" && sessionStorage.getItem("job-hunt")) {
@@ -46,12 +47,12 @@ export default function Dashboard() {
 
         <div className="db-bento">
           <ProfileCard />
-          <PipelineCard apps={apps} />
+          <ActivityChart apps={apps} />
 
           <div className="db-card db-sidebar">
             <div className="db-sidebar-section">
-              <div className="db-sidebar-title">Urgent</div>
-              <UrgentPanel />
+              <div className="db-sidebar-title">Upcoming</div>
+              <UpcomingPanel />
             </div>
             <div className="db-sidebar-section">
               <div className="db-sidebar-title">Stats</div>
