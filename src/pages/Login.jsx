@@ -40,7 +40,6 @@ export default function Login() {
       return;
     }
 
-    console.log("Login successful! Attempting to navigate...");
     navigate("/app");
   };
 

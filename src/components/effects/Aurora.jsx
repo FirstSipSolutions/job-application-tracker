@@ -1,5 +1,5 @@
 import { Renderer, Program, Mesh, Color, Triangle } from "ogl";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 import "./Aurora.css";
 
@@ -116,7 +116,7 @@ export default function Aurora(props) {
     blend = 0.5,
   } = props;
   const propsRef = useRef(props);
-  propsRef.current = props;
+  useLayoutEffect(() => { propsRef.current = props; });
 
   const ctnDom = useRef(null);
 

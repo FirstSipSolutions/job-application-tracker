@@ -49,4 +49,5 @@ export function EventsProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEvents() { return useContext(EventsContext); }

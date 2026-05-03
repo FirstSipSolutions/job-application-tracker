@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { X } from "lucide-react";
 import { useEvents } from "../../context/EventsContext.jsx";
 
@@ -13,8 +14,14 @@ function fmtDate(iso) {
 
 export default function UpcomingPanel() {
   const { events, dismissed, dismissEvent } = useEvents();
-  const today = new Date().toISOString().slice(0, 10);
-  const weekOut = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+  const { today, weekOut } = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
+    return {
+      today: new Date(now).toISOString().slice(0, 10),
+      weekOut: new Date(now + 7 * 864e5).toISOString().slice(0, 10),
+    };
+  }, []);
 
   const upcoming = events
     .filter(e => e.date >= today && e.date <= weekOut && !dismissed.has(`${e.date}::${e.label}`))
