@@ -122,6 +122,64 @@ textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
 .modal-btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 .modal-btn-danger          { background: #e5989b; color: #fff; }
 
+/* ── Resume detail modal ── */
+
+.rdm-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--db-text-dim);
+  margin-bottom: 16px;
+}
+
+.rdm-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.rdm-stat-box {
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rdm-stat-num   { font-size: 22px; font-weight: 700; color: var(--db-text); }
+.rdm-stat-label { font-size: 11px; color: var(--db-text-dim); }
+
+.rdm-apps-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--db-text-dim);
+  margin-bottom: 8px;
+}
+
+.rdm-apps-list  { display: flex; flex-direction: column; gap: 6px; }
+
+.rdm-app-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: 8px;
+  font-size: 12px;
+  align-items: center;
+}
+
+.rdm-app-company { font-weight: 600; color: var(--db-text); }
+.rdm-app-role    { color: var(--db-text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rdm-app-status  { font-weight: 600; font-size: 11px; white-space: nowrap; }
+.rdm-app-date    { font-size: 11px; color: var(--db-text-faint); white-space: nowrap; }
+
+.rdm-empty { font-size: 13px; color: var(--db-text-dim); margin: 8px 0 16px; }
+
+/* ── Resume picker pills ── */
+
 .modal-resume-pills { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .modal-resume-pill {

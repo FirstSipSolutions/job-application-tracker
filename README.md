@@ -28,13 +28,13 @@ VITE_SUPABASE_ANON_KEY=
 
 ## DSA in Practice
 
-Real data structure decisions made in this codebase with complexity annotations.
+See [`docs/dsa.md`](docs/dsa.md) for full explanations with code samples.
 
-**Hash Map** — `src/hooks/useResumes.js`
-Resume stats (application count, response rate) are aggregated by building a hash map keyed by `resume_id` in a single O(N) pass. Each card then reads its stats in O(1). The alternative — filtering the full application array once per card — would be O(N*M) and degrades as users accumulate hundreds of applications.
+**Hash Map** — `src/hooks/useResumes.js` — resume stats aggregated in O(N), read in O(1) per card instead of O(N*M) naive filtering.
 
-**Set** — `src/context/EventsContext.jsx`
-Dismissed events are stored in a `Set`. The upcoming panel calls `dismissed.has(key)` on every event during filtering. A Set gives O(1) lookup vs O(N) for an array scan.
+**Set (dismissed events)** — `src/context/EventsContext.jsx` — O(1) membership check on every panel render instead of O(N) array scan.
+
+**Set (URL pattern matching)** — `src/components/modals/AddApplicationModal.jsx` — O(1) subdomain and path lookups to extract company name from any job board URL.
 
 ## Backlog
 
