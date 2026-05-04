@@ -10,7 +10,7 @@ async function fetchResumesWithStats() {
     supabase.from("resumes").select("*").order("created_at", { ascending: false }),
     // Only fetch rows that have a resume attached. Skips the majority of applications
     // and avoids shipping unrelated data to the browser.
-    supabase.from("applications").select("resume_id, status").not("resume_id", "is", null),
+    supabase.from("applications").select("resume_id, status, date").not("resume_id", "is", null),
   ]);
 
   // DATA STRUCTURE: Hash Map (plain object used as a key-value store)
@@ -29,13 +29,15 @@ async function fetchResumesWithStats() {
   // is negligible compared to the CPU saved at render time.
   const statMap = {};
   for (const app of stats ?? []) {
-    if (!statMap[app.resume_id]) statMap[app.resume_id] = { count: 0, responses: 0 };
+    if (!statMap[app.resume_id]) statMap[app.resume_id] = { count: 0, responses: 0, lastUsed: null };
     statMap[app.resume_id].count++;
     if (["Interview", "Offer"].includes(app.status)) statMap[app.resume_id].responses++;
+    if (!statMap[app.resume_id].lastUsed || app.date > statMap[app.resume_id].lastUsed)
+      statMap[app.resume_id].lastUsed = app.date;
   }
 
   // Attach stats directly to each resume so components never need the apps array.
-  return (rows ?? []).map(r => ({ ...r, _stats: statMap[r.id] ?? { count: 0, responses: 0 } }));
+  return (rows ?? []).map(r => ({ ...r, _stats: statMap[r.id] ?? { count: 0, responses: 0, lastUsed: null } }));
 }
 
 export function useResumes() {
@@ -58,7 +60,7 @@ export function useResumes() {
       .from("resumes")
       .upload(path, file, { contentType: "application/pdf" });
 
-    if (storageErr) { setUploading(false); return; }
+    if (storageErr) { console.error("storage upload failed:", storageErr); setUploading(false); return; }
 
     const name = file.name.replace(/\.pdf$/i, "");
     const { data: row, error: dbErr } = await supabase
@@ -92,9 +94,10 @@ export function useResumes() {
     // Signed URL expires in 60 seconds. Never expose a public URL for resumes
     // since they contain personal information. The download flag adds
     // Content-Disposition: attachment so the browser saves the file instead of opening it.
+    // download can be a filename string — Supabase uses it for Content-Disposition.
     const { data } = await supabase.storage
       .from("resumes")
-      .createSignedUrl(file_path, 60, download ? { download: true } : undefined);
+      .createSignedUrl(file_path, 60, download ? { download } : undefined);
     return data?.signedUrl;
   }
 

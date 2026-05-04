@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Download, ExternalLink } from "lucide-react";
 import { useResumes } from "../../hooks/useResumes.js";
+import ResumeDetailModal from "../modals/ResumeDetailModal.jsx";
 
 function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -26,8 +27,9 @@ function getBadge(resume, allResumes) {
 // full application list, which can grow to hundreds of rows.
 export default function ResumeBoard() {
   const { resumes, uploading, uploadResume, renameResume, removeResume, getUrl } = useResumes();
-  const [editing, setEditing] = useState(null);
-  const [editVal, setEditVal] = useState("");
+  const [editing,     setEditing]     = useState(null);
+  const [editVal,     setEditVal]     = useState("");
+  const [viewResume,  setViewResume]  = useState(null);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept:   { "application/pdf": [".pdf"] },
@@ -40,6 +42,7 @@ export default function ResumeBoard() {
   function commitRename() { if (editVal.trim()) renameResume(editing, editVal.trim()); setEditing(null); }
 
   return (
+    <>
     <div className="db-card db-resume-board">
       <div className="rb-header">
         <div>
@@ -64,25 +67,27 @@ export default function ResumeBoard() {
             const rate  = count ? Math.round(responses / count * 100) : null;
             const badge = getBadge(r, resumes);
             return (
-              <div key={r.id} className="rb-card">
+              <div key={r.id} className="rb-card" style={{ cursor: "pointer" }} onClick={() => setViewResume(r)}>
                 <div className="rb-card-top">
                   {editing === r.id ? (
-                    <input
-                      className="rb-rename"
-                      value={editVal}
-                      autoFocus
-                      onChange={e => setEditVal(e.target.value)}
-                      onBlur={commitRename}
-                      onKeyDown={e => e.key === "Enter" && commitRename()}
-                    />
+                    <div className="rb-rename-wrap">
+                      <input
+                        className="rb-rename"
+                        value={editVal}
+                        autoFocus
+                        onChange={e => setEditVal(e.target.value)}
+                        onBlur={commitRename}
+                        onKeyDown={e => { if (e.key === "Enter") commitRename(); if (e.key === "Escape") setEditing(null); }}
+                      />
+                    </div>
                   ) : (
-                    <span className="rb-name" onClick={() => startRename(r)} title="Click to rename">{r.name}</span>
+                    <span className="rb-name" onClick={e => { e.stopPropagation(); startRename(r); }} title="Click to rename">{r.name}</span>
                   )}
-                  <div className="rb-actions">
+                  <div className="rb-actions" onClick={e => e.stopPropagation()}>
                     <button className="rb-icon-btn" title="Open" onClick={async () => { const url = await getUrl(r.file_path); if (url) window.open(url, "_blank"); }}>
                       <ExternalLink size={13} />
                     </button>
-                    <button className="rb-icon-btn" title="Download" onClick={async () => { const url = await getUrl(r.file_path, true); if (url) { const a = document.createElement("a"); a.href = url; a.download = `${r.name}.pdf`; a.click(); } }}>
+                    <button className="rb-icon-btn" title="Download" onClick={async () => { const url = await getUrl(r.file_path, `${r.name}.pdf`); if (url) { const a = document.createElement("a"); a.href = url; a.click(); } }}>
                       <Download size={13} />
                     </button>
                     <button className="rb-icon-btn rb-icon-del" onClick={() => removeResume(r.id)} title="Delete">×</button>
@@ -108,5 +113,14 @@ export default function ResumeBoard() {
         </div>
       )}
     </div>
+
+    {viewResume && (
+      <ResumeDetailModal
+        resume={viewResume}
+        onClose={() => setViewResume(null)}
+        getUrl={getUrl}
+      />
+    )}
+    </>
   );
 }
