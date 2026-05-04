@@ -126,7 +126,8 @@
 .db-profile  { grid-column: 1;     grid-row: 1; }
 .db-activity-chart { grid-column: 2;     grid-row: 1; }
 .db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
-.db-app-board  { grid-column: 1 / 4; grid-row: 2; }
+.db-resume-board { grid-column: 1 / 4; grid-row: 2; }
+.db-app-board    { grid-column: 1 / 4; grid-row: 3; }
 
 
 /* ── Profile card ── */
@@ -245,6 +246,21 @@
 .db-nav-add:hover          { opacity: 0.85; }
 .db-nav-add-green          { background: #4cad7c; color: #fff; }
 .db-nav-add-red            { background: #e5989b; color: #fff; }
+
+.db-nav-bookmarklet {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: grab;
+  user-select: none;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.db-nav-bookmarklet:hover { border-color: var(--db-blue); color: var(--db-blue); }
 
 /* ── Settings input ── */
 
@@ -495,3 +511,120 @@
 }
 .wg-edit-inline:hover  { color: var(--db-text); }
 .wg-edit-inline.wg-edit-active { color: var(--db-blue); font-weight: 600; }
+
+/* ── Resume Vault ── */
+
+.rb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.rb-drop {
+  padding: 7px 16px;
+  border: 1px dashed var(--db-border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.rb-drop:hover,
+.rb-drop-active { color: var(--db-blue); border-color: var(--db-blue); }
+
+.rb-cards {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.rb-card {
+  min-width: 160px;
+  max-width: 180px;
+  flex-shrink: 0;
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rb-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.rb-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--db-text);
+  cursor: pointer;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.12s;
+}
+.rb-name:hover { color: var(--db-blue); }
+
+.rb-rename {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--db-surface);
+  border: 1px solid var(--db-blue);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--db-text);
+  min-width: 0;
+}
+.rb-rename:focus { outline: none; }
+
+.rb-date { font-size: 11px; color: var(--db-text-faint); }
+
+.rb-stats { display: flex; gap: 10px; margin-top: 2px; }
+.rb-stat  { font-size: 12px; color: var(--db-text-dim); }
+.rb-stat strong { color: var(--db-text); font-weight: 700; }
+
+.rb-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 2px 6px;
+}
+
+.rb-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.rb-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  border: none;
+  background: transparent;
+  color: var(--db-text-faint);
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+}
+.rb-icon-btn:hover     { color: var(--db-blue);  background: var(--db-blue-dim); }
+.rb-icon-del:hover     { color: var(--db-alert); background: var(--alert-dim); }
