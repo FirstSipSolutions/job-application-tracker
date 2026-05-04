@@ -1,48 +1,59 @@
-# src/ — what's in here
-
-| Folder         | What's in it                                               |
-| -------------- | ---------------------------------------------------------- |
-| `pages/`       | One file per screen. Each = one URL the user visits.       |
-| `components/`  | Reusable parts that pages assemble together.               |
-| `hooks/`       | Data + state (Supabase queries go here when wired up).     |
-| `context/`     | React context — ThemeContext (dark/light) lives here.      |
-| `lib/`         | Third-party setup — Supabase client (`supabase.js`).       |
-| `styles/`      | CSS — one file per page/feature + `theme.css` for tokens.  |
+# src/
 
 ## Pages
 
-| File              | URL                            | What it is                        |
-| ----------------- | ------------------------------ | --------------------------------- |
-| `Landing.jsx`     | `/`                            | Public landing page               |
-| `Login.jsx`       | `/login`                       | Sign in                           |
-| `Signup.jsx`      | `/signup`                      | Create account                    |
-| `Dashboard.jsx`   | `/app`                         | Applications list + pipeline chart|
-| `CalendarPage.jsx`| `/app/calendar`                | Interview + follow-up calendar    |
-| `RoleView.jsx`    | `/app/role/:roleId`            | Kanban board for one role         |
-| `JobDetailPage.jsx`| `/app/role/:roleId/job/:jobId`| Single job application detail     |
+| File              | URL                  | What it is                          |
+| ----------------- | -------------------- | ----------------------------------- |
+| `Landing.jsx`     | `/`                  | Public landing page                 |
+| `Login.jsx`       | `/login`             | Sign in                             |
+| `Signup.jsx`      | `/signup`            | Create account                      |
+| `Dashboard.jsx`   | `/app`               | Main dashboard                      |
+| `CalendarPage.jsx`| `/app/calendar`      | Interview and follow-up calendar    |
+| `Settings.jsx`    | `/app/settings`      | Profile settings                    |
 
 ## Components
 
-```
-components/
-├── ui/         AddApplicationModal, ThemeToggle
-├── effects/    Aurora (used by Login)
-├── layout/     AppLayout, Sidebar
-└── kanban/     KanbanBoard, KanbanColumn, JobCard
-└── role-and-job/ RoleCard, JobForm, JobDetail
-```
+| Folder       | What's in it                                                        |
+| ------------ | ------------------------------------------------------------------- |
+| `dashboard/` | Widgets that live on the dashboard grid                             |
+| `widgets/`   | Floating panels (UpcomingPanel, WidgetGrid, HireHub)                |
+| `layout/`    | AppNav — top nav bar present on every authenticated page            |
+| `modals/`    | AddApplicationModal, AddEventModal, LogoutModal                     |
+| `effects/`   | Aurora — animated gradient background used on landing and login     |
+| `ui/`        | ThemeToggle                                                         |
+
+### dashboard/
+
+| File                    | What it does                                             |
+| ----------------------- | -------------------------------------------------------- |
+| `ActivityChart.jsx`     | Applications over time bar chart                        |
+| `JobApplicationBoard.jsx` | Kanban-style application status board                 |
+| `ProfileCard.jsx`       | User profile summary card                               |
+| `ResumeBoard.jsx`       | CV Vault — upload, manage, and track resume versions    |
 
 ## Hooks
 
-| File              | Status     | What it does                        |
-| ----------------- | ---------- | ----------------------------------- |
-| `useAuth.js`      | live       | Current Supabase session            |
-| `useRoles.js`     | stub       | User's role cards — wire to Supabase|
-| `useJobs.js`      | stub       | Jobs under a role — wire to Supabase|
+| File                 | What it does                                     |
+| -------------------- | ------------------------------------------------ |
+| `useApplications.js` | Applications CRUD — reads and writes to Supabase |
+| `useResumes.js`      | CV Vault CRUD — resumes with usage stats         |
+| `useAuth.js`         | Current Supabase auth session                    |
 
-## How a feature flows
+## Context
 
-1. URL → `App.jsx` picks the matching `pages/` file
-2. Page calls a hook to get data
-3. Page renders components with that data
-4. Components are dumb — they only show what they're given
+| File                | What it does                                                     |
+| ------------------- | ---------------------------------------------------------------- |
+| `ThemeContext.jsx`  | Dark / light mode toggle, persisted to localStorage             |
+| `ProfileContext.jsx`| Display name and job title, synced to Supabase profiles table   |
+| `EventsContext.jsx` | Calendar events + dismissed state (uses Set for O(1) lookup)    |
+
+## Styles
+
+| File            | Covers                                      |
+| --------------- | ------------------------------------------- |
+| `theme.css`     | CSS variables and design tokens             |
+| `index.css`     | Global base styles and resets               |
+| `dashboard.css` | Dashboard page and all dashboard components |
+| `calendar.css`  | Calendar page                               |
+| `landing.css`   | Landing page                                |
+| `login.css`     | Login and signup pages                      |

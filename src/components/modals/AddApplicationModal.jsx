@@ -1,45 +1,86 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
+import { supabase } from "../../lib/supabase.js";
 import "./modals.css";
 
 const STATUS_OPTIONS = ["Applied", "Screening", "Interview", "Offer", "Rejected"];
 
-// prepend https:// so new URL() doesn't throw on bare domains
-function extractDomain(raw) {
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// Subdomains that belong to the ATS, not the company.
+// When the first subdomain is one of these, the company slug is in the URL path instead.
+const GENERIC_SUBDOMAINS = new Set(["jobs", "apply", "boards", "careers", "work", "hire", "job"]);
+
+// Path segments that are structural (not company slugs).
+const GENERIC_PATHS = new Set(["jobs", "careers", "apply", "job", "positions", "openings", "j"]);
+
+// Extracts a human-readable company name from a job posting URL.
+// Strategy: if the subdomain is a generic ATS prefix (apply., jobs., boards.),
+// the company slug is in the first meaningful path segment. Otherwise the
+// subdomain itself is the company name (e.g. stripe.workday.com).
+function urlToCompany(raw) {
   try {
-    const url = raw.startsWith("http") ? raw : "https://" + raw;
-    return new URL(url).hostname.replace(/^www\./, "");
+    const full = raw.startsWith("http") ? raw : "https://" + raw;
+    const { hostname, pathname } = new URL(full);
+    const host  = hostname.replace(/^www\./, "");
+    const parts = host.split(".");
+    const segs  = pathname.split("/").filter(s => s && !GENERIC_PATHS.has(s.toLowerCase()));
+
+    const subdomain = parts.length > 2 ? parts[0].toLowerCase() : null;
+
+    // Generic subdomain (apply.workable.com, jobs.lever.co, boards.greenhouse.io)
+    // → company is the first non-generic path segment
+    if (subdomain && GENERIC_SUBDOMAINS.has(subdomain) && segs[0])
+      return cap(segs[0]);
+
+    // Company-as-subdomain (stripe.workday.com, stripe.bamboohr.com)
+    if (subdomain && !GENERIC_SUBDOMAINS.has(subdomain))
+      return cap(subdomain);
+
+    // Plain domain with no meaningful subdomain (linkedin.com, indeed.com)
+    return cap(parts[0]);
   } catch {
     return "";
   }
 }
 
-// "stripe.com" → "Stripe"
-function domainToCompany(domain) {
-  const name = domain.split(".")[0];
-  return name.charAt(0).toUpperCase() + name.slice(1);
+// Returns true when the URL is parseable — used to show the "Parsed" tag.
+function isValidUrl(raw) {
+  try {
+    const full = raw.startsWith("http") ? raw : "https://" + raw;
+    return !!new URL(full).hostname;
+  } catch { return false; }
 }
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function AddApplicationModal({ onClose, onAdd, initial }) {
-  const [url, setUrl]         = useState(initial?.url     || "");
-  const [company, setCompany] = useState(initial?.company || "");
-  const [role, setRole]       = useState(initial?.role    || "");
+// prefill: data from bookmarklet or query params (add mode, not edit mode)
+// initial: existing row data for edit mode
+export default function AddApplicationModal({ onClose, onAdd, initial, prefill }) {
+  const [url, setUrl]         = useState(prefill?.url     || initial?.url     || "");
+  const [company, setCompany] = useState(prefill?.company || initial?.company || "");
+  const [role, setRole]       = useState(prefill?.role    || initial?.role    || "");
   const [status, setStatus]   = useState(initial?.status  || "Applied");
   const [date, setDate]       = useState(initial?.date    || todayISO());
   const [notes, setNotes]     = useState(initial?.notes   || "");
   const [parsed, setParsed]   = useState(false);
-
-  // ref not state — auto-fill tracking without triggering re-render
-  const autoFilledRef = useRef(initial?.company || "");
+  const [resumeId, setResumeId] = useState(initial?.resume_id || null);
+  const [resumes, setResumes]   = useState([]);
 
   useEffect(() => {
-    const domain = extractDomain(url);
-    if (domain) {
-      const name = domainToCompany(domain);
+    supabase.from("resumes").select("id, name").order("created_at", { ascending: false })
+      .then(({ data }) => setResumes(data ?? []));
+  }, []);
+
+  // ref not state — auto-fill tracking without triggering re-render
+  const autoFilledRef = useRef(prefill?.company || initial?.company || "");
+
+  useEffect(() => {
+    if (!url) { setParsed(false); return; }
+    if (isValidUrl(url)) {
+      const name = urlToCompany(url);
       // only overwrite if empty OR still matches last auto-fill (user hasn't manually edited)
       setCompany((c) => (c === autoFilledRef.current || c === "") ? name : c);
       autoFilledRef.current = name;
@@ -49,10 +90,20 @@ export default function AddApplicationModal({ onClose, onAdd, initial }) {
     }
   }, [url]);
 
+  // On fresh add (no edit, no bookmarklet prefill): read clipboard for a job URL.
+  // Silently ignored if clipboard is empty, non-URL, or permission is denied.
+  useEffect(() => {
+    if (initial || prefill?.url || prefill?.role) return;
+    navigator.clipboard?.readText().then(text => {
+      const t = text?.trim() ?? "";
+      if (/^https?:\/\//i.test(t)) setUrl(t);
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleSubmit(e) {
     e.preventDefault();
     if (!company.trim() || !role.trim()) return;
-    onAdd({ url: url.trim(), company: company.trim(), role: role.trim(), status, date, notes: notes.trim() });
+    onAdd({ url: url.trim(), company: company.trim(), role: role.trim(), status, date, notes: notes.trim(), resume_id: resumeId || null });
     onClose();
   }
 
@@ -116,6 +167,24 @@ export default function AddApplicationModal({ onClose, onAdd, initial }) {
               placeholder="Referral from Alex · Senior role · Strong culture fit"
               value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
+
+          {resumes.length > 0 && (
+            <div className="modal-field">
+              <label className="modal-label">Resume Used <span className="modal-label-opt">(optional)</span></label>
+              <div className="modal-resume-pills">
+                {resumes.map(r => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    className={`modal-resume-pill${resumeId === r.id ? " modal-resume-pill-active" : ""}`}
+                    onClick={() => setResumeId(prev => prev === r.id ? null : r.id)}
+                  >
+                    {r.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="modal-footer">
             <button type="button" className="modal-btn-cancel" onClick={onClose}>Cancel</button>
