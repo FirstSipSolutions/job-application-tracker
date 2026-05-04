@@ -121,3 +121,21 @@ textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
 .modal-btn-submit:hover    { opacity: 0.85; }
 .modal-btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
 .modal-btn-danger          { background: #e5989b; color: #fff; }
+
+.modal-resume-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.modal-resume-pill {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--db-border);
+  background: transparent;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+
+.modal-resume-pill:hover       { border-color: var(--db-blue); color: var(--db-blue); }
+.modal-resume-pill-active      { background: var(--db-blue-dim); border-color: var(--db-blue); color: var(--db-blue); font-weight: 600; }
