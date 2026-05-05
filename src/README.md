@@ -10,13 +10,13 @@
 | `Dashboard.jsx`   | `/app`               | Main dashboard                      |
 | `CalendarPage.jsx`| `/app/calendar`      | Interview and follow-up calendar    |
 | `Settings.jsx`    | `/app/settings`      | Profile settings                    |
+| `NotFound.jsx`    | `*`                  | 404 fallback page                   |
 
 ## Components
 
 | Folder       | What's in it                                                        |
 | ------------ | ------------------------------------------------------------------- |
-| `dashboard/` | Widgets that live on the dashboard grid                             |
-| `widgets/`   | Floating panels (UpcomingPanel, WidgetGrid, HireHub)                |
+| `dashboard/` | All dashboard components                                            |
 | `layout/`    | AppNav — top nav bar present on every authenticated page            |
 | `modals/`    | AddApplicationModal, AddEventModal, LogoutModal                     |
 | `effects/`   | Aurora — animated gradient background used on landing and login     |
@@ -30,6 +30,9 @@
 | `JobApplicationBoard.jsx` | Kanban-style application status board                 |
 | `ProfileCard.jsx`       | User profile summary card                               |
 | `ResumeBoard.jsx`       | CV Vault — upload, manage, and track resume versions    |
+| `HireHub.jsx`           | Job board quick-links with custom link support          |
+| `UpcomingPanel.jsx`     | Upcoming interviews and follow-ups (next 7 days)        |
+| `WidgetGrid.jsx`        | Draggable stats widgets bar                             |
 
 ## Hooks
 
