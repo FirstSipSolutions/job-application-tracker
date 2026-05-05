@@ -5,6 +5,7 @@ import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import CalendarPage from "./pages/CalendarPage.jsx";
 import Settings from "./pages/Settings.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import { useAuth } from "./hooks/useAuth.js";
 
 function ProtectedRoute({ children }) {
@@ -46,6 +47,7 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

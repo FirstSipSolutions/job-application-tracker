@@ -1,5 +1,5 @@
 import { useProfile } from "../../context/ProfileContext.jsx";
-import HireHub from "../widgets/HireHub.jsx";
+import HireHub from "./HireHub.jsx";
 
 export default function ProfileCard() {
   const { displayName, jobTitle } = useProfile();

@@ -39,6 +39,6 @@ See [`docs/dsa.md`](docs/dsa.md) for full explanations with code samples.
 ## Backlog
 
 - [ ] Toast notifications on all CRUD actions and auth errors
-- [ ] 404 page + fallback route
+- [x] 404 page + fallback route
 - [ ] Event edit and delete (calendar events are currently add-only)
 - [ ] Remove dead `onSubmit` prop from Login/Signup button components
