@@ -7,12 +7,22 @@ const STATUS_OPTIONS = ["Applied", "Screening", "Interview", "Offer", "Rejected"
 
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-// Subdomains that belong to the ATS, not the company.
-// When the first subdomain is one of these, the company slug is in the URL path instead.
+// DATA STRUCTURE: Set (x2)
+//
+// Problem: given a job posting URL we need to decide in real time whether a
+// subdomain or path segment belongs to the company or to the job board platform.
+// A naive approach would be an array of strings checked with .includes(): O(N)
+// per lookup, called on every URL change.
+//
+// Solution: two Sets — one for generic subdomains, one for generic path segments.
+// Set.has() is O(1) average case (hash-based). With 7 subdomains and 7 path words
+// the difference is small now, but the pattern scales cleanly if the lists grow.
+//
+// Trade-off: Sets use slightly more memory than arrays and cannot hold duplicates,
+// both of which are fine here. The real benefit is intent — a Set signals
+// "membership check" which makes the code easier to reason about than .includes().
 const GENERIC_SUBDOMAINS = new Set(["jobs", "apply", "boards", "careers", "work", "hire", "job"]);
-
-// Path segments that are structural (not company slugs).
-const GENERIC_PATHS = new Set(["jobs", "careers", "apply", "job", "positions", "openings", "j"]);
+const GENERIC_PATHS      = new Set(["jobs", "careers", "apply", "job", "positions", "openings", "j"]);
 
 // Extracts a human-readable company name from a job posting URL.
 // Strategy: if the subdomain is a generic ATS prefix (apply., jobs., boards.),

@@ -69,7 +69,18 @@ export default function WidgetGrid({ apps, vertical = false }) {
   const [editing, setEditing] = useState(false);
   const [activeId, setActive] = useState(null);
 
-  // distance:6 prevents a plain click from starting a drag
+  // ALGORITHM: arrayMove (from @dnd-kit/sortable)
+//
+// When a drag ends, we know the dragged item's index and the drop target's index.
+// arrayMove produces a new array with the item moved to the correct position in O(N)
+// time — it slices the array around the two indexes and splices the item in.
+// We never mutate the existing array; we return a new one and call setOrder, which
+// triggers a re-render. This is the immutable state update pattern React requires.
+//
+// The alternative (splice on the original array) would work but breaks React's
+// ability to detect changes because the array reference stays the same.
+
+// distance:6 prevents a plain click from starting a drag
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   function onDragStart({ active }) { setActive(active.id); }
