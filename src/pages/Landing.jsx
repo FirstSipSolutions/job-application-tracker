@@ -1,8 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom"; 
+// Navigate added  redirects without a link click
 import Aurora from "../components/effects/Aurora.jsx";
+
+
+import { useAuth } from "../hooks/useAuth.js"; 
+// pull in the current auth session
 import "../styles/landing.css";
 
 export default function Landing() {
+  const { user, loading } = useAuth(); 
+  // user will EQUAl logged-in user or null; loading = session still being checked
+
+  if (loading) return null;
+   // wait for Supabase to restore the session before deciding what to show
+
+  if (user) return <Navigate to="/app" replace />;
+   // already logged in — skip the landing page entirely
+
   return (
     <div className="land-root">
       <div className="land-aurora-wrap" aria-hidden="true">
