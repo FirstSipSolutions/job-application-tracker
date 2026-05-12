@@ -50,10 +50,18 @@ export default function DayDetailsModal({
                   <span className="cal-event-label">{event.label}</span>
 
                   <div className="cal-event-actions">
-                    <button onClick={() => onEdit(event)} type="button">
+                    <button
+                      className="modal-btn-submit-edit"
+                      onClick={() => onEdit(event)}
+                      type="button"
+                    >
                       Edit
                     </button>
-                    <button onClick={() => onDelete(event.id)} type="button">
+                    <button
+                      className="modal-btn-submit-delete"
+                      onClick={() => onDelete(event.id)}
+                      type="button"
+                    >
                       Delete
                     </button>
                   </div>
@@ -65,8 +73,12 @@ export default function DayDetailsModal({
           )}
         </div>
         <div className="cal-add-event">
-          <button onClick={() => onAdd()} type="button">
-            Add Event
+          <button
+            className="modal-btn-submit-add"
+            onClick={() => onAdd()}
+            type="button"
+          >
+            +
           </button>
         </div>
       </div>
