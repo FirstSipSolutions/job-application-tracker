@@ -13,8 +13,12 @@
 }
 
 @keyframes modal-bg {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-box {
@@ -28,8 +32,14 @@
 }
 
 @keyframes modal-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -39,34 +49,59 @@
   margin-bottom: 24px;
 }
 
-.modal-title { font-size: 16px; font-weight: 700; color: var(--db-text); }
-
-.modal-close {
-  width: 28px; height: 28px;
-  border-radius: 4px; border: none; background: transparent;
-  color: var(--db-text-dim); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.12s, color 0.12s;
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--db-text);
 }
 
-.modal-close:hover { background: var(--db-surface-2); color: var(--db-text); }
+.modal-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
 
-.modal-field      { margin-bottom: 14px; }
+.modal-close:hover {
+  background: var(--db-surface-2);
+  color: var(--db-text);
+}
+
+.modal-field {
+  margin-bottom: 14px;
+}
 
 .modal-label {
   display: block;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--db-text-dim); margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--db-text-dim);
+  margin-bottom: 6px;
 }
 
 .modal-label-opt {
-  font-size: 10px; font-weight: 400;
-  text-transform: none; letter-spacing: 0;
-  color: var(--db-text-faint); margin-left: 4px;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--db-text-faint);
+  margin-left: 4px;
 }
 
-.modal-url-wrap { position: relative; }
+.modal-url-wrap {
+  position: relative;
+}
 
 .modal-input {
   width: 100%;
@@ -74,53 +109,166 @@
   background: var(--db-surface-2);
   border: 1px solid var(--db-border);
   border-radius: 4px;
-  font-size: 13px; color: var(--db-text);
+  font-size: 13px;
+  color: var(--db-text);
   transition: border-color 0.15s;
-  appearance: none; -webkit-appearance: none;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-.modal-input:focus        { outline: none; border-color: var(--db-blue); }
-.modal-input::placeholder { color: var(--db-text-faint); }
-.modal-input-has-tag      { padding-right: 88px; }
+.modal-input:focus {
+  outline: none;
+  border-color: var(--db-blue);
+}
+.modal-input::placeholder {
+  color: var(--db-text-faint);
+}
+.modal-input-has-tag {
+  padding-right: 88px;
+}
 
-textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
+textarea.modal-input {
+  resize: vertical;
+  line-height: 1.5;
+  min-height: 60px;
+}
 
 .modal-url-tag {
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 4px;
-  background: var(--db-blue-dim); color: var(--db-blue);
-  pointer-events: none; white-space: nowrap;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--db-blue-dim);
+  color: var(--db-blue);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
-.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 
 .modal-footer {
-  display: flex; gap: 8px; justify-content: flex-end;
-  margin-top: 24px; padding-top: 20px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
   border-top: 1px solid var(--db-border);
 }
 
 .modal-btn-cancel {
-  padding: 9px 18px; border-radius: 4px;
-  font-size: 13px; font-weight: 600;
-  background: transparent; border: 1px solid var(--db-border);
-  color: var(--db-text-dim); cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
+  padding: 9px 18px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid var(--db-border);
+  color: var(--db-text-dim);
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
-.modal-btn-cancel:hover { color: var(--db-text); border-color: var(--db-text-dim); }
+.modal-btn-cancel:hover {
+  color: var(--db-text);
+  border-color: var(--db-text-dim);
+}
 
 .modal-btn-submit {
-  padding: 9px 20px; border-radius: 4px;
-  font-size: 13px; font-weight: 700;
-  background: var(--db-blue); color: var(--db-blue-text);
-  border: none; cursor: pointer; transition: opacity 0.15s;
+  padding: 9px 20px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--db-blue);
+  color: var(--db-blue-text);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
 }
 
-.modal-btn-submit:hover    { opacity: 0.85; }
-.modal-btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
-.modal-btn-danger          { background: #e5989b; color: #fff; }
+.modal-btn-submit:hover {
+  opacity: 0.85;
+}
+.modal-btn-submit:disabled {
+  opacity: 0.4;
+  cursor: auto;
+}
+.modal-btn-danger {
+  background: #e5989b;
+  color: #fff;
+}
+
+.modal-btn-submit-add {
+  padding: 6px 20px;
+  margin: 5px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--db-green);
+  color: var(--db-black-text);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-btn-submit-add:hover {
+  opacity: 0.85;
+}
+.modal-btn-submit-add:disabled {
+  opacity: 0.4;
+  cursor: auto;
+}
+
+.modal-btn-submit-edit {
+  padding: 6px 20px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--db-blue);
+  color: var(--db-blue-text);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-btn-submit-edit:hover {
+  opacity: 0.85;
+}
+.modal-btn-submit-edit:disabled {
+  opacity: 0.4;
+  cursor: auto;
+}
+
+.modal-btn-submit-delete {
+  padding: 6px 20px;
+  margin: 5px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgb(253, 54, 54);
+  color: rgb(255, 255, 255);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-btn-submit-delete:hover {
+  opacity: 0.85;
+}
+.modal-btn-submit-delete:disabled {
+  opacity: 0.4;
+  cursor: auto;
+}
 
 /* ── Resume detail modal ── */
 
@@ -149,8 +297,15 @@ textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
   gap: 2px;
 }
 
-.rdm-stat-num   { font-size: 22px; font-weight: 700; color: var(--db-text); }
-.rdm-stat-label { font-size: 11px; color: var(--db-text-dim); }
+.rdm-stat-num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--db-text);
+}
+.rdm-stat-label {
+  font-size: 11px;
+  color: var(--db-text-dim);
+}
 
 .rdm-apps-title {
   font-size: 11px;
@@ -161,7 +316,11 @@ textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
   margin-bottom: 8px;
 }
 
-.rdm-apps-list  { display: flex; flex-direction: column; gap: 6px; }
+.rdm-apps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .rdm-app-row {
   display: grid;
@@ -171,16 +330,40 @@ textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
   align-items: center;
 }
 
-.rdm-app-company { font-weight: 600; color: var(--db-text); }
-.rdm-app-role    { color: var(--db-text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rdm-app-status  { font-weight: 600; font-size: 11px; white-space: nowrap; }
-.rdm-app-date    { font-size: 11px; color: var(--db-text-faint); white-space: nowrap; }
+.rdm-app-company {
+  font-weight: 600;
+  color: var(--db-text);
+}
+.rdm-app-role {
+  color: var(--db-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rdm-app-status {
+  font-weight: 600;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.rdm-app-date {
+  font-size: 11px;
+  color: var(--db-text-faint);
+  white-space: nowrap;
+}
 
-.rdm-empty { font-size: 13px; color: var(--db-text-dim); margin: 8px 0 16px; }
+.rdm-empty {
+  font-size: 13px;
+  color: var(--db-text-dim);
+  margin: 8px 0 16px;
+}
 
 /* ── Resume picker pills ── */
 
-.modal-resume-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.modal-resume-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
 .modal-resume-pill {
   padding: 5px 12px;
@@ -192,8 +375,19 @@ textarea.modal-input { resize: vertical; line-height: 1.5; min-height: 60px; }
   color: var(--db-text-dim);
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
+  transition:
+    border-color 0.12s,
+    color 0.12s,
+    background 0.12s;
 }
 
-.modal-resume-pill:hover       { border-color: var(--db-blue); color: var(--db-blue); }
-.modal-resume-pill-active      { background: var(--db-blue-dim); border-color: var(--db-blue); color: var(--db-blue); font-weight: 600; }
+.modal-resume-pill:hover {
+  border-color: var(--db-blue);
+  color: var(--db-blue);
+}
+.modal-resume-pill-active {
+  background: var(--db-blue-dim);
+  border-color: var(--db-blue);
+  color: var(--db-blue);
+  font-weight: 600;
+}
