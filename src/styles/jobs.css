@@ -50,6 +50,33 @@
 .jobs-filter-btn:hover  { color: var(--db-text); border-color: var(--db-blue); }
 .jobs-filter-btn.active { background: var(--db-blue); color: var(--db-blue-text); border-color: var(--db-blue); }
 
+.jobs-filter-select {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--db-border);
+  background: transparent;
+  color: var(--db-text);
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.jobs-filter-select:hover { border-color: var(--db-blue); }
+.jobs-filter-select:focus { outline: none; border-color: var(--db-blue); }
+
+.jobs-filter-reset {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+.jobs-filter-reset:hover { color: var(--db-blue); }
+
 /* ── Live button ── */
 
 .jobs-live-btn {

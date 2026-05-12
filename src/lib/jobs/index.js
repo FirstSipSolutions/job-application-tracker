@@ -41,7 +41,7 @@ export async function fetchJobs({ fresh = false } = {}) {
 
   const all = results.flatMap(r => r.status === "fulfilled" ? r.value : []);
 
-  // Dedup by URL — same job can appear on multiple boards.
+  // Dedup by URL, same job can appear on multiple boards.
   const seen    = new Set();
   const deduped = all.filter(job => {
     if (!job.url || seen.has(job.url)) return false;

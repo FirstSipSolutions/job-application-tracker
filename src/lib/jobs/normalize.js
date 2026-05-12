@@ -57,7 +57,7 @@ export function fromJobicy(job) {
 
 export function fromGreenhouse(job, companyName, category) {
   const loc = job.location?.name ?? "";
-  // Greenhouse rarely includes salary in the base listing — check metadata array
+  // Greenhouse rarely includes salary in the base listing, check metadata array
   const salaryMeta = (job.metadata ?? []).find(m =>
     /salary|compensation|pay/i.test(m.name) && m.value
   );
