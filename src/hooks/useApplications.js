@@ -16,7 +16,7 @@ export function useApplications() {
       });
   }, []);
 
-  // waits for server row — needs the DB-generated UUID back
+  // waits for server row, needs the DB-generated UUID back
   async function addApp(fields) {
     const { data: row, error } = await supabase
       .from("applications")
