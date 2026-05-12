@@ -20,7 +20,7 @@ export default function JobCard({ job, onApply }) {
     <div className="job-card">
       <div className="job-card-badges">
         <span className="job-badge job-badge-remote">Remote</span>
-        <span className="job-badge" style={{ background: `${color}22`, color }}>
+        <span className="job-badge" style={{ color }}>
           {job.source}
         </span>
         {age && <span className="job-badge-age">{age}</span>}

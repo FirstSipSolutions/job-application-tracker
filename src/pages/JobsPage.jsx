@@ -14,8 +14,9 @@ const RECENCY = [
   { key: "week", label: "This week",   days: 7 },
 ];
 
-const SOURCES = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby];
-const POLL_MS = 5 * 60 * 1000; // 5 minutes
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby];
+const POLL_MS   = 5 * 60 * 1000;
+const PAGE_SIZE = 10;
 
 function dedup(arr) {
   const seen = new Set();
@@ -41,6 +42,7 @@ export default function JobsPage() {
   const [recency,  setRecency]  = useState("all");
   const [live,     setLive]     = useState(false);
   const [newCount, setNewCount] = useState(0);
+  const [page,     setPage]     = useState(1);
   const seenUrls  = useRef(new Set());
   const pollTimer = useRef(null);
   const { addApp } = useApplications();
@@ -110,14 +112,16 @@ export default function JobsPage() {
     setNewCount(0);
   }
 
-  const loading = resolved < SOURCES.length && jobs.length === 0;
-  const cutoff  = RECENCY.find(r => r.key === recency)?.days ?? Infinity;
-  const visible = cutoff === Infinity
+  const loading  = resolved < SOURCES.length && jobs.length === 0;
+  const cutoff   = RECENCY.find(r => r.key === recency)?.days ?? Infinity;
+  const filtered = cutoff === Infinity
     ? jobs
     : jobs.filter(j => {
         if (!j.postedAt) return true;
         return (Date.now() - new Date(j.postedAt)) / 864e5 <= cutoff;
       });
+  const visible  = filtered.slice(0, page * PAGE_SIZE);
+  const hasMore  = visible.length < filtered.length;
 
   return (
     <div className="db-root">
@@ -130,7 +134,7 @@ export default function JobsPage() {
             <p className="jobs-sub">
               {loading
                 ? `Scanning sources... ${resolved}/${SOURCES.length} done`
-                : `${visible.length} real listings — direct from company boards, no promoted`}
+                : `${visible.length} real listings - direct from company boards, no promoted`}
             </p>
           </div>
 
@@ -140,7 +144,7 @@ export default function JobsPage() {
                 <button
                   key={r.key}
                   className={`jobs-filter-btn${recency === r.key ? " active" : ""}`}
-                  onClick={() => setRecency(r.key)}
+                  onClick={() => { setRecency(r.key); setPage(1); }}
                 >
                   {r.label}
                 </button>
@@ -168,10 +172,18 @@ export default function JobsPage() {
           {visible.map(job => (
             <JobCard key={job.id} job={job} onApply={logAndOpen} />
           ))}
-          {!loading && visible.length === 0 && (
-            <p className="jobs-empty">No listings matched this filter — try "All".</p>
+          {!loading && filtered.length === 0 && (
+            <p className="jobs-empty">No listings matched this filter - try "All".</p>
           )}
         </div>
+
+        {hasMore && (
+          <div className="jobs-load-more">
+            <button className="jobs-load-more-btn" onClick={() => setPage(p => p + 1)}>
+              Load more ({filtered.length - visible.length} remaining)
+            </button>
+          </div>
+        )}
 
       </main>
     </div>
