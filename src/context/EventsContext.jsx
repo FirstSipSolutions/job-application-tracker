@@ -4,12 +4,15 @@ import { supabase } from "../lib/supabase.js";
 const EventsContext = createContext(null);
 
 function loadDismissed() {
-  try { return new Set(JSON.parse(localStorage.getItem("dismissed-events")) || []); }
-  catch { return new Set(); }
+  try {
+    return new Set(JSON.parse(localStorage.getItem("dismissed-events")) || []);
+  } catch {
+    return new Set();
+  }
 }
 
 export function EventsProvider({ children }) {
-  const [events,    setEvents]    = useState([]);
+  const [events, setEvents] = useState([]);
 
   // DATA STRUCTURE: Set
   //
@@ -40,13 +43,37 @@ export function EventsProvider({ children }) {
       .insert(fields)
       .select()
       .single();
-    if (!error) setEvents(prev => [...prev, row]);
+    if (!error) setEvents((prev) => [...prev, row]);
+  }
+
+  async function deleteEvent(eventId) {
+    const { data: error } = await supabase
+      .from("events")
+      .delete()
+      .eq("id", eventId)
+      .select()
+      .single();
+    if (!error)
+      setEvents((prev) => prev.filter((event) => event.id !== eventId));
+  }
+
+  async function updateEvent(eventId, fields) {
+    const { data: row, error } = await supabase
+      .from("events")
+      .update(fields)
+      .eq("id", eventId)
+      .select()
+      .single();
+    if (!error)
+      setEvents((prev) =>
+        prev.map((event) => (event.id == eventId ? row : event)),
+      );
   }
 
   // dismissed stays in localStorage, it's a UI preference not worth syncing to DB
   // key format: "2026-05-08::Google Interview" unique per event
   function dismissEvent(key) {
-    setDismissed(prev => {
+    setDismissed((prev) => {
       const next = new Set(prev);
       next.add(key);
       localStorage.setItem("dismissed-events", JSON.stringify([...next]));
@@ -55,11 +82,22 @@ export function EventsProvider({ children }) {
   }
 
   return (
-    <EventsContext.Provider value={{ events, addEvent, dismissed, dismissEvent }}>
+    <EventsContext.Provider
+      value={{
+        events,
+        addEvent,
+        dismissed,
+        dismissEvent,
+        deleteEvent,
+        updateEvent,
+      }}
+    >
       {children}
     </EventsContext.Provider>
   );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useEvents() { return useContext(EventsContext); }
+export function useEvents() {
+  return useContext(EventsContext);
+}
