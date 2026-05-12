@@ -1,16 +1,9 @@
+import { STATUS_OPTIONS, STATUS_COLOR } from "../../lib/status.js";
+
 // T00:00:00 prevents UTC offset from shifting the displayed day backward
 function fmtDate(iso) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
-
-// CSS vars can't be used in inline JS styles, so raw hex lives here
-const STATUS_COLOR = {
-  Applied:   "#5ba3ff",
-  Screening: "#888",
-  Interview: "#4cad7c",
-  Offer:     "#4cad7c",
-  Rejected:  "#e5989b",
-};
 
 export default function JobApplicationBoard({ apps, loading, updateStatus, removeApp, onEdit }) {
   return (
@@ -42,7 +35,7 @@ export default function JobApplicationBoard({ apps, loading, updateStatus, remov
                   onChange={(e) => updateStatus(id, e.target.value)}
                   style={{ color: STATUS_COLOR[status] ?? "#888" }}
                 >
-                  {Object.keys(STATUS_COLOR).map((opt) => <option key={opt}>{opt}</option>)}
+                  {STATUS_OPTIONS.map((opt) => <option key={opt}>{opt}</option>)}
                 </select>
                 <span className="db-app-date">{fmtDate(date)}</span>
                 <div className="db-app-actions">

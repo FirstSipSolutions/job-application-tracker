@@ -127,8 +127,8 @@
 .db-profile  { grid-column: 1;     grid-row: 1; }
 .db-activity-chart { grid-column: 2;     grid-row: 1; }
 .db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
-.db-resume-board { grid-column: 1 / 4; grid-row: 2; }
-.db-app-board    { grid-column: 1 / 4; grid-row: 3; }
+.db-app-board    { grid-column: 1 / 4; grid-row: 2; }
+.db-resume-board { grid-column: 1 / 4; grid-row: 3; }
 
 
 /* ── Profile card ── */
@@ -227,6 +227,12 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.db-nav-action-slot {
+  min-width: 160px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .db-nav-add {

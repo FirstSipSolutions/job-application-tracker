@@ -1,9 +1,3 @@
-const SOURCE_COLOR = {
-  "Silicon Harbour": "#4cad7c",
-  "Greenhouse":      "#5ba3ff",
-  "Ashby":           "#a78bfa",
-};
-
 function daysAgoLabel(postedAt) {
   if (!postedAt) return null;
   const d = Math.floor((Date.now() - new Date(postedAt)) / 864e5);
@@ -13,16 +7,12 @@ function daysAgoLabel(postedAt) {
 }
 
 export default function JobCard({ job, onApply }) {
-  const age   = daysAgoLabel(job.postedAt);
-  const color = SOURCE_COLOR[job.source] ?? "#888";
+  const age = daysAgoLabel(job.postedAt);
 
   return (
     <div className="job-card">
       <div className="job-card-badges">
         <span className="job-badge job-badge-remote">Remote</span>
-        <span className="job-badge" style={{ color }}>
-          {job.source}
-        </span>
         {age && <span className="job-badge-age">{age}</span>}
       </div>
 

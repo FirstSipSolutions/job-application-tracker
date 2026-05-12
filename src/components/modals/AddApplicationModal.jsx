@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { supabase } from "../../lib/supabase.js";
+import { STATUS_OPTIONS } from "../../lib/status.js";
 import "./modals.css";
-
-const STATUS_OPTIONS = ["Applied", "Screening", "Interview", "Offer", "Rejected"];
 
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
@@ -44,7 +43,7 @@ function urlToCompany(raw) {
   }
 }
 
-// Returns true when the URL is parseable — used to show the "Parsed" tag.
+// Returns true when the URL is parseable, used to show the "Parsed" tag.
 function isValidUrl(raw) {
   try {
     const full = raw.startsWith("http") ? raw : "https://" + raw;
@@ -74,7 +73,7 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
       .then(({ data }) => setResumes(data ?? []));
   }, []);
 
-  // ref not state — auto-fill tracking without triggering re-render
+  // ref not state, auto-fill tracking without triggering re-render
   const autoFilledRef = useRef(prefill?.company || initial?.company || "");
 
   useEffect(() => {

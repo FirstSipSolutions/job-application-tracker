@@ -22,7 +22,7 @@ function greeting() {
 export default function Dashboard() {
   const { apps, loading, addApp, updateApp, updateStatus, removeApp } = useApplications();
   const { displayName } = useProfile();
-  // Read bookmarklet params at render time — useState ignores initial value after first render
+  // Read bookmarklet params at render time, useState ignores initial value after first render
   // so this is safe and avoids setState-in-effect lint errors.
   const [searchParams] = useSearchParams();
   const _fromBookmark  = searchParams.get("add") === "1";
@@ -35,7 +35,7 @@ export default function Dashboard() {
     company: searchParams.get("company") || "",
   } : null);
 
-  // Strip params from the URL after reading — no setState, just history cleanup.
+  // Strip params from the URL after reading, no setState, just history cleanup.
   useEffect(() => {
     if (window.location.search.includes("add=1")) {
       window.history.replaceState({}, "", window.location.pathname);
@@ -79,8 +79,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <ResumeBoard />
-
           <JobApplicationBoard
             apps={apps}
             loading={loading}
@@ -88,6 +86,8 @@ export default function Dashboard() {
             removeApp={removeApp}
             onEdit={setEditingApp}
           />
+
+          <ResumeBoard />
         </div>
       </main>
 

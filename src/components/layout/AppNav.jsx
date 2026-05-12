@@ -68,14 +68,16 @@ export default function AppNav({ onAddApp, onAddEvent }) {
         </div>
 
         <div className="db-nav-actions">
-          {pathname === "/app"          && <button className="db-nav-add"                   onClick={onAddApp}>+ Add Application</button>}
-          {pathname === "/app/calendar" && <button className="db-nav-add db-nav-add-green"  onClick={onAddEvent}>+ Add Event</button>}
-          {pathname === "/app/settings" && <button className="db-nav-add db-nav-add-red"    onClick={() => setShowLogout(true)}>Log out</button>}
+          <div className="db-nav-action-slot">
+            {pathname === "/app"          && <button className="db-nav-add"                   onClick={onAddApp}>+ Add Application</button>}
+            {pathname === "/app/calendar" && <button className="db-nav-add db-nav-add-green"  onClick={onAddEvent}>+ Add Event</button>}
+            {pathname === "/app/settings" && <button className="db-nav-add db-nav-add-red"    onClick={() => setShowLogout(true)}>Log out</button>}
+          </div>
           <a
             ref={dragRef}
             href="#"
             draggable
-            title="Drag to bookmarks bar — click on any job page to log it instantly"
+            title="Drag to bookmarks bar, then click on any job page to log it instantly"
             className="db-nav-bookmarklet"
           >
             ⚡ Log This Job

@@ -8,7 +8,7 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-// Badge logic uses pre-aggregated _stats from the hook — no app array needed here.
+// Badge logic uses pre-aggregated _stats from the hook, no app array needed here.
 // Badges reflect usage and activity, not callback rate, because no-callbacks are
 // normal in a tough market and should not be framed as resume failure.
 function getBadge(resume, allResumes) {
@@ -23,7 +23,7 @@ function getBadge(resume, allResumes) {
   return null;
 }
 
-// No apps prop — stats come from the hook so this component never touches the
+// No apps prop, stats come from the hook so this component never touches the
 // full application list, which can grow to hundreds of rows.
 export default function ResumeBoard() {
   const { resumes, uploading, uploadResume, renameResume, removeResume, getUrl } = useResumes();
@@ -60,9 +60,9 @@ export default function ResumeBoard() {
       ) : (
         <div className="rb-cards">
           {resumes.map(r => {
-            // Stats are pre-computed in the hook — just read them off the object.
+            // Stats are pre-computed in the hook, just read them off the object.
             const { count, responses } = r._stats;
-            // Response rate is shown as context only — low numbers are expected
+            // Response rate is shown as context only, low numbers are expected
             // in this market and do not indicate a problem with the resume.
             const rate  = count ? Math.round(responses / count * 100) : null;
             const badge = getBadge(r, resumes);
