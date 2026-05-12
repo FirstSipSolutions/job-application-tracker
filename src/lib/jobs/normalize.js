@@ -1,5 +1,20 @@
-// Maps each API's raw job shape to one common format.
+// Maps each source's raw job shape into one common format.
 // Every source goes through here before being filtered or displayed.
+
+function isRemoteLoc(str) {
+  if (!str) return false;
+  return /remote|anywhere|worldwide/i.test(str);
+}
+
+function extractSalary(text) {
+  if (!text) return null;
+  const clean = text.replace(/<[^>]+>/g, " ");
+  const m = clean.match(/\$[\d,.]+k?\s*[-–to]+\s*\$[\d,.]+k?(?:\s*(?:USD|CAD|CAD\/yr|USD\/yr))?/i)
+         || clean.match(/(?:CAD|USD)\s*[\d,]+\s*[-–]\s*[\d,]+/i);
+  return m ? m[0].replace(/\s+/g, " ").trim() : null;
+}
+
+// ── Silicon Harbour ──────────────────────────────────────────────────────────
 
 export function fromSiliconHarbour(job) {
   return {
@@ -15,6 +30,8 @@ export function fromSiliconHarbour(job) {
   };
 }
 
+// ── Jobicy ───────────────────────────────────────────────────────────────────
+
 export function fromJobicy(job) {
   return {
     id:            `jc-${job.id}`,
@@ -26,5 +43,42 @@ export function fromJobicy(job) {
     postedAt:      job.pubDate,
     url:           job.url ?? "",
     source:        "Jobicy",
+  };
+}
+
+// ── Greenhouse ───────────────────────────────────────────────────────────────
+
+export function fromGreenhouse(job, companyName) {
+  const loc = job.location?.name ?? "";
+  // Greenhouse rarely includes salary in the base listing — check metadata array
+  const salaryMeta = (job.metadata ?? []).find(m =>
+    /salary|compensation|pay/i.test(m.name) && m.value
+  );
+  return {
+    id:            `gh-${job.id}`,
+    title:         job.title ?? "",
+    company:       companyName,
+    location:      loc,
+    workplaceType: isRemoteLoc(loc) ? "Remote" : loc,
+    salary:        salaryMeta?.value ?? null,
+    postedAt:      job.first_published ?? job.updated_at,
+    url:           job.absolute_url ?? "",
+    source:        "Greenhouse",
+  };
+}
+
+// ── Ashby ─────────────────────────────────────────────────────────────────────
+
+export function fromAshby(job, companyName) {
+  return {
+    id:            `ab-${job.id}`,
+    title:         job.title ?? "",
+    company:       companyName,
+    location:      job.location ?? "",
+    workplaceType: job.isRemote || /remote/i.test(job.workplaceType ?? "") ? "Remote" : job.workplaceType ?? "",
+    salary:        job.compensation?.compensationTierGuide ?? extractSalary(job.descriptionHtml ?? ""),
+    postedAt:      job.publishedAt,
+    url:           job.jobUrl ?? "",
+    source:        "Ashby",
   };
 }

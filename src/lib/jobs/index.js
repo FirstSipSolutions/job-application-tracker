@@ -1,24 +1,53 @@
 import { fetchSiliconHarbour } from "./sources/siliconHarbour.js";
-import { fetchJobicy }         from "./sources/jobicy.js";
-import { passesFilter }        from "./filter.js";
+import { fetchGreenhouse }    from "./sources/greenhouse.js";
+import { fetchAshby }         from "./sources/ashby.js";
+import { passesFilter }       from "./filter.js";
 
-// Fetches all sources in parallel. Promise.allSettled means one failing API
-// never breaks the feed — you just get fewer results that session.
-export async function fetchJobs() {
+const CACHE_KEY = "cv-vault-jobs-v1";
+const CACHE_TTL = 4 * 60 * 60 * 1000; // 4 hours
+
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, jobs } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) return null;
+    return jobs;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(jobs) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), jobs }));
+  } catch {}
+}
+
+// fresh=true bypasses the cache (used by a manual refresh button).
+export async function fetchJobs({ fresh = false } = {}) {
+  if (!fresh) {
+    const cached = readCache();
+    if (cached) return cached;
+  }
+
   const results = await Promise.allSettled([
     fetchSiliconHarbour(),
-    fetchJobicy(),
+    fetchGreenhouse(),
+    fetchAshby(),
   ]);
 
   const all = results.flatMap(r => r.status === "fulfilled" ? r.value : []);
 
-  // Dedup by URL so the same job posted on multiple boards only shows once.
-  const seen = new Set();
+  // Dedup by URL — same job can appear on multiple boards.
+  const seen    = new Set();
   const deduped = all.filter(job => {
     if (!job.url || seen.has(job.url)) return false;
     seen.add(job.url);
     return true;
   });
 
-  return deduped.filter(passesFilter);
+  const filtered = deduped.filter(passesFilter);
+  writeCache(filtered);
+  return filtered;
 }
