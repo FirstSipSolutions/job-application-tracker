@@ -36,64 +36,81 @@ function ping() {
   try { new Audio("/sounds/new-job.mp3").play(); } catch {}
 }
 
+async function fetchAll() {
+  const incoming = [];
+  await Promise.allSettled(
+    SOURCES.map(fn =>
+      fn().then(raw => incoming.push(...raw.filter(passesFilter))).catch(() => {})
+    )
+  );
+  return dedup(incoming).sort(byNewest);
+}
+
 export default function JobsPage() {
-  const [jobs,     setJobs]     = useState([]);
-  const [resolved, setResolved] = useState(0);
-  const [recency,  setRecency]  = useState("all");
-  const [live,     setLive]     = useState(false);
-  const [newCount, setNewCount] = useState(0);
-  const [page,     setPage]     = useState(1);
+  const [jobs,      setJobs]      = useState([]);
+  const [resolved,  setResolved]  = useState(0);
+  const [recency,   setRecency]   = useState("all");
+  const [page,      setPage]      = useState(1);
+  const [live,      setLive]      = useState(false);
+  const [liveJobs,  setLiveJobs]  = useState([]);
+  const [polling,   setPolling]   = useState(false);
   const seenUrls  = useRef(new Set());
   const pollTimer = useRef(null);
   const { addApp } = useApplications();
 
-  const loadAll = useCallback(async (isLivePoll = false) => {
-    let done = 0;
-    let incoming = [];
+  // Initial load - progressive per source
+  useEffect(() => {
+    let active = true;
+    let done   = 0;
+    SOURCES.forEach(fn => {
+      fn()
+        .then(raw => {
+          if (!active) return;
+          const fresh = raw.filter(passesFilter);
+          fresh.forEach(j => seenUrls.current.add(j.url));
+          setJobs(prev => dedup([...prev, ...fresh]).sort(byNewest));
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!active) return;
+          done++;
+          setResolved(done);
+        });
+    });
+    return () => { active = false; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    await Promise.allSettled(
-      SOURCES.map(fn =>
-        fn()
-          .then(raw => {
-            const fresh = raw.filter(passesFilter);
-            incoming = [...incoming, ...fresh];
-            done++;
-            if (!isLivePoll) setResolved(done);
-          })
-          .catch(() => { done++; if (!isLivePoll) setResolved(done); })
-      )
-    );
-
-    const all = dedup(incoming).sort(byNewest);
-
-    if (isLivePoll) {
+  // Live poll - fires every POLL_MS while live is on
+  const runPoll = useCallback(async () => {
+    setPolling(true);
+    try {
+      const all   = await fetchAll();
       const brand = all.filter(j => !seenUrls.current.has(j.url));
       if (brand.length > 0) {
         ping();
-        setNewCount(n => n + brand.length);
         brand.forEach(j => seenUrls.current.add(j.url));
-        setJobs(prev => dedup([...brand, ...prev]).sort(byNewest));
+        setLiveJobs(prev => dedup([...brand, ...prev]).sort(byNewest));
       }
-    } else {
-      all.forEach(j => seenUrls.current.add(j.url));
-      setJobs(all);
+    } finally {
+      setPolling(false);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Initial load
   useEffect(() => {
-    loadAll(false);
-  }, [loadAll]);
-
-  // Live polling
-  useEffect(() => {
-    if (live) {
-      pollTimer.current = setInterval(() => loadAll(true), POLL_MS);
-    } else {
-      clearInterval(pollTimer.current);
-    }
+    if (!live) { clearInterval(pollTimer.current); return; }
+    pollTimer.current = setInterval(runPoll, POLL_MS);
     return () => clearInterval(pollTimer.current);
-  }, [live, loadAll]);
+  }, [live, runPoll]);
+
+  function startLive() {
+    setLiveJobs([]);
+    setLive(true);
+  }
+
+  function stopLive() {
+    setLive(false);
+    setPolling(false);
+  }
 
   function logAndOpen(job) {
     window.open(job.url, "_blank", "noopener,noreferrer");
@@ -107,22 +124,53 @@ export default function JobsPage() {
     });
   }
 
-  function toggleLive() {
-    setLive(l => !l);
-    setNewCount(0);
-  }
-
   const loading  = resolved < SOURCES.length && jobs.length === 0;
   const cutoff   = RECENCY.find(r => r.key === recency)?.days ?? Infinity;
   const filtered = cutoff === Infinity
     ? jobs
-    : jobs.filter(j => {
-        if (!j.postedAt) return true;
-        return (Date.now() - new Date(j.postedAt)) / 864e5 <= cutoff;
-      });
+    : jobs.filter(j => !j.postedAt || (Date.now() - new Date(j.postedAt)) / 864e5 <= cutoff);
   const visible  = filtered.slice(0, page * PAGE_SIZE);
   const hasMore  = visible.length < filtered.length;
 
+  // Live view
+  if (live) {
+    return (
+      <div className="db-root">
+        <AppNav />
+        <main className="db-main">
+          <div className="live-screen">
+            <div className="live-screen-header">
+              <span className="live-dot live-dot-pulse" />
+              <span className="live-screen-title">Watching for new listings</span>
+              {polling && <span className="live-scanning">scanning...</span>}
+            </div>
+            <p className="live-screen-sub">
+              Polls {SOURCES.length} sources every 5 minutes. You will hear a sound when a new job appears.
+            </p>
+            <button className="live-stop-btn" onClick={stopLive}>Stop Watching</button>
+
+            {liveJobs.length === 0 ? (
+              <div className="live-waiting">
+                <div className="live-waiting-ring" />
+                <p>Waiting for new jobs...</p>
+              </div>
+            ) : (
+              <div className="live-found">
+                <p className="live-found-label">{liveJobs.length} new {liveJobs.length === 1 ? "listing" : "listings"} found</p>
+                <div className="jobs-grid">
+                  {liveJobs.map(job => (
+                    <JobCard key={job.id} job={job} onApply={logAndOpen} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Browse view
   return (
     <div className="db-root">
       <AppNav />
@@ -134,7 +182,7 @@ export default function JobsPage() {
             <p className="jobs-sub">
               {loading
                 ? `Scanning sources... ${resolved}/${SOURCES.length} done`
-                : `${visible.length} real listings - direct from company boards, no promoted`}
+                : `${filtered.length} real listings - direct from company boards, no promoted`}
             </p>
           </div>
 
@@ -150,25 +198,17 @@ export default function JobsPage() {
                 </button>
               ))}
             </div>
-
-            <button
-              className={`jobs-live-btn${live ? " live-on" : ""}`}
-              onClick={toggleLive}
-              title="Polls all sources every 5 min and plays a sound when new jobs appear"
-            >
-              <span className={`live-dot${live ? " live-dot-pulse" : ""}`} />
-              {live ? "Live" : "Go Live"}
-              {newCount > 0 && <span className="live-badge">{newCount}</span>}
+            <button className="jobs-live-btn" onClick={startLive}>
+              <span className="live-dot" />
+              Go Live
             </button>
           </div>
         </div>
 
         <div className="jobs-grid">
-          {loading && (
-            Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="job-card job-card-skeleton" />
-            ))
-          )}
+          {loading && Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="job-card job-card-skeleton" />
+          ))}
           {visible.map(job => (
             <JobCard key={job.id} job={job} onApply={logAndOpen} />
           ))}

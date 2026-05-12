@@ -214,6 +214,95 @@
 
 .job-apply-btn:hover { opacity: 0.85; }
 
+/* ── Live screen ── */
+
+.live-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 48px;
+  gap: 16px;
+  text-align: center;
+}
+
+.live-screen-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.live-screen-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--db-text);
+}
+
+.live-scanning {
+  font-size: 12px;
+  color: var(--db-text-faint);
+  font-style: italic;
+}
+
+.live-screen-sub {
+  font-size: 13px;
+  color: var(--db-text-dim);
+  max-width: 380px;
+  margin: 0;
+}
+
+.live-stop-btn {
+  padding: 7px 20px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--db-border);
+  background: transparent;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.live-stop-btn:hover {
+  border-color: var(--db-alert);
+  color: var(--db-alert);
+}
+
+.live-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-top: 32px;
+  color: var(--db-text-faint);
+  font-size: 13px;
+}
+
+.live-waiting-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--db-border);
+  border-top-color: #4cad7c;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.live-found {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.live-found-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4cad7c;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
 /* ── Load more ── */
 
 .jobs-load-more {
