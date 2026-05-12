@@ -4,12 +4,17 @@ import JobCard from "../components/jobs/JobCard.jsx";
 import { fetchSiliconHarbour } from "../lib/jobs/sources/siliconHarbour.js";
 import { fetchGreenhouse }     from "../lib/jobs/sources/greenhouse.js";
 import { fetchAshby }          from "../lib/jobs/sources/ashby.js";
-import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
 import { passesFilter }        from "../lib/jobs/filter.js";
 import { useApplications }     from "../hooks/useApplications.js";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchWorkday];
+const RECENCY = [
+  { key: "all",  label: "All",         days: Infinity },
+  { key: "3d",   label: "Last 3 days", days: 3 },
+  { key: "week", label: "This week",   days: 7 },
+];
+
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby];
 const POLL_MS   = 5 * 60 * 1000;
 const PAGE_SIZE = 10;
 
@@ -24,17 +29,6 @@ function dedup(arr) {
 
 function byNewest(a, b) {
   return new Date(b.postedAt ?? 0) - new Date(a.postedAt ?? 0);
-}
-
-function jobCountry(job) {
-  return job.category === "canadian" || job.currency === "CAD" ? "canadian" : "us";
-}
-
-function jobLevel(title) {
-  const t = (title ?? "").toLowerCase();
-  if (/\bjunior\b|\bentry\b|\bjr\b|\bnew.?grad\b|\bintern\b/.test(t)) return "junior";
-  if (/\bsenior\b|\bsr\b|\blead\b|\bstaff\b|\bprincipal\b/.test(t)) return "senior";
-  return "mid";
 }
 
 // Swap public/sounds/new-job.mp3 to change the notification sound.
@@ -55,9 +49,7 @@ async function fetchAll() {
 export default function JobsPage() {
   const [jobs,      setJobs]      = useState([]);
   const [resolved,  setResolved]  = useState(0);
-  const [filterCountry, setFilterCountry] = useState("all");
-  const [filterSalary,  setFilterSalary]  = useState("all");
-  const [filterExp,     setFilterExp]     = useState("all");
+  const [recency,   setRecency]   = useState("all");
   const [page,      setPage]      = useState(1);
   const [live,      setLive]      = useState(false);
   const [liveJobs,  setLiveJobs]  = useState([]);
@@ -133,10 +125,10 @@ export default function JobsPage() {
   }
 
   const loading  = resolved < SOURCES.length && jobs.length === 0;
-  const filtered = jobs
-    .filter(j => filterCountry === "all" || jobCountry(j) === filterCountry)
-    .filter(j => filterSalary  === "all" || Boolean(j.salary))
-    .filter(j => filterExp     === "all" || jobLevel(j.title) === filterExp);
+  const cutoff   = RECENCY.find(r => r.key === recency)?.days ?? Infinity;
+  const filtered = cutoff === Infinity
+    ? jobs
+    : jobs.filter(j => !j.postedAt || (Date.now() - new Date(j.postedAt)) / 864e5 <= cutoff);
   const visible  = filtered.slice(0, page * PAGE_SIZE);
   const hasMore  = visible.length < filtered.length;
 
@@ -190,39 +182,21 @@ export default function JobsPage() {
             <p className="jobs-sub">
               {loading
                 ? `Scanning sources... ${resolved}/${SOURCES.length} done`
-                : `${filtered.length} remote listings, sourced directly from company boards`}
+                : `${filtered.length} real listings - direct from company boards, no promoted`}
             </p>
           </div>
 
           <div className="jobs-controls">
             <div className="jobs-filter-row">
-              <select
-                className="jobs-filter-select"
-                value={filterCountry}
-                onChange={e => { setFilterCountry(e.target.value); setPage(1); }}
-              >
-                <option value="all">All countries</option>
-                <option value="canadian">Canadian</option>
-                <option value="us">US</option>
-              </select>
-              <select
-                className="jobs-filter-select"
-                value={filterSalary}
-                onChange={e => { setFilterSalary(e.target.value); setPage(1); }}
-              >
-                <option value="all">Any salary</option>
-                <option value="listed">Salary listed</option>
-              </select>
-              <select
-                className="jobs-filter-select"
-                value={filterExp}
-                onChange={e => { setFilterExp(e.target.value); setPage(1); }}
-              >
-                <option value="all">All levels</option>
-                <option value="junior">Junior</option>
-                <option value="mid">Mid</option>
-                <option value="senior">Senior</option>
-              </select>
+              {RECENCY.map(r => (
+                <button
+                  key={r.key}
+                  className={`jobs-filter-btn${recency === r.key ? " active" : ""}`}
+                  onClick={() => { setRecency(r.key); setPage(1); }}
+                >
+                  {r.label}
+                </button>
+              ))}
             </div>
             <button className="jobs-live-btn" onClick={startLive}>
               <span className="live-dot" />
@@ -239,7 +213,7 @@ export default function JobsPage() {
             <JobCard key={job.id} job={job} onApply={logAndOpen} />
           ))}
           {!loading && filtered.length === 0 && (
-            <p className="jobs-empty">No listings matched these filters.</p>
+            <p className="jobs-empty">No listings matched this filter - try "All".</p>
           )}
         </div>
 

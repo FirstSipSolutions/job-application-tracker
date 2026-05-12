@@ -6,13 +6,6 @@ function isRemoteLoc(str) {
   return /remote|anywhere|worldwide/i.test(str);
 }
 
-function detectCurrency(str) {
-  if (!str) return null;
-  if (/CAD|C\$|CA\$/.test(str)) return "CAD";
-  if (/\$|USD/.test(str)) return "USD";
-  return null;
-}
-
 function extractSalary(text) {
   if (!text) return null;
   const clean = text.replace(/<[^>]+>/g, " ");
@@ -55,43 +48,37 @@ export function fromJobicy(job) {
 
 // ── Greenhouse ───────────────────────────────────────────────────────────────
 
-export function fromGreenhouse(job, companyName, category) {
+export function fromGreenhouse(job, companyName) {
   const loc = job.location?.name ?? "";
   // Greenhouse rarely includes salary in the base listing — check metadata array
   const salaryMeta = (job.metadata ?? []).find(m =>
     /salary|compensation|pay/i.test(m.name) && m.value
   );
-  const salary = salaryMeta?.value ?? null;
   return {
     id:            `gh-${job.id}`,
     title:         job.title ?? "",
     company:       companyName,
     location:      loc,
     workplaceType: isRemoteLoc(loc) ? "Remote" : loc,
-    salary,
-    currency:      detectCurrency(salary),
+    salary:        salaryMeta?.value ?? null,
     postedAt:      job.first_published ?? job.updated_at,
     url:           job.absolute_url ?? "",
     source:        "Greenhouse",
-    category,
   };
 }
 
 // ── Ashby ─────────────────────────────────────────────────────────────────────
 
-export function fromAshby(job, companyName, category) {
-  const salary = job.compensation?.compensationTierGuide ?? extractSalary(job.descriptionHtml ?? "");
+export function fromAshby(job, companyName) {
   return {
     id:            `ab-${job.id}`,
     title:         job.title ?? "",
     company:       companyName,
     location:      job.location ?? "",
     workplaceType: job.isRemote || /remote/i.test(job.workplaceType ?? "") ? "Remote" : job.workplaceType ?? "",
-    salary,
-    currency:      detectCurrency(salary),
+    salary:        job.compensation?.compensationTierGuide ?? extractSalary(job.descriptionHtml ?? ""),
     postedAt:      job.publishedAt,
     url:           job.jobUrl ?? "",
     source:        "Ashby",
-    category,
   };
 }

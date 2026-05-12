@@ -62,6 +62,7 @@ export default function AppNav({ onAddApp, onAddEvent }) {
 
         <div className="db-nav-links">
           <Link to="/app"          className={`db-nav-link${active("/app")}`}>Dashboard</Link>
+          <Link to="/app/jobs"     className={`db-nav-link${active("/app/jobs")}`}>Jobs</Link>
           <Link to="/app/calendar" className={`db-nav-link${active("/app/calendar")}`}>Calendar</Link>
           <Link to="/app/settings" className={`db-nav-link${active("/app/settings")}`}>Settings</Link>
         </div>

@@ -65,6 +65,7 @@
 }
 
 .db-nav-brand {
+  flex: 1;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -220,13 +221,12 @@
 
 /* ── Nav action buttons ── */
 
-/* fixed width keeps the nav right-side stable no matter which button is showing */
 .db-nav-actions {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  min-width: 220px;
 }
 
 .db-nav-add {
