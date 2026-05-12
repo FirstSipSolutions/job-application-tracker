@@ -56,10 +56,14 @@
   font-size: 12px;
   font-weight: 500;
   border: 1px solid var(--db-border);
-  background: transparent;
+  background: var(--db-surface);
   color: var(--db-text);
   cursor: pointer;
   transition: border-color 0.12s;
+}
+.jobs-filter-select option {
+  background: var(--db-surface);
+  color: var(--db-text);
 }
 .jobs-filter-select:hover { border-color: var(--db-blue); }
 .jobs-filter-select:focus { outline: none; border-color: var(--db-blue); }

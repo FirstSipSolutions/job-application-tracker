@@ -8,7 +8,10 @@ export default function AppNav({ onAddApp, onAddEvent }) {
   const { pathname }       = useLocation();
   const navigate           = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
-  const dragRef = useRef(null);
+  const [navState, setNavState] = useState("pinned");
+  const dragRef  = useRef(null);
+  const lastY    = useRef(0);
+  const delta    = useRef(0);
 
   useEffect(() => {
     if (!dragRef.current) return;
@@ -46,6 +49,41 @@ export default function AppNav({ onAddApp, onAddEvent }) {
     dragRef.current.setAttribute("href", "javascript:" + js);
   }, []);
 
+  useEffect(() => {
+    const DOWN_THRESHOLD = 60;
+    const UP_THRESHOLD   = 15;
+    const PIN_THRESHOLD  = 80;
+
+    function onScroll() {
+      const y    = window.scrollY;
+      const diff = y - lastY.current;
+      lastY.current = y;
+
+      if (diff > 0 && delta.current < 0) delta.current = 0;
+      if (diff < 0 && delta.current > 0) delta.current = 0;
+      delta.current += diff;
+
+      setNavState(prev => {
+        if (y < PIN_THRESHOLD) {
+          delta.current = 0;
+          return "pinned";
+        }
+        if ((prev === "pinned" || prev === "visible") && delta.current >= DOWN_THRESHOLD) {
+          delta.current = 0;
+          return "hidden";
+        }
+        if (prev === "hidden" && delta.current <= -UP_THRESHOLD) {
+          delta.current = 0;
+          return "visible";
+        }
+        return prev;
+      });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   function active(path) {
     return pathname === path ? " active" : "";
   }
@@ -57,7 +95,7 @@ export default function AppNav({ onAddApp, onAddEvent }) {
 
   return (
     <>
-      <nav className="db-nav">
+      <nav className={`db-nav db-nav--${navState}`}>
         <Link to="/" className="db-nav-brand">AppTrack</Link>
 
         <div className="db-nav-links">
