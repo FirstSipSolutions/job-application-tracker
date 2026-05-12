@@ -1,6 +1,7 @@
 import { fetchSiliconHarbour } from "./sources/siliconHarbour.js";
 import { fetchGreenhouse }    from "./sources/greenhouse.js";
 import { fetchAshby }         from "./sources/ashby.js";
+import { fetchWorkday }       from "./sources/workday.js";
 import { passesFilter }       from "./filter.js";
 
 const CACHE_KEY = "cv-vault-jobs-v1";
@@ -35,6 +36,7 @@ export async function fetchJobs({ fresh = false } = {}) {
     fetchSiliconHarbour(),
     fetchGreenhouse(),
     fetchAshby(),
+    fetchWorkday(),
   ]);
 
   const all = results.flatMap(r => r.status === "fulfilled" ? r.value : []);
