@@ -94,7 +94,7 @@ export function useResumes() {
     // Signed URL expires in 60 seconds. Never expose a public URL for resumes
     // since they contain personal information. The download flag adds
     // Content-Disposition: attachment so the browser saves the file instead of opening it.
-    // download can be a filename string — Supabase uses it for Content-Disposition.
+    // download can be a filename string, Supabase uses it for Content-Disposition.
     const { data } = await supabase.storage
       .from("resumes")
       .createSignedUrl(file_path, 60, download ? { download } : undefined);

@@ -10,16 +10,20 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X, Plus } from "lucide-react";
 
+// Viewed entries are jobs the user clicked but did not apply to.
+// They count toward "viewed" only, not toward total applications.
+const isApplied = x => x.status && x.status !== "Viewed";
+
 const DEFS = {
-  "total-apps":    { label: "Total Applications", color: "var(--db-blue)",  val: a => a.length },
+  "viewed":        { label: "Jobs Viewed",        color: "#facc15",         val: a => a.filter(x => x.status === "Viewed").length },
+  "total-apps":    { label: "Total Applications", color: "#9ca3af",         val: a => a.filter(isApplied).length },
   "interviews":    { label: "Active Interviews",  color: "var(--db-green)", val: a => a.filter(x => x.status === "Interview").length },
   "rejections":    { label: "Rejections",         color: "var(--db-alert)", val: a => a.filter(x => x.status === "Rejected").length },
-  "offers":        { label: "Offers",             color: "#f59e0b",         val: a => a.filter(x => x.status === "Offer").length },
-  "response-rate": { label: "Response Rate",      color: "var(--db-blue)",  val: a => { const t = a.length; return t ? Math.round(a.filter(x => x.status !== "Applied").length / t * 100) + "%" : "—"; } },
-  "this-week":     { label: "Applied This Week",  color: "var(--db-green)", val: a => { const cut = Date.now() - 7 * 864e5; return a.filter(x => new Date(x.date + "T00:00:00") >= cut).length; } },
+  "offers":        { label: "Offers",             color: "#29ABE2",         val: a => a.filter(x => x.status === "Offer").length },
+  "this-week":     { label: "Applied This Week",  color: "var(--db-green)", val: a => { const cut = Date.now() - 7 * 864e5; return a.filter(x => isApplied(x) && new Date(x.date + "T00:00:00") >= cut).length; } },
 };
 
-const DEFAULT = ["total-apps", "interviews", "rejections", "response-rate"];
+const DEFAULT = ["viewed", "total-apps", "interviews", "offers"];
 
 function load() {
   try { return (JSON.parse(localStorage.getItem("wg-order")) || DEFAULT).filter(id => id in DEFS); }
@@ -53,7 +57,7 @@ function Card({ id, apps, editing, vertical, onRemove }) {
   );
 }
 
-// floating clone rendered during drag — keeps original slot visible
+// floating clone rendered during drag, keeps original slot visible
 function Ghost({ id, apps, vertical }) {
   const def = DEFS[id];
   return (
