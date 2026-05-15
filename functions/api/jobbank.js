@@ -12,7 +12,7 @@ const HEADERS = {
 
 export async function onRequest(context) {
   const term = new URL(context.request.url).searchParams.get("term") || "software developer";
-  const upstream = `${BASE}?term=${encodeURIComponent(term)}&rows=100`;
+  const upstream = `${BASE}?searchstring=${encodeURIComponent(term)}&rows=100`;
   try {
     const res = await fetch(upstream, {
       headers: { "User-Agent": "CVVault/1.0", "Accept": "application/atom+xml" },

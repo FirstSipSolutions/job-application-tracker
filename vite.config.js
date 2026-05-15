@@ -23,7 +23,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => {
           const term = new URLSearchParams(path.split("?")[1] || "").get("term") || "software developer";
-          return `/jobsearch/feed/jobSearchRSSfeed?term=${encodeURIComponent(term)}&rows=100`;
+          return `/jobsearch/feed/jobSearchRSSfeed?searchstring=${encodeURIComponent(term)}&rows=100`;
         },
       },
     },
