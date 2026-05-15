@@ -12,6 +12,7 @@ import { fetchWeWorkRemotely } from "../lib/jobs/sources/weWorkRemotely.js";
 import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
 import { fetchLever }          from "../lib/jobs/sources/lever.js";
 import { fetchJobBank }        from "../lib/jobs/sources/jobBank.js";
+import { fetchArbeitnow }      from "../lib/jobs/sources/arbeitnow.js";
 import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
@@ -19,7 +20,7 @@ import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
 import "../styles/jobs.css";
 
-const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchJobBank, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchWeWorkRemotely, fetchRemoteOk];
+const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchJobBank, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchWeWorkRemotely, fetchRemoteOk, fetchArbeitnow];
 const POLL_MS        = 5 * 60 * 1000;
 const PAGE_SIZE      = 10;
 const CLASSIFY_BATCH = 24; // 4 chunks of 6 -- stays under Groq free-tier token-per-minute limit
