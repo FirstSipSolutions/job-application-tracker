@@ -17,9 +17,9 @@
 | Folder       | What's in it                                                        |
 | ------------ | ------------------------------------------------------------------- |
 | `dashboard/` | All dashboard components                                            |
-| `layout/`    | AppNav — top nav bar present on every authenticated page            |
+| `layout/`    | AppNav, top nav bar present on every authenticated page            |
 | `modals/`    | AddApplicationModal, AddEventModal, LogoutModal                     |
-| `effects/`   | Aurora — animated gradient background used on landing and login     |
+| `effects/`   | Aurora, animated gradient background used on landing and login     |
 | `ui/`        | ThemeToggle                                                         |
 
 ### dashboard/
@@ -29,7 +29,7 @@
 | `ActivityChart.jsx`     | Applications over time bar chart                        |
 | `JobApplicationBoard.jsx` | Kanban-style application status board                 |
 | `ProfileCard.jsx`       | User profile summary card                               |
-| `ResumeBoard.jsx`       | CV Vault — upload, manage, and track resume versions    |
+| `ResumeBoard.jsx`       | CV Vault, upload, manage, and track resume versions    |
 | `HireHub.jsx`           | Job board quick-links with custom link support          |
 | `UpcomingPanel.jsx`     | Upcoming interviews and follow-ups (next 7 days)        |
 | `WidgetGrid.jsx`        | Draggable stats widgets bar                             |
@@ -38,8 +38,8 @@
 
 | File                 | What it does                                     |
 | -------------------- | ------------------------------------------------ |
-| `useApplications.js` | Applications CRUD — reads and writes to Supabase |
-| `useResumes.js`      | CV Vault CRUD — resumes with usage stats         |
+| `useApplications.js` | Applications CRUD, reads and writes to Supabase |
+| `useResumes.js`      | CV Vault CRUD, resumes with usage stats         |
 | `useAuth.js`         | Current Supabase auth session                    |
 
 ## Context

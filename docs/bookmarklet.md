@@ -30,10 +30,10 @@ Done. You only do this once.
 
 | Site        | Company | Role | Notes                                      |
 | ----------- | ------- | ---- | ------------------------------------------ |
-| Lever       | Yes     | Yes  | Company from URL path — reliable           |
-| Greenhouse  | Yes     | Yes  | Company from URL path — reliable           |
-| Workable    | Yes     | Yes  | Company from URL path — reliable           |
-| Workday     | Yes     | Yes  | Company from subdomain — reliable          |
+| Lever       | Yes     | Yes  | Company from URL path, reliable           |
+| Greenhouse  | Yes     | Yes  | Company from URL path, reliable           |
+| Workable    | Yes     | Yes  | Company from URL path, reliable           |
+| Workday     | Yes     | Yes  | Company from subdomain, reliable          |
 | LinkedIn    | Partial | Yes  | Role from page title. Company works on individual job pages with format "Role at Company" in the title. Search/feed pages won't work. |
 | Other sites | Partial | Yes  | Falls back to page title parsing and hostname |
 
@@ -49,7 +49,7 @@ and parses the company from it. No bookmarklet needed for this flow.
 The bookmark was saved before a fix was applied. Re-drag the button from the nav.
 
 **Company shows a wrong name**
-The site uses an unusual URL structure. Edit the company field manually — it is
+The site uses an unusual URL structure. Edit the company field manually, it is
 always editable after auto-fill.
 
 **Role is blank or wrong**

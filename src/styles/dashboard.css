@@ -62,9 +62,23 @@
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--db-border);
   border-radius: 4px;
+  will-change: transform;
+  transform: translateY(0);
+  /* reveal: spring overshoot */
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.db-nav--pinned,
+.db-nav--visible {
+  transform: translateY(0);
+}
+/* hide: fast ease-out, no spring */
+.db-nav--hidden {
+  transform: translateY(calc(-100% - 32px));
+  transition: transform 0.22s cubic-bezier(0.4, 0, 1, 1);
 }
 
 .db-nav-brand {
+  flex: 1;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -126,8 +140,8 @@
 .db-profile  { grid-column: 1;     grid-row: 1; }
 .db-activity-chart { grid-column: 2;     grid-row: 1; }
 .db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
-.db-resume-board { grid-column: 1 / 4; grid-row: 2; }
-.db-app-board    { grid-column: 1 / 4; grid-row: 3; }
+.db-app-board    { grid-column: 1 / 4; grid-row: 2; }
+.db-resume-board { grid-column: 1 / 4; grid-row: 3; }
 
 
 /* ── Profile card ── */
@@ -220,13 +234,18 @@
 
 /* ── Nav action buttons ── */
 
-/* fixed width keeps the nav right-side stable no matter which button is showing */
 .db-nav-actions {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  min-width: 220px;
+}
+
+.db-nav-action-slot {
+  min-width: 160px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .db-nav-add {
@@ -478,6 +497,62 @@
   transition: color 0.12s, background 0.12s;
 }
 .upcoming-dismiss:hover { color: var(--db-alert); background: rgba(229,152,155,0.1); }
+
+/* ── Hot jobs (Up & Coming panel) ── */
+
+.hot-jobs-list { display: flex; flex-direction: column; gap: 6px; }
+
+.hot-job-row {
+  position: relative;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: var(--db-surface-2);
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+.hot-job-row:hover {
+  border-color: var(--db-accent);
+  background: var(--db-surface-3, var(--db-surface-2));
+}
+
+.hot-job-body    { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.hot-job-title   { font-size: 12px; color: var(--db-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hot-job-company { font-size: 11px; color: var(--db-text-faint); }
+
+.hot-job-hide {
+  position: absolute; top: 5px; right: 6px;
+  width: 14px; height: 14px;
+  border: none; border-radius: 3px; background: transparent;
+  color: var(--db-text-faint); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s, background 0.12s;
+  padding: 0;
+}
+.hot-job-row:hover .hot-job-hide { opacity: 1; }
+.hot-job-hide:hover { color: var(--db-alert); background: rgba(229,152,155,0.12); }
+
+.hot-job-timer {
+  display: flex; align-items: center; gap: 3px;
+  flex-shrink: 0;
+  font-size: 10px; font-weight: 600;
+  color: #f97316;
+  white-space: nowrap;
+}
+.hot-flame { color: #f97316; flex-shrink: 0; }
+
+.hot-jobs-more {
+  display: flex; justify-content: flex-end;
+  padding-top: 2px;
+}
+.hot-jobs-more a {
+  font-size: 11px; color: var(--db-text-faint);
+  text-decoration: none;
+  transition: color 0.12s;
+}
+.hot-jobs-more a:hover { color: var(--db-accent); }
 
 /* ── Vertical widget layout (sidebar) ── */
 

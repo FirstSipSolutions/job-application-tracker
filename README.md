@@ -17,6 +17,7 @@ Create `.env.local` with:
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
+VITE_GROQ_API_KEY=
 ```
 
 ## Stack
@@ -24,7 +25,11 @@ VITE_SUPABASE_ANON_KEY=
 - React 19 + Vite
 - React Router
 - Supabase (DB + Auth)
-- Tailwind CSS
+- Custom CSS
+- motion (animations)
+- Groq AI (job classification)
+- Recharts (dashboard charts)
+- dnd-kit (drag and drop)
 
 ## DSA in Practice
 
@@ -35,10 +40,3 @@ See [`docs/dsa.md`](docs/dsa.md) for full explanations with code samples.
 **Set (dismissed events)** — `src/context/EventsContext.jsx` — O(1) membership check on every panel render instead of O(N) array scan.
 
 **Set (URL pattern matching)** — `src/components/modals/AddApplicationModal.jsx` — O(1) subdomain and path lookups to extract company name from any job board URL.
-
-## Backlog
-
-- [ ] Toast notifications on all CRUD actions and auth errors
-- [x] 404 page + fallback route
-- [ ] Event edit and delete (calendar events are currently add-only)
-- [ ] Remove dead `onSubmit` prop from Login/Signup button components

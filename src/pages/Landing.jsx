@@ -15,7 +15,7 @@ export default function Landing() {
    // wait for Supabase to restore the session before deciding what to show
 
   if (user) return <Navigate to="/app" replace />;
-   // already logged in — skip the landing page entirely
+   // already logged in, skip the landing page entirely
 
   return (
     <div className="land-root">

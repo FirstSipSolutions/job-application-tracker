@@ -8,7 +8,10 @@ export default function AppNav({ onAddApp, onAddEvent }) {
   const { pathname }       = useLocation();
   const navigate           = useNavigate();
   const [showLogout, setShowLogout] = useState(false);
-  const dragRef = useRef(null);
+  const [navState, setNavState] = useState("pinned");
+  const dragRef  = useRef(null);
+  const lastY    = useRef(0);
+  const delta    = useRef(0);
 
   useEffect(() => {
     if (!dragRef.current) return;
@@ -46,6 +49,41 @@ export default function AppNav({ onAddApp, onAddEvent }) {
     dragRef.current.setAttribute("href", "javascript:" + js);
   }, []);
 
+  useEffect(() => {
+    const DOWN_THRESHOLD = 60;
+    const UP_THRESHOLD   = 15;
+    const PIN_THRESHOLD  = 80;
+
+    function onScroll() {
+      const y    = window.scrollY;
+      const diff = y - lastY.current;
+      lastY.current = y;
+
+      if (diff > 0 && delta.current < 0) delta.current = 0;
+      if (diff < 0 && delta.current > 0) delta.current = 0;
+      delta.current += diff;
+
+      setNavState(prev => {
+        if (y < PIN_THRESHOLD) {
+          delta.current = 0;
+          return "pinned";
+        }
+        if ((prev === "pinned" || prev === "visible") && delta.current >= DOWN_THRESHOLD) {
+          delta.current = 0;
+          return "hidden";
+        }
+        if (prev === "hidden" && delta.current <= -UP_THRESHOLD) {
+          delta.current = 0;
+          return "visible";
+        }
+        return prev;
+      });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   function active(path) {
     return pathname === path ? " active" : "";
   }
@@ -57,24 +95,27 @@ export default function AppNav({ onAddApp, onAddEvent }) {
 
   return (
     <>
-      <nav className="db-nav">
+      <nav className={`db-nav db-nav--${navState}`}>
         <Link to="/" className="db-nav-brand">AppTrack</Link>
 
         <div className="db-nav-links">
           <Link to="/app"          className={`db-nav-link${active("/app")}`}>Dashboard</Link>
+          <Link to="/app/jobs"     className={`db-nav-link${active("/app/jobs")}`}>Jobs</Link>
           <Link to="/app/calendar" className={`db-nav-link${active("/app/calendar")}`}>Calendar</Link>
           <Link to="/app/settings" className={`db-nav-link${active("/app/settings")}`}>Settings</Link>
         </div>
 
         <div className="db-nav-actions">
-          {pathname === "/app"          && <button className="db-nav-add"                   onClick={onAddApp}>+ Add Application</button>}
-          {pathname === "/app/calendar" && <button className="db-nav-add db-nav-add-green"  onClick={onAddEvent}>+ Add Event</button>}
-          {pathname === "/app/settings" && <button className="db-nav-add db-nav-add-red"    onClick={() => setShowLogout(true)}>Log out</button>}
+          <div className="db-nav-action-slot">
+            {pathname === "/app"          && <button className="db-nav-add"                   onClick={onAddApp}>+ Add Application</button>}
+            {pathname === "/app/calendar" && <button className="db-nav-add db-nav-add-green"  onClick={onAddEvent}>+ Add Event</button>}
+            {pathname === "/app/settings" && <button className="db-nav-add db-nav-add-red"    onClick={() => setShowLogout(true)}>Log out</button>}
+          </div>
           <a
             ref={dragRef}
             href="#"
             draggable
-            title="Drag to bookmarks bar — click on any job page to log it instantly"
+            title="Drag to bookmarks bar, then click on any job page to log it instantly"
             className="db-nav-bookmarklet"
           >
             ⚡ Log This Job

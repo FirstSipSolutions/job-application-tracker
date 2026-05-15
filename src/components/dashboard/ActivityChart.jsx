@@ -15,7 +15,8 @@ function buildChartData(apps) {
     });
     return {
       day: end.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      applied:    inBucket.length,
+      viewed:     inBucket.filter(a => a.status === "Viewed").length,
+      applied:    inBucket.filter(a => a.status !== "Viewed").length,
       interviews: inBucket.filter(a => a.status === "Interview" || a.status === "Offer").length,
     };
   });
@@ -28,6 +29,7 @@ export default function ActivityChart({ apps = [] }) {
 
   // raw hex required: CSS vars don't work in recharts props
   const colors = {
+    viewed:     "#facc15",
     applied:    "#abc4ff",
     interviews: dark ? "#4cad7c" : "#2e8a58",
     grid:       dark ? "rgba(255,255,255,0.05)" : "rgba(171,196,255,0.15)",
@@ -41,6 +43,7 @@ export default function ActivityChart({ apps = [] }) {
       <div className="db-card-sub">last 8 weeks</div>
 
       <div className="db-chart-legend">
+        <div className="db-legend-dot"><div className="db-dot" style={{ background: colors.viewed }} />Viewed</div>
         <div className="db-legend-dot"><div className="db-dot" style={{ background: colors.applied }} />Applied</div>
         <div className="db-legend-dot"><div className="db-dot" style={{ background: colors.interviews }} />Interviews</div>
       </div>
@@ -48,6 +51,10 @@ export default function ActivityChart({ apps = [] }) {
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
           <defs>
+            <linearGradient id="g-viewed" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%"  stopColor={colors.viewed}     stopOpacity={0.25} />
+              <stop offset="95%" stopColor={colors.viewed}     stopOpacity={0} />
+            </linearGradient>
             <linearGradient id="g-applied" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%"  stopColor={colors.applied}    stopOpacity={0.25} />
               <stop offset="95%" stopColor={colors.applied}    stopOpacity={0} />
@@ -64,6 +71,7 @@ export default function ActivityChart({ apps = [] }) {
             contentStyle={{ background: colors.tooltip, border: "1px solid var(--db-border)", borderRadius: 4, fontSize: 12 }}
             labelStyle={{ color: "var(--db-text)", fontWeight: 600 }}
           />
+          <Area type="monotone" dataKey="viewed"     stroke={colors.viewed}     strokeWidth={2} fill="url(#g-viewed)"     dot={false} />
           <Area type="monotone" dataKey="applied"    stroke={colors.applied}    strokeWidth={2} fill="url(#g-applied)"    dot={false} />
           <Area type="monotone" dataKey="interviews" stroke={colors.interviews} strokeWidth={2} fill="url(#g-interviews)" dot={false} />
         </AreaChart>
