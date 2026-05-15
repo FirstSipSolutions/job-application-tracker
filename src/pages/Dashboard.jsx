@@ -70,7 +70,7 @@ export default function Dashboard() {
 
           <div className="db-card db-sidebar">
             <div className="db-sidebar-section">
-              <div className="db-sidebar-title">Upcoming</div>
+              <div className="db-sidebar-title">New Today</div>
               <UpcomingPanel />
             </div>
             <div className="db-sidebar-section">

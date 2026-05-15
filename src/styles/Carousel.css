@@ -1,0 +1,200 @@
+/* Carousel component -- job card sliding view */
+
+.carousel-container {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--db-border);
+  border-radius: 10px;
+  padding: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--db-surface);
+  transition: border-color 0.15s;
+}
+
+.carousel-container:hover {
+  border-color: var(--db-blue);
+}
+
+.carousel-track {
+  display: flex;
+}
+
+.carousel-item {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--db-border);
+  border-radius: 8px;
+  background: var(--db-surface-2, var(--db-surface));
+  overflow: hidden;
+  cursor: grab;
+  min-height: 200px;
+  padding: 0 0 14px;
+  box-sizing: border-box;
+}
+
+.carousel-item:active {
+  cursor: grabbing;
+}
+
+.carousel-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 14px 10px;
+}
+
+.carousel-icon-glow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.carousel-icon-glow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.carousel-item-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--db-text-faint);
+  text-transform: uppercase;
+  margin-left: auto;
+}
+
+.carousel-item-content {
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.carousel-item-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--db-text);
+  line-height: 1.3;
+}
+
+.carousel-item-description {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--db-text-dim);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Tech tag chips on the stack slide */
+.carousel-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.carousel-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--db-surface);
+  color: var(--db-blue);
+  border: 1px solid var(--db-blue);
+}
+
+/* Apply button on the last slide */
+.carousel-action-btn {
+  margin-top: auto;
+  padding: 8px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #29ABE2;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-align: center;
+  width: 100%;
+  align-self: flex-end;
+}
+
+.carousel-action-btn:hover {
+  opacity: 0.85;
+}
+
+/* Prev / next arrow buttons -- bare icon, glow on hover, fade in on container hover */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--db-text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, filter 0.15s, color 0.15s;
+  pointer-events: none;
+  padding: 0;
+}
+
+.carousel-container:hover .carousel-arrow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.carousel-arrow:hover {
+  color: var(--db-blue);
+  filter: drop-shadow(0 0 6px var(--db-blue));
+}
+
+.carousel-arrow-prev { left: 4px; }
+.carousel-arrow-next { right: 4px; }
+
+/* Dot indicators */
+.carousel-indicators-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+.carousel-indicators {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.carousel-indicator {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 150ms;
+}
+
+.carousel-indicator.active {
+  background-color: var(--db-blue);
+  width: 16px;
+  border-radius: 3px;
+}
+
+.carousel-indicator.inactive {
+  background-color: var(--db-border);
+}

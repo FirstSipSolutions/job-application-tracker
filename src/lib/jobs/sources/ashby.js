@@ -1,46 +1,44 @@
 import { fromAshby } from "../normalize.js";
 
 const COMPANIES = [
-  // Fullstack web / SaaS
-  { name: "Linear",        slug: "linear",       category: "devtools" },
-  { name: "Notion",        slug: "notion",       category: "devtools" },
-  { name: "Replit",        slug: "replit",       category: "devtools" },
-  { name: "Supabase",      slug: "supabase",     category: "devtools" },
-  { name: "PostHog",       slug: "posthog",      category: "devtools" },
-  { name: "Loom",          slug: "loom",         category: "devtools" },
-  { name: "Railway",       slug: "railway",      category: "devtools" },
-  { name: "Resend",        slug: "resend",       category: "devtools" },
-  { name: "Warp",          slug: "warp",         category: "devtools" },
-  { name: "Raycast",       slug: "raycast",      category: "devtools" },
-  { name: "Neon",          slug: "neon",         category: "devtools" },
-  { name: "Zapier",        slug: "zapier",       category: "devtools" },
-  // Fintech
-  { name: "Deel",          slug: "deel",         category: "fintech"  },
-  { name: "Ramp",          slug: "ramp",         category: "fintech"  },
-  { name: "Mercury",       slug: "mercury",      category: "fintech"  },
-  // Security
-  { name: "Vanta",         slug: "vanta",        category: "security" },
-  // AI-product (build web apps, hire fullstack)
-  { name: "Cursor",        slug: "anysphere",    category: "devtools" },
-  { name: "Perplexity",    slug: "perplexityai", category: "devtools" },
-  { name: "Cohere",        slug: "cohere",       category: "canadian" },
-  { name: "Mistral",       slug: "mistral",      category: "devtools" },
-  // More devtools / web infra
-  { name: "Render",        slug: "render",       category: "devtools" },
-  { name: "Fly.io",        slug: "fly",          category: "devtools" },
-  { name: "Turso",         slug: "turso",        category: "devtools" },
-  { name: "Clerk",         slug: "clerk",        category: "devtools" },
-  { name: "Doppler",       slug: "doppler",      category: "security" },
-  { name: "Infisical",     slug: "infisical",    category: "security" },
-  { name: "Tailscale",     slug: "tailscale",    category: "security" },
-  { name: "Sentry",        slug: "sentry",       category: "devtools" },
-  { name: "Retool",        slug: "retool",       category: "devtools" },
-  { name: "Deno",          slug: "deno",         category: "devtools" },
-  { name: "Netlify",       slug: "netlify",      category: "devtools" },
-  { name: "Codeium",       slug: "codeium",      category: "devtools" },
-  { name: "Stytch",        slug: "stytch",       category: "security" },
-  { name: "Expo",          slug: "expo",         category: "devtools" },
-  { name: "Liveblocks",    slug: "liveblocks",   category: "devtools" },
+  // ── Global-remote / known Canada-friendly ────────────────────────────────
+  { name: "Zapier",       slug: "zapier",      category: "global-remote" },
+  { name: "PostHog",      slug: "posthog",     category: "global-remote" },
+  { name: "Supabase",     slug: "supabase",    category: "global-remote" },
+  { name: "Sentry",       slug: "sentry",      category: "global-remote" },
+  { name: "Help Scout",   slug: "helpscout",   category: "global-remote" },
+  { name: "Deel",         slug: "deel",        category: "global-remote" },
+  // ── Dev tools ─────────────────────────────────────────────────────────────
+  { name: "Linear",       slug: "linear",      category: "devtools" },
+  { name: "Notion",       slug: "notion",      category: "devtools" },
+  { name: "Replit",       slug: "replit",      category: "devtools" },
+  { name: "Loom",         slug: "loom",        category: "devtools" },
+  { name: "Railway",      slug: "railway",     category: "devtools" },
+  { name: "Resend",       slug: "resend",      category: "devtools" },
+  { name: "Warp",         slug: "warp",        category: "devtools" },
+  { name: "Raycast",      slug: "raycast",     category: "devtools" },
+  { name: "Neon",         slug: "neon",        category: "devtools" },
+  { name: "Render",       slug: "render",      category: "devtools" },
+  { name: "Clerk",        slug: "clerk",       category: "devtools" },
+  { name: "Mistral",      slug: "mistral",     category: "devtools" },
+  // ── Security ──────────────────────────────────────────────────────────────
+  { name: "Vanta",        slug: "vanta",       category: "security" },
+  { name: "Doppler",      slug: "doppler",     category: "security" },
+  { name: "Infisical",    slug: "infisical",   category: "security" },
+  { name: "Stytch",       slug: "stytch",      category: "security" },
+  // ── Fintech ───────────────────────────────────────────────────────────────
+  { name: "Ramp",         slug: "ramp",        category: "fintech"  },
+  { name: "Mercury",      slug: "mercury",     category: "fintech"  },
+  // ── Canadian ──────────────────────────────────────────────────────────────
+  { name: "Cohere",       slug: "cohere",      category: "canadian" },
+  { name: "Clearco",      slug: "clearco",     category: "canadian" },
+  { name: "Trulioo",      slug: "trulioo",     category: "canadian" },
+  { name: "Relay",        slug: "relay",       category: "canadian" },
+  { name: "Miovision",    slug: "miovision",   category: "canadian" },
+  { name: "1Password",    slug: "1password",   category: "canadian" }, // confirmed on Ashby (was dead GH slug)
+  { name: "Procurify",    slug: "procurify",   category: "canadian" }, // spend mgmt, Vancouver, confirmed Ashby
+  { name: "Klue",         slug: "klue",        category: "canadian" }, // competitive intel, Vancouver, confirmed Ashby
+  { name: "Loopio",       slug: "loopio",      category: "canadian" }, // RFP software, Toronto, confirmed Ashby
 ];
 
 const TIMEOUT_MS = 8000;

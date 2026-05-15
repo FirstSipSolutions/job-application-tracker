@@ -81,6 +81,27 @@
 }
 .jobs-filter-reset:hover { color: var(--db-blue); }
 
+.jobs-shuffle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--db-border);
+  background: transparent;
+  color: var(--db-text-dim);
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+.jobs-shuffle-btn:hover { color: var(--db-text); border-color: var(--db-blue); }
+.jobs-shuffle-btn--active {
+  color: var(--db-blue);
+  border-color: var(--db-blue);
+  background: rgba(var(--db-blue-rgb, 99, 140, 255), 0.1);
+}
+
 /* ── Live button ── */
 
 .jobs-live-btn {
@@ -144,34 +165,46 @@
   gap: 12px;
 }
 
-.jobs-empty {
+.jobs-empty-state {
   grid-column: 1 / -1;
-  font-size: 13px;
-  color: var(--db-text-faint);
-  padding: 32px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
   text-align: center;
 }
 
-/* ── Job card ── */
-
-.job-card {
-  background: var(--db-surface);
-  border: 1px solid var(--db-border);
-  border-radius: 6px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color 0.15s;
+.jobs-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--db-text);
+  margin: 0;
 }
 
-.job-card:hover { border-color: var(--db-blue); }
+.jobs-empty-sub {
+  font-size: 13px;
+  color: var(--db-text-dim);
+  margin: 0;
+  max-width: 340px;
+}
+
+.jobs-empty-reset {
+  margin-top: 4px;
+  padding: 6px 16px;
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Job card -- now a carousel, see Carousel.css for card styles ── */
 
 .job-card-skeleton {
-  min-height: 148px;
+  min-height: 260px;
   background: var(--db-surface);
   border: 1px solid var(--db-border);
-  border-radius: 6px;
+  border-radius: 10px;
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
@@ -179,71 +212,6 @@
   0%, 100% { opacity: 0.5; }
   50%       { opacity: 1;   }
 }
-
-.job-card-badges {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.job-badge {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.job-badge-remote {
-  color: #4cad7c;
-}
-
-.job-badge-age {
-  font-size: 10px;
-  color: var(--db-text-faint);
-  margin-left: auto;
-}
-
-.job-salary {
-  font-size: 13px;
-  font-weight: 700;
-  color: #4cad7c;
-  margin-top: 2px;
-}
-
-.job-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--db-text);
-  margin: 0;
-  line-height: 1.35;
-}
-
-.job-company {
-  font-size: 12px;
-  color: var(--db-blue);
-  font-weight: 500;
-}
-
-.job-location {
-  font-size: 11px;
-  color: var(--db-text-faint);
-}
-
-.job-apply-btn {
-  margin-top: auto;
-  padding: 7px 0;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #29ABE2;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  text-align: center;
-}
-
-.job-apply-btn:hover { opacity: 0.85; }
 
 /* ── Live screen ── */
 
