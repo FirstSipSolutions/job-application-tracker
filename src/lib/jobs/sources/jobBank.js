@@ -23,7 +23,7 @@ function parseAtom(xml) {
     const location = (summary.match(/Location:<\/strong>\s*([^<]+)/)                              ?? [])[1]?.trim() ?? "";
     const salary   = (summary.match(/Salary:<\/strong>\s*([^<]+)/)                               ?? [])[1]?.trim() ?? null;
     const company  = (summary.match(/Employer:<\/strong>\s*([^<]+)/)                             ?? [])[1]?.trim() ?? null;
-    if (title && url) entries.push({ title, url, postedAt, location, salary, company });
+    if (title && url) entries.push({ title, url, postedAt, location, salary, company, summary });
   }
   return entries;
 }

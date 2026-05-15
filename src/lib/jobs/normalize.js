@@ -300,13 +300,17 @@ export function fromHimalayas(job) {
 // ── Job Bank Canada (Government of Canada) ────────────────────────────────────
 
 export function fromJobBank(job) {
-  const loc = job.location ?? "";
+  const loc     = job.location ?? "";
+  const summary = job.summary  ?? "";
+  // Job Bank uses "Work arrangement: Telecommuting" or "Various locations" for remote roles.
+  // Check both the extracted location field and the full summary HTML.
+  const isRemote = /telecommut|remote|work\s+from\s+home|various\s+loc/i.test(loc + " " + summary);
   return {
     id:                 `jb-${job.url.split("/").pop()}`,
     title:              job.title ?? "",
     company:            job.company ?? "",
-    location:           loc,
-    workplaceType:      /telecommut|remote/i.test(loc) ? "Remote" : loc,
+    location:           isRemote ? "Remote, Canada" : loc,
+    workplaceType:      isRemote ? "Remote" : loc,
     salary:             job.salary ?? null,
     currency:           detectCurrency(job.salary ?? ""),
     postedAt:           job.postedAt ?? null,
