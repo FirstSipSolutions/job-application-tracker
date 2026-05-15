@@ -271,11 +271,16 @@ function mapHimalayasSeniority(arr) {
 }
 
 export function fromHimalayas(job) {
-  const locs   = (job.locationRestrictions ?? []).join(", ") || "Canada Remote";
+  const restrictions = job.locationRestrictions ?? [];
+  const locs   = restrictions.join(", ") || "Remote";
   const salary = job.minSalary && job.maxSalary
     ? `$${Math.round(job.minSalary / 1000)}k - $${Math.round(job.maxSalary / 1000)}k ${job.currency ?? "USD"}`
     : null;
   const slug   = (job.applicationLink ?? job.guid ?? "").split("/").filter(Boolean).pop() ?? "";
+  // Detect Canada eligibility from locationRestrictions rather than relying on the query filter.
+  // Empty restrictions = worldwide = open. Explicit Canada/NA/Global = open.
+  const canadaOpen = restrictions.length === 0
+    || restrictions.some(r => /canada|worldwide|anywhere|north america|global/i.test(r));
   return {
     id:                 `hm-${job.companySlug ?? "x"}-${slug}`,
     title:              job.title ?? "",
@@ -288,12 +293,30 @@ export function fromHimalayas(job) {
     url:                job.applicationLink ?? job.guid ?? "",
     source:             "Himalayas",
     category:           "remote",
-    // country=CA in the API query guarantees Canada eligibility
-    canadaOpen:         true,
-    _canadaSource:      "source",
-    // Himalayas declares seniority directly -- use it as a pre-Groq scoring signal
+    canadaOpen,
+    _canadaSource:      canadaOpen ? "source" : undefined,
     sourceExp:          mapHimalayasSeniority(job.seniority),
     descriptionSnippet: toSnippet(job.description ?? job.excerpt ?? ""),
+  };
+}
+
+// ── Arbeitnow ─────────────────────────────────────────────────────────────────
+
+export function fromArbeitnow(job) {
+  const tags = (job.tags ?? []).join(" ");
+  return {
+    id:                 `an-${job.slug}`,
+    title:              job.title ?? "",
+    company:            job.company_name ?? "",
+    location:           job.location || "Remote",
+    workplaceType:      "Remote",
+    salary:             null,
+    currency:           null,
+    postedAt:           job.created_at ? new Date(job.created_at * 1000).toISOString() : null,
+    url:                job.url ?? "",
+    source:             "Arbeitnow",
+    category:           "remote",
+    descriptionSnippet: toSnippet((job.description ?? "") + " " + tags),
   };
 }
 

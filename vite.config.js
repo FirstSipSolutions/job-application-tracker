@@ -8,7 +8,7 @@ export default defineConfig({
       "/api/himalayas": {
         target: "https://himalayas.app",
         changeOrigin: true,
-        rewrite: () => "/jobs/api/search?country=CA&sort=recent&limit=100",
+        rewrite: () => "/jobs/api/search?sort=recent&limit=100",
       },
       "/api/dns": {
         target: "https://digitalnovascotia.com",
