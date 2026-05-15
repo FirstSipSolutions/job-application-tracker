@@ -297,6 +297,26 @@ export function fromHimalayas(job) {
   };
 }
 
+// ── Job Bank Canada (Government of Canada) ────────────────────────────────────
+
+export function fromJobBank(job) {
+  const loc = job.location ?? "";
+  return {
+    id:                 `jb-${job.url.split("/").pop()}`,
+    title:              job.title ?? "",
+    company:            job.company ?? "",
+    location:           loc,
+    workplaceType:      /telecommut|remote/i.test(loc) ? "Remote" : loc,
+    salary:             job.salary ?? null,
+    currency:           detectCurrency(job.salary ?? ""),
+    postedAt:           job.postedAt ?? null,
+    url:                job.url ?? "",
+    source:             "Job Bank",
+    category:           "canadian",
+    descriptionSnippet: null,
+  };
+}
+
 // ── RemoteOK ──────────────────────────────────────────────────────────────────
 
 export function fromRemoteOk(job) {

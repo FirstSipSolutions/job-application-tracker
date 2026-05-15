@@ -18,6 +18,14 @@ export default defineConfig({
           return `/wp-json/wp/v2/job_portal?per_page=100&status=publish&page=${page}`;
         },
       },
+      "/api/jobbank": {
+        target: "https://www.jobbank.gc.ca",
+        changeOrigin: true,
+        rewrite: (path) => {
+          const term = new URLSearchParams(path.split("?")[1] || "").get("term") || "software developer";
+          return `/jobsearch/feed/jobSearchRSSfeed?term=${encodeURIComponent(term)}&rows=100`;
+        },
+      },
     },
   },
 });

@@ -128,7 +128,7 @@ export function isRemote(job) {
   const loc = job.location ?? "";
   const combined = `${wt} ${loc}`;
   if (/\bon[- ]?site\b|\bhybrid\b|\bin[- ]?office\b|\bin[- ]?person\b/i.test(combined)) return false;
-  return /remote|anywhere|worldwide/i.test(combined);
+  return /remote|anywhere|worldwide|telecommut/i.test(combined);
 }
 
 export function isTech(job) {
