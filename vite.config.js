@@ -3,4 +3,21 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      "/api/himalayas": {
+        target: "https://himalayas.app",
+        changeOrigin: true,
+        rewrite: () => "/jobs/api/search?country=CA&sort=recent&limit=100",
+      },
+      "/api/dns": {
+        target: "https://digitalnovascotia.com",
+        changeOrigin: true,
+        rewrite: (path) => {
+          const page = new URLSearchParams(path.split("?")[1] || "").get("page") || "1";
+          return `/wp-json/wp/v2/job_portal?per_page=100&status=publish&page=${page}`;
+        },
+      },
+    },
+  },
 });
