@@ -2,15 +2,26 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import AppNav from "../components/layout/AppNav.jsx";
 import JobCard from "../components/jobs/JobCard.jsx";
 import { fetchSiliconHarbour } from "../lib/jobs/sources/siliconHarbour.js";
+import { fetchDigitalNS }      from "../lib/jobs/sources/digitalNovascotia.js";
 import { fetchGreenhouse }     from "../lib/jobs/sources/greenhouse.js";
 import { fetchAshby }          from "../lib/jobs/sources/ashby.js";
-import { passesFilter, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getSeniority, TECH_OPTIONS, SENIORITY_OPTIONS } from "../lib/jobs/filter.js";
-import { useApplications }     from "../hooks/useApplications.js";
+import { fetchHimalayas }      from "../lib/jobs/sources/himalayas.js";
+import { fetchJobicy }         from "../lib/jobs/sources/jobicy.js";
+import { fetchRemotive }       from "../lib/jobs/sources/remotive.js";
+import { fetchWeWorkRemotely } from "../lib/jobs/sources/weWorkRemotely.js";
+import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
+import { fetchLever }          from "../lib/jobs/sources/lever.js";
+import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
+import { useApplications }           from "../hooks/useApplications.js";
+import { classifyJobs }              from "../lib/llm/classifyJobs.js";
+import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
+import { Shuffle } from "lucide-react";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby];
-const POLL_MS   = 5 * 60 * 1000;
-const PAGE_SIZE = 10;
+const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchWeWorkRemotely, fetchRemoteOk];
+const POLL_MS        = 5 * 60 * 1000;
+const PAGE_SIZE      = 10;
+const CLASSIFY_BATCH = 24; // 4 chunks of 6 -- stays under Groq free-tier token-per-minute limit
 
 const POSTED_BANDS = [
   { value: 1,  label: "Today" },
@@ -19,17 +30,48 @@ const POSTED_BANDS = [
   { value: 14, label: "Last 14 days" },
 ];
 
+const PROVINCES = [
+  { value: "ON", label: "Ontario" },
+  { value: "BC", label: "British Columbia" },
+  { value: "AB", label: "Alberta" },
+  { value: "QC", label: "Quebec" },
+  { value: "NS", label: "Nova Scotia" },
+  { value: "NB", label: "New Brunswick" },
+  { value: "MB", label: "Manitoba" },
+  { value: "SK", label: "Saskatchewan" },
+  { value: "NL", label: "Newfoundland" },
+  { value: "PE", label: "PEI" },
+];
+
+const PROVINCE_PATTERNS = {
+  ON: /\bontario\b|\btoronto\b|\bottawa\b|\bmississauga\b|\bwaterloo\b|\bhamilton\b/i,
+  BC: /\bbritish columbia\b|\bvancouver\b|\bvictoria\b|\bkelowna\b|\bsurrey\b/i,
+  AB: /\balberta\b|\bcalgary\b|\bedmonton\b/i,
+  QC: /\bquebec\b|\bmontreal\b|\bgatineau\b/i,
+  NS: /\bnova\s+scotia\b|\bhalifax\b/i,
+  NB: /\bnew\s+brunswick\b|\bmoncton\b|\bfredericton\b/i,
+  MB: /\bmanitoba\b|\bwinnipeg\b/i,
+  SK: /\bsaskatchewan\b|\bregina\b|\bsaskatoon\b/i,
+  NL: /\bnewfoundland\b|\bst\.?\s*john.s\b/i,
+  PE: /\bprince\s+edward\s+island\b|\bpei\b|\bcharlottetown\b/i,
+};
+
+// canadaOpen field is set by Groq (classifyJobs.js).
+// Falls back to the regex-based isCanadaEligible when Groq hasn't run yet.
+function canadaOK(job) {
+  if (job.canadaOpen !== undefined) return job.canadaOpen;
+  return isCanadaEligible(job); // pre-Groq fallback
+}
+
 function matchesRegion(job, region) {
-  if (region === "ca-elig-any") return isCanadaEligible(job);
-  if (region === "ca-elig-us")  return isCanadaEligible(job) && getCountry(job) === "US";
-  if (region === "ca-elig-eu")  return isCanadaEligible(job) && getCountry(job) === "EU";
-  if (region === "ca-elig-uk")  return isCanadaEligible(job) && getCountry(job) === "UK";
-  if (region === "canada")      return isCanadaJob(job);
-  if (region === "all-us")      return getCountry(job) === "US";
-  if (region === "all-eu")      return getCountry(job) === "EU";
-  if (region === "all-uk")      return getCountry(job) === "UK";
-  if (region === "global")      return getCountry(job) === "Global";
-  return true;
+  // "province" acts as Canada-wide at the region level; the province sub-filter
+  // narrows further inside the useMemo.
+  if (region === "canada" || region === "province") {
+    return isCanadaJob(job) || job.category === "canadian";
+  }
+  if (region === "ca-us")     return canadaOK(job) && getCountry(job) === "US";
+  if (region === "ca-global") return canadaOK(job) && (getCountry(job) === "Global" || getCountry(job) === null);
+  return true; // "all"
 }
 
 function dedup(arr) {
@@ -41,12 +83,100 @@ function dedup(arr) {
   });
 }
 
+// Ranks jobs so the most hirable ones surface first.
+// Canadian companies and global-remote teams come before ambiguous US postings.
+// Within the same tier, fresher postings win.
+function scoreJob(job) {
+  let score = 0;
+
+  // groqExp is the primary seniority signal -- Groq read the actual description.
+  // sourceExp is a pre-Groq signal from sources that declare seniority directly (Himalayas).
+  // Title patterns are the fallback for jobs neither Groq nor the source has classified yet.
+  const exp   = job.groqExp ?? job.sourceExp;
+  const title = job.title ?? "";
+  if (exp === "0-2") {
+    score += 40;
+  } else if (exp === "2-5") {
+    score += 15;
+  } else if (exp === "5+") {
+    score -= 40;
+  } else {
+    // No exp signal yet -- use title keywords as a rough proxy
+    if      (/\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) score += 35;
+    else if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) score += 15;
+    else if (/\bstaff\b|\bprincipal\b|\bdistinguished\b|\bhead\s+of\b|\bvp\b|\bdirector\b/i.test(title)) score -= 55;
+    else if (/\bsenior\b|\bsr\.?\b|\blead\b/i.test(title)) score -= 30;
+  }
+
+  // Canada confidence
+  if (job.category === "canadian")           score += 30;
+  else if (job._canadaSource === "source")   score += 27;
+  else if (job.source === "Jobicy")          score += 24;
+  else if (job.category === "global-remote") score += 20;
+  else if (job.canadaOpen === true)          score += 12;
+  else if (job.canadaOpen === false)         score -= 20;
+
+  // Quality signals
+  if (job.salary)             score += 8;
+  if (job.descriptionSnippet) score += 3;
+
+  // US-only location penalty when Canada status unknown
+  if (job.canadaOpen === undefined && job.category !== "canadian" && job.category !== "global-remote") {
+    const loc = (job.location ?? "").toLowerCase();
+    if (/\bus\b|\busa\b|united states|san francisco|new york|seattle|austin|boston|los angeles|chicago/i.test(loc)
+      && !/canada|worldwide|global/i.test(loc)) score -= 10;
+  }
+
+  // Recency
+  const days = (Date.now() - new Date(job.postedAt ?? 0)) / 864e5;
+  if      (days <= 1)  score += 15;
+  else if (days <= 3)  score += 10;
+  else if (days <= 7)  score +=  5;
+
+  return score;
+}
+
+function byScore(a, b) {
+  return scoreJob(b) - scoreJob(a);
+}
+
 function byNewest(a, b) {
   return new Date(b.postedAt ?? 0) - new Date(a.postedAt ?? 0);
 }
 
+// Deterministic per-job hash for shuffle -- same shuffleKey always gives the same order.
+function jobSeed(seed, id) {
+  let h = seed * 2654435761;
+  for (let i = 0; i < id.length; i++) {
+    h = Math.imul(h ^ id.charCodeAt(i), 0x9e3779b9);
+  }
+  return (h ^ h >>> 16) >>> 0;
+}
+
 function ping() {
   try { new Audio("/sounds/new-job.mp3").play(); } catch { /* sound is optional */ }
+}
+
+// ── Jobs cache ────────────────────────────────────────────────────────────────
+// Persists the last known job list so the page loads instantly on re-nav.
+// Groq data (canadaOpen, groqStack, groqExp) is baked into the cached objects
+// so it survives across visits without re-classifying.
+const JOBS_CACHE_KEY = "cv-vault-jobs-v4"; // bumped - seniority gates before Canada
+
+function readJobsCache() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(JOBS_CACHE_KEY) ?? "null");
+    if (!raw) return [];
+    return (raw.jobs ?? []).filter(j => j.postedAt && (Date.now() - new Date(j.postedAt)) / 864e5 <= 20);
+  } catch { return []; }
+}
+
+function writeJobsCache(jobs) {
+  try {
+    localStorage.setItem(JOBS_CACHE_KEY, JSON.stringify({ jobs: jobs.slice(0, 250), at: Date.now() }));
+  } catch {
+    try { localStorage.removeItem(JOBS_CACHE_KEY); } catch {}
+  }
 }
 
 async function fetchAll() {
@@ -60,37 +190,99 @@ async function fetchAll() {
 }
 
 export default function JobsPage() {
-  const [jobs,      setJobs]      = useState([]);
-  const [resolved,  setResolved]  = useState(0);
-  const [region,    setRegion]    = useState("ca-elig-any");
-  const [posted,    setPosted]    = useState(0);
-  const [tech,      setTech]      = useState("");
-  const [seniority, setSeniority] = useState("");
-  const [page,      setPage]      = useState(1);
-  const [live,      setLive]      = useState(false);
-  const [liveJobs,  setLiveJobs]  = useState([]);
-  const [polling,   setPolling]   = useState(false);
-  const seenUrls  = useRef(new Set());
-  const pollTimer = useRef(null);
+  const [jobs,       setJobs]      = useState([]);
+  const [resolved,   setResolved]  = useState(0);
+  const [region,     setRegion]    = useState("canada");
+  const [province,   setProvince]  = useState("");
+  const [provider,   setProvider]  = useState("");
+  const [posted,     setPosted]    = useState(0);
+  const [tech,       setTech]      = useState("");
+  const [expLevel,   setExpLevel]  = useState("");
+  const [shuffleKey, setShuffleKey] = useState(0);
+  const [page,       setPage]      = useState(1);
+  const [live,        setLive]        = useState(false);
+  const [liveJobs,    setLiveJobs]    = useState([]);
+  const [polling,     setPolling]     = useState(false);
+  const [aiFiltering, setAiFiltering] = useState(false);
+  const seenUrls       = useRef(new Set());
+  const classifiedUrls = useRef(new Set());
+  const pollTimer      = useRef(null);
   const { addApp } = useApplications();
 
-  // Initial load, progressive per source so the page fills as fetches finish.
   useEffect(() => {
     let active = true;
     let done   = 0;
+    const collected = [];
+
+    // Show cached jobs instantly on every nav - no blank page while sources load.
+    // Groq fields (canadaOpen, groqStack, groqExp) are baked into cached objects
+    // so filters work immediately without re-classifying.
+    const cached    = readJobsCache();
+    const cachedMap = new Map(cached.map(j => [j.url, j]));
+    if (cached.length > 0) {
+      cached.forEach(j => {
+        seenUrls.current.add(j.url);
+        if (j.canadaOpen !== undefined || j.groqStack || j.groqExp) {
+          classifiedUrls.current.add(j.url);
+        }
+      });
+      setJobs(applyMemory(cached.sort(byScore)));
+    }
+
     SOURCES.forEach(fn => {
       fn()
         .then(raw => {
           if (!active) return;
-          const fresh = raw.filter(passesFilter);
+          const fresh    = raw.filter(passesFilter);
+          const noRemote = raw.filter(j => !isRemote(j)).length;
+          const noTech   = raw.filter(j => isRemote(j) && !isTech(j)).length;
+          const stale    = raw.filter(j => isRemote(j) && isTech(j) && !isFresh(j)).length;
+          console.log(`[Source] ${fn.name}: ${raw.length} raw -> ${fresh.length} passed (dropped: ${noRemote} not-remote, ${noTech} not-tech, ${stale} stale)`);
           fresh.forEach(j => seenUrls.current.add(j.url));
-          setJobs(prev => dedup([...prev, ...fresh]).sort(byNewest));
+          // Restore cached Groq fields so scoring works before Groq re-runs
+          const enriched = fresh.map(j => {
+            const hit = cachedMap.get(j.url);
+            return hit ? { ...j, canadaOpen: j.canadaOpen ?? hit.canadaOpen, groqStack: j.groqStack ?? hit.groqStack, groqExp: j.groqExp ?? hit.groqExp } : j;
+          });
+          collected.push(...enriched);
+          // Merge with remaining cached jobs not yet replaced by fresh source data
+          setJobs(dedup([...collected, ...cached]).sort(byScore));
         })
-        .catch(() => {})
+        .catch(err => console.error(`[Source] ${fn.name} failed:`, err))
         .finally(() => {
           if (!active) return;
           done++;
           setResolved(done);
+
+          if (done === SOURCES.length) {
+            const base       = dedup(collected).sort(byScore);
+            const firstBatch = base.slice(0, CLASSIFY_BATCH);
+            setJobs(base);
+            writeJobsCache(base); // persist for next visit
+
+            // Hot jobs for Dashboard "New Today" panel
+            const hotJobs = base
+              .filter(j => j.postedAt && (Date.now() - new Date(j.postedAt)) < 864e5)
+              .slice(0, 12)
+              .map(j => ({ title: j.title, company: j.company, url: j.url, postedAt: j.postedAt, source: j.source }));
+            try { localStorage.setItem("cv-vault-hot-jobs", JSON.stringify({ jobs: hotJobs, savedAt: Date.now() })); } catch {}
+
+            // Only classify jobs Groq hasn't seen yet
+            const toClassify = firstBatch.filter(j => !classifiedUrls.current.has(j.url));
+            if (toClassify.length === 0) return;
+            setAiFiltering(true);
+            classifyJobs(toClassify).then(scored => {
+              if (!active) return;
+              scored.forEach(j => classifiedUrls.current.add(j.url));
+              const m = new Map(scored.map(j => [j.url, j]));
+              setJobs(prev => {
+                const updated = applyMemory(prev.map(j => m.get(j.url) ?? j));
+                writeJobsCache(updated); // update cache with fresh Groq data
+                return updated;
+              });
+              setAiFiltering(false);
+            });
+          }
         });
     });
     return () => { active = false; };
@@ -129,35 +321,82 @@ export default function JobsPage() {
 
   function logAndOpen(job) {
     window.open(job.url, "_blank", "noopener,noreferrer");
+    markApplied(job.company); // strongest Canada signal: you clicked Apply
     addApp({
       url:     job.url,
       company: job.company,
       role:    job.title,
       status:  "Viewed",
       date:    new Date().toISOString().slice(0, 10),
-      notes:   `Via ${job.source}`,
+      notes:   [
+        `Via ${job.source}`,
+        job.groqStack                ? `Stack: ${job.groqStack}`       : null,
+        job.groqExp                  ? `Exp: ${job.groqExp} yrs`       : null,
+        job.salary                   ? `Salary: ${job.salary}`         : null,
+        job.descriptionSnippet       ? job.descriptionSnippet.slice(0, 300) : null,
+      ].filter(Boolean).join(" | "),
     });
   }
 
+  const providers = useMemo(() => {
+    const set = new Set(jobs.map(j => j.source).filter(Boolean));
+    return [...set].sort();
+  }, [jobs]);
+
   const filtered = useMemo(() => {
-    return jobs.filter(j => {
-      if (!matchesRegion(j, region)) return false;
-      if (posted > 0 && getDaysOld(j) > posted) return false;
-      if (tech && getTechStack(j) !== tech) return false;
-      if (seniority && getSeniority(j) !== seniority) return false;
-      return true;
-    });
-  }, [jobs, region, posted, tech, seniority]);
+    const sortFn = shuffleKey > 0
+      ? (a, b) => jobSeed(shuffleKey, a.url ?? a.id) - jobSeed(shuffleKey, b.url ?? b.id)
+      : byScore;
+    return jobs
+      .filter(j => {
+        if (!matchesRegion(j, region)) return false;
+        if (region === "province" && province) {
+          const re = PROVINCE_PATTERNS[province];
+          if (re && !re.test(`${j.location ?? ""} ${j.workplaceType ?? ""}`)) return false;
+        }
+        if (provider && j.source !== provider) return false;
+        if (posted > 0 && getDaysOld(j) > posted) return false;
+        if (tech) {
+          const s = getTechStack(j);
+          const tags = getTechTags(j);
+          if (s !== tech && !tags.includes(tech)) return false;
+        }
+        if (expLevel) {
+          const e = getExperienceLevel(j);
+          if (e !== null && e !== expLevel) return false;
+          if (e === null && expLevel === "0-2" && /\b(senior|sr\.|staff|principal|head\s+of|vp)\b/i.test(j.title ?? "")) return false;
+        }
+        return true;
+      })
+      .sort(sortFn);
+  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey]);
 
   function resetFilters() {
-    setRegion("ca-elig-any");
+    setRegion("canada");
+    setProvince("");
+    setProvider("");
     setPosted(0);
     setTech("");
-    setSeniority("");
+    setExpLevel("");
+    setShuffleKey(0);
     setPage(1);
   }
 
-  const filtersActive = region !== "ca-elig-any" || posted > 0 || tech !== "" || seniority !== "";
+  const filtersActive = region !== "canada" || province !== "" || provider !== "" || posted > 0 || tech !== "" || expLevel !== "" || shuffleKey > 0;
+
+  function handleLoadMore() {
+    const nextPage  = page + 1;
+    setPage(nextPage);
+    // Classify whatever is about to become visible that hasn't been seen by Groq yet
+    const nextSlice   = filtered.slice(page * PAGE_SIZE, nextPage * PAGE_SIZE);
+    const toClassify  = nextSlice.filter(j => !classifiedUrls.current.has(j.url));
+    if (toClassify.length === 0) return;
+    classifyJobs(toClassify).then(scored => {
+      scored.forEach(j => classifiedUrls.current.add(j.url));
+      const m = new Map(scored.map(j => [j.url, j]));
+      setJobs(prev => applyMemory(prev.map(j => m.get(j.url) ?? j)));
+    });
+  }
 
   const loading = resolved < SOURCES.length && jobs.length === 0;
   const visible = filtered.slice(0, page * PAGE_SIZE);
@@ -211,9 +450,11 @@ export default function JobsPage() {
             <p className="jobs-sub">
               {loading
                 ? `Scanning sources... ${resolved}/${SOURCES.length} done`
-                : filtersActive
-                  ? `${filtered.length} of ${jobs.length} listings match`
-                  : `${jobs.length} listings`}
+                : aiFiltering
+                  ? `AI filtering ${jobs.length} listings...`
+                  : filtersActive
+                    ? `${filtered.length} of ${jobs.length} listings match`
+                    : `${filtered.length} listings`}
             </p>
           </div>
 
@@ -222,23 +463,31 @@ export default function JobsPage() {
               <select
                 className="jobs-filter-select"
                 value={region}
-                onChange={(e) => { setRegion(e.target.value); setPage(1); }}
-                aria-label="Country"
+                onChange={(e) => { setRegion(e.target.value); setProvince(""); setPage(1); }}
+                aria-label="Region"
               >
-                <optgroup label="Hiring Canadians">
-                  <option value="ca-elig-any">Any country</option>
-                  <option value="ca-elig-us">US (hires Canadians)</option>
-                  <option value="ca-elig-eu">EU (hires Canadians)</option>
-                  <option value="ca-elig-uk">UK (hires Canadians)</option>
-                </optgroup>
-                <optgroup label="Other">
-                  <option value="canada">Canada only</option>
-                  <option value="all-us">All US</option>
-                  <option value="all-eu">All EU</option>
-                  <option value="all-uk">All UK</option>
-                  <option value="global">Global only</option>
-                </optgroup>
+                <option value="canada">Canada wide</option>
+                <option value="province">By province...</option>
+                <option disabled>──────────</option>
+                <option value="ca-us">US hires Canadians</option>
+                <option value="ca-global">Global hires Canadians</option>
+                <option disabled>──────────</option>
+                <option value="all">All remote</option>
               </select>
+
+              {region === "province" && (
+                <select
+                  className="jobs-filter-select"
+                  value={province}
+                  onChange={(e) => { setProvince(e.target.value); setPage(1); }}
+                  aria-label="Province"
+                >
+                  <option value="">All provinces</option>
+                  {PROVINCES.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+              )}
 
               <select
                 className="jobs-filter-select"
@@ -266,15 +515,36 @@ export default function JobsPage() {
 
               <select
                 className="jobs-filter-select"
-                value={seniority}
-                onChange={(e) => { setSeniority(e.target.value); setPage(1); }}
-                aria-label="Seniority"
+                value={expLevel}
+                onChange={(e) => { setExpLevel(e.target.value); setPage(1); }}
+                aria-label="Experience level"
               >
                 <option value="">Any level</option>
-                {SENIORITY_OPTIONS.map(s => (
-                  <option key={s} value={s}>{s}</option>
+                {EXPERIENCE_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
+
+              <select
+                className="jobs-filter-select"
+                value={provider}
+                onChange={(e) => { setProvider(e.target.value); setPage(1); }}
+                aria-label="Job source"
+              >
+                <option value="">All sources</option>
+                {providers.map(p => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+
+              <button
+                className={`jobs-shuffle-btn${shuffleKey > 0 ? " jobs-shuffle-btn--active" : ""}`}
+                onClick={() => { setShuffleKey(k => k + 1); setPage(1); }}
+                title="Shuffle order"
+                aria-label="Shuffle job order"
+              >
+                <Shuffle size={14} />
+              </button>
 
               {filtersActive && (
                 <button className="jobs-filter-reset" onClick={resetFilters}>
@@ -297,13 +567,27 @@ export default function JobsPage() {
             <JobCard key={job.id} job={job} onApply={logAndOpen} />
           ))}
           {!loading && filtered.length === 0 && (
-            <p className="jobs-empty">No listings match. Try widening the filters or hit Reset.</p>
+            <div className="jobs-empty-state">
+              <p className="jobs-empty-title">No jobs in this category</p>
+              <p className="jobs-empty-sub">
+                {tech      && `No ${tech} roles match your other filters. `}
+                {expLevel === "0-2" && !tech && `Entry-level postings are limited -- try Any level. `}
+                {expLevel === "5+" && !tech && `Try Mid or Any level to see more. `}
+                {posted > 0 && `Try a wider date range. `}
+                {!tech && !expLevel && !posted && `Try "All remote" or reset filters.`}
+              </p>
+              {filtersActive && (
+                <button className="jobs-filter-reset jobs-empty-reset" onClick={resetFilters}>
+                  Reset filters
+                </button>
+              )}
+            </div>
           )}
         </div>
 
         {hasMore && (
           <div className="jobs-load-more">
-            <button className="jobs-load-more-btn" onClick={() => setPage(p => p + 1)}>
+            <button className="jobs-load-more-btn" onClick={handleLoadMore}>
               Load more ({filtered.length - visible.length} remaining)
             </button>
           </div>
