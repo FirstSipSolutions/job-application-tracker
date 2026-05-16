@@ -11,8 +11,14 @@ const COMPANIES = [
   // ── Canadian companies ────────────────────────────────────────────────────
   { name: "Wealthsimple",   slug: "wealthsimple",   category: "canadian" }, // fintech, Toronto
   { name: "PointClickCare", slug: "pointclickcare", category: "canadian" }, // healthcare SaaS, Mississauga
+  { name: "Clio",           slug: "clio",           category: "canadian" }, // legal SaaS, Vancouver
+  { name: "Jobber",         slug: "jobber",         category: "canadian" }, // field service mgmt, Edmonton
+  { name: "Vendasta",       slug: "vendasta",       category: "canadian" }, // digital agency platform, Saskatoon
+  { name: "Thinkific",      slug: "thinkific",      category: "canadian" }, // online course platform, Vancouver
   // ── Global-remote ─────────────────────────────────────────────────────────
   { name: "Toptal",         slug: "toptal",         category: "global-remote" }, // fully remote, worldwide
+  { name: "Buffer",         slug: "buffer",         category: "global-remote" }, // social media tools, fully remote
+  { name: "Doist",          slug: "doist",          category: "global-remote" }, // Todoist/Twist, fully remote
 ];
 
 const BASE       = "https://api.lever.co/v0/postings";
