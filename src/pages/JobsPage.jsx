@@ -69,7 +69,8 @@ function matchesRegion(job, region) {
   // "province" acts as Canada-wide at the region level; the province sub-filter
   // narrows further inside the useMemo.
   if (region === "canada" || region === "province") {
-    return isCanadaJob(job) || job.category === "canadian";
+    // Include source-confirmed or Groq-confirmed Canada-open jobs (e.g. Himalayas worldwide, Remotive NA)
+    return isCanadaJob(job) || job.category === "canadian" || job.canadaOpen === true;
   }
   if (region === "ca-us")     return canadaOK(job) && getCountry(job) === "US";
   if (region === "ca-global") return canadaOK(job) && (getCountry(job) === "Global" || getCountry(job) === null);
@@ -199,7 +200,7 @@ export default function JobsPage() {
   const [provider,   setProvider]  = useState("");
   const [posted,     setPosted]    = useState(0);
   const [tech,       setTech]      = useState("");
-  const [expLevel,   setExpLevel]  = useState("");
+  const [expLevel,   setExpLevel]  = useState("jr-mid");
   const [shuffleKey, setShuffleKey] = useState(0);
   const [page,       setPage]      = useState(1);
   const [live,        setLive]        = useState(false);
@@ -353,8 +354,12 @@ export default function JobsPage() {
       .filter(j => {
         if (!matchesRegion(j, region)) return false;
         if (region === "province" && province) {
-          const re = PROVINCE_PATTERNS[province];
-          if (re && !re.test(`${j.location ?? ""} ${j.workplaceType ?? ""}`)) return false;
+          const locStr = `${j.location ?? ""} ${j.workplaceType ?? ""}`;
+          // Exclude only if a different province is explicitly named; otherwise include
+          // Canada-wide remote jobs that don't specify any province.
+          const namesDifferentProv = Object.entries(PROVINCE_PATTERNS)
+            .some(([code, p]) => code !== province && p.test(locStr));
+          if (namesDifferentProv) return false;
         }
         if (provider && j.source !== provider) return false;
         if (posted > 0 && getDaysOld(j) > posted) return false;
@@ -365,8 +370,14 @@ export default function JobsPage() {
         }
         if (expLevel) {
           const e = getExperienceLevel(j);
-          if (e !== null && e !== expLevel) return false;
-          if (e === null && expLevel === "0-2" && /\b(senior|sr\.|staff|principal|head\s+of|vp)\b/i.test(j.title ?? "")) return false;
+          const seniorTitle = /\b(senior|sr\.?|lead|staff|principal|head\s+of|vp|architect|director|manager)\b/i;
+          if (expLevel === "jr-mid") {
+            if (e === "5+") return false;
+            if (e === null && seniorTitle.test(j.title ?? "")) return false;
+          } else {
+            if (e !== null && e !== expLevel) return false;
+            if (e === null && expLevel === "0-2" && seniorTitle.test(j.title ?? "")) return false;
+          }
         }
         return true;
       })
@@ -379,12 +390,12 @@ export default function JobsPage() {
     setProvider("");
     setPosted(0);
     setTech("");
-    setExpLevel("");
+    setExpLevel("jr-mid");
     setShuffleKey(0);
     setPage(1);
   }
 
-  const filtersActive = region !== "canada" || province !== "" || provider !== "" || posted > 0 || tech !== "" || expLevel !== "" || shuffleKey > 0;
+  const filtersActive = region !== "canada" || province !== "" || provider !== "" || posted > 0 || tech !== "" || expLevel !== "jr-mid" || shuffleKey > 0;
 
   function handleLoadMore() {
     const nextPage  = page + 1;
