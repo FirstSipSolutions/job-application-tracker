@@ -171,7 +171,7 @@ export function isCanadaEligible(job) {
   // Explicit exclusions
   if (/\bus\s*[-/]?\s*only\b|united states only|usa only/i.test(loc)) return false;
   if (/us\s+citizen|us\s+work\s+authorization|authorized.*work.*us/i.test(loc)) return false;
-  if (/\beu\s*[-/]?\s*only\b|europe\s+only|\buk\s*[-/]?\s*only\b/i.test(loc)) return false;
+  if (/\beu\s*[-/]?\s*only\b|europe\s+only|\buk\s*[-/]?\s*only\b|\bemea\b|\bapac\b|asia\s+pacific/i.test(loc)) return false;
 
   // "Remote (US)", "Remote - US", "Remote, US", "US Remote", "Remote United States"
   if (/\bremote\s*[,(\-]\s*(us|usa|united states)\b/i.test(loc)) return false;
@@ -283,23 +283,46 @@ export function getExperienceLevel(job) {
   const snippet = job.descriptionSnippet ?? "";
   const title   = job.title ?? "";
 
-  const m = snippet.match(/(\d+)\+?\s*(?:[-–to]+\s*(\d+)\s*)?years?\s*(?:of\s+)?(?:experience|exp\b)/i);
+  // Explicit years in snippet -- most reliable pre-Groq signal.
+  // Second pattern catches "at least N years", "minimum N years", "over N years".
+  const m = snippet.match(/(\d+)(\+)?\s*(?:[-–to]+\s*(\d+)\s*)?years?\s*(?:of\s+)?(?:experience|exp\b)/i)
+         || snippet.match(/(?:at\s+least|minimum|min\.?|over)\s+(\d+)(\+)?\s*years?/i);
   if (m) {
-    const min = parseInt(m[1], 10);
+    const min     = parseInt(m[1], 10);
+    const hasPlus = !!m[2];
+    const max     = m[3] != null ? parseInt(m[3], 10) : null;
+    // "5+ years" or bare "5 years" → senior
+    if ((hasPlus && min >= 5) || min >= 5) return "5+";
+    if (max !== null) {
+      // It's a range like "2-5 years" or "1-3 years"
+      if (max <= 3) return "0-2";   // "1-3 years" → entry
+      if (min >= 4) return "5+";    // "4-7 years" → senior (min too high)
+      return "2-5";                  // "2-5", "3-5" → mid
+    }
+    // Single number, no range
     if (min <= 2) return "0-2";
-    if (min <= 5) return "2-5";
-    return "5+";
+    if (min >= 4) return "5+";  // "4 years" min is too high for jr/mid
+    return "2-5";
   }
 
+  // Entry-level keywords
   if (/new\s*grad|entry[- ]level|0\s*[-–]\s*[12]\s*year|no\s+experience\s+required/i.test(snippet + " " + title)) return "0-2";
+  if (/\bjunior\b|\bjr\.?\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) return "0-2";
 
-  // Do NOT infer "5+" from title words like Senior/Lead/Staff.
-  // A job titled "Senior Engineer" with no stated years is unknown - let it show everywhere.
+  // Mid-level keywords in title
+  if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) return "2-5";
+
+  // Senior-level keywords in title.
+  // Groq overrides this once it reads the full description. Title is the best
+  // pre-Groq signal -- "Senior Engineer" almost always means 5+ years required.
+  if (/\b(senior|sr\.?|staff|principal|distinguished|lead|head\s+of|vp|director|architect)\b/i.test(title)) return "5+";
+
   return null;
 }
 
 export const EXPERIENCE_OPTIONS = [
-  { value: "0-2", label: "0-2 yrs (Entry)" },
-  { value: "2-5", label: "2-5 yrs (Mid)" },
-  { value: "5+",  label: "5+ yrs (Senior)" },
+  { value: "jr-mid", label: "Jr/Mid (0-3 yrs)" },
+  { value: "0-2",    label: "0-2 yrs (Entry)" },
+  { value: "2-5",    label: "2-5 yrs (Mid)" },
+  { value: "5+",     label: "5+ yrs (Senior)" },
 ];

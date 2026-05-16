@@ -56,7 +56,7 @@ function remotiveCanadaOpen(location) {
   if (/canada/i.test(l)) return true;
   // US-only without Canada mentioned
   if (/\busa?\b|united states/i.test(l) && !/canada|north america/i.test(l)) return false;
-  if (/\beurope?\b|\beu\b|\buk\b|latin america/i.test(l)) return false;
+  if (/\beurope?\b|\beu\b|\buk\b|latin america|\bemea\b|\bapac\b|asia\s+pacific/i.test(l)) return false;
   return undefined; // ambiguous
 }
 
