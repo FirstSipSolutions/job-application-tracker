@@ -17,6 +17,8 @@ import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible,
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
 import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
+import { useProfile }                from "../context/ProfileContext.jsx";
+import { matchScore }                from "../lib/llm/parseProfile.js";
 import { Shuffle } from "lucide-react";
 import "../styles/jobs.css";
 
@@ -89,7 +91,7 @@ function dedup(arr) {
 // Ranks jobs so the most hirable ones surface first.
 // Canadian companies and global-remote teams come before ambiguous US postings.
 // Within the same tier, fresher postings win.
-function scoreJob(job) {
+function scoreJob(job, userProfile = null) {
   let score = 0;
 
   // groqExp is the primary seniority signal -- Groq read the actual description.
@@ -119,9 +121,21 @@ function scoreJob(job) {
   else if (job.canadaOpen === true)          score += 12;
   else if (job.canadaOpen === false)         score -= 20;
 
+  // Fullstack title bonus — matches user's target role
+  if (/\bfull[- ]?stack\b/i.test(title)) score += 12;
+
   // Quality signals
   if (job.salary)             score += 8;
+  if (job.groqSal)            score += 10; // Groq detected salary in description
   if (job.descriptionSnippet) score += 3;
+
+  // ATS-direct source bonus — these are real postings, not aggregator noise
+  const atsSource = ["Greenhouse","Lever","Ashby"].includes(job.source);
+  if (atsSource) score += 8;
+
+  // Aggregator penalty when canadaOpen not confirmed — high false-positive rate
+  const aggregator = ["RemoteOK","Arbeitnow","Jobicy"].includes(job.source);
+  if (aggregator && job.canadaOpen !== true && job.category !== "canadian") score -= 8;
 
   // US-only location penalty when Canada status unknown
   if (job.canadaOpen === undefined && job.category !== "canadian" && job.category !== "global-remote") {
@@ -136,11 +150,17 @@ function scoreJob(job) {
   else if (days <= 3)  score += 10;
   else if (days <= 7)  score +=  5;
 
+  // GitHub profile match — surfaces jobs that match user's actual stack
+  if (userProfile) {
+    const m = matchScore(job, userProfile);
+    if (m) score += Math.round(m.score * 0.3); // up to +30 for a perfect stack match
+  }
+
   return score;
 }
 
-function byScore(a, b) {
-  return scoreJob(b) - scoreJob(a);
+function byScore(profile = null) {
+  return (a, b) => scoreJob(b, profile) - scoreJob(a, profile);
 }
 
 function byNewest(a, b) {
@@ -211,6 +231,7 @@ export default function JobsPage() {
   const classifiedUrls = useRef(new Set());
   const pollTimer      = useRef(null);
   const { addApp } = useApplications();
+  const { userProfile } = useProfile();
 
   useEffect(() => {
     let active = true;
@@ -229,7 +250,7 @@ export default function JobsPage() {
           classifiedUrls.current.add(j.url);
         }
       });
-      setJobs(applyMemory(cached.sort(byScore)));
+      setJobs(applyMemory(cached.sort(byScore(userProfile))));
     }
 
     SOURCES.forEach(fn => {
@@ -249,7 +270,7 @@ export default function JobsPage() {
           });
           collected.push(...enriched);
           // Merge with remaining cached jobs not yet replaced by fresh source data
-          setJobs(dedup([...collected, ...cached]).sort(byScore));
+          setJobs(dedup([...collected, ...cached]).sort(byScore(userProfile)));
         })
         .catch(err => console.error(`[Source] ${fn.name} failed:`, err))
         .finally(() => {
@@ -258,7 +279,7 @@ export default function JobsPage() {
           setResolved(done);
 
           if (done === SOURCES.length) {
-            const base       = dedup(collected).sort(byScore);
+            const base       = dedup(collected).sort(byScore(userProfile));
             const firstBatch = base.slice(0, CLASSIFY_BATCH);
             setJobs(base);
             writeJobsCache(base); // persist for next visit
@@ -333,9 +354,11 @@ export default function JobsPage() {
       date:    new Date().toISOString().slice(0, 10),
       notes:   [
         `Via ${job.source}`,
+        job.postedAt                 ? `Posted: ${job.postedAt.slice(0, 10)}` : null,
         job.groqStack                ? `Stack: ${job.groqStack}`       : null,
         job.groqExp                  ? `Exp: ${job.groqExp} yrs`       : null,
         job.salary                   ? `Salary: ${job.salary}`         : null,
+        job.groqSal && !job.salary   ? `Salary mentioned in posting`   : null,
         job.descriptionSnippet       ? job.descriptionSnippet.slice(0, 300) : null,
       ].filter(Boolean).join(" | "),
     });
@@ -349,7 +372,7 @@ export default function JobsPage() {
   const filtered = useMemo(() => {
     const sortFn = shuffleKey > 0
       ? (a, b) => jobSeed(shuffleKey, a.url ?? a.id) - jobSeed(shuffleKey, b.url ?? b.id)
-      : byScore;
+      : byScore(userProfile);
     return jobs
       .filter(j => {
         if (!matchesRegion(j, region)) return false;
