@@ -3,12 +3,13 @@
 // Classifies jobs in chunks of 6. Results cached in localStorage by URL so
 // return visits cost 0 tokens for already-seen jobs.
 //
-// Each job gets three fields:
+// Each job gets four fields:
 //   canadaOpen — true if open to Canadian remote workers
 //   groqStack  — primary tech stack (React, Node, Python, etc.)
 //   groqExp    — experience required ("0-2" | "2-5" | "5+" | null)
+//   groqSal    — true if a salary or compensation range is mentioned
 //
-// Response format: array of objects [{c,s,e}, ...] — one per job in order.
+// Response format: array of objects [{c,s,e,sal}, ...] — one per job in order.
 // Per-job objects are robust to partial responses; parallel arrays break on
 // any off-by-one and corrupt everything after the misalignment.
 //
@@ -17,7 +18,7 @@
 
 const GROQ_URL      = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL         = "llama-3.1-8b-instant";
-const CACHE_KEY     = "cv-vault-groq-cache-v3"; // bumped — better chunking + per-job objects
+const CACHE_KEY     = "cv-vault-groq-cache-v4"; // bumped — added groqSal field
 const CACHE_TTL     = 7 * 24 * 60 * 60 * 1000;
 const CHUNK_SIZE    = 6; // small enough for 8b to stay accurate across all fields
 const DESC_CHARS    = 150; // shorter = ~half the tokens per chunk, stays under free-tier limit
@@ -51,11 +52,12 @@ async function classifyChunk(chunk, apiKey) {
   });
 
   const prompt =
-    `You are a job data extractor. For each job return one JSON object with three fields.\n\n` +
+    `You are a job data extractor. For each job return one JSON object with four fields.\n\n` +
     `Fields:\n` +
     `  c: 1 if open to Canadian remote workers, 0 if not\n` +
     `  s: primary tech stack — exactly one of: ${STACK_OPTIONS.join(", ")} — or null\n` +
-    `  e: years of experience required — "0-2", "2-5", "5+", or null\n\n` +
+    `  e: years of experience required — "0-2", "2-5", "5+", or null\n` +
+    `  sal: 1 if a salary or compensation range is mentioned anywhere, 0 if not\n\n` +
     `Rules for c:\n` +
     `  - Canadian company or location mentions Canada = 1\n` +
     `  - Worldwide / Global / Anywhere / North America = 1\n` +
@@ -78,8 +80,12 @@ async function classifyChunk(chunk, apiKey) {
     `  - "5+ years", "7 years", "8+ years" = "5+"\n` +
     `  - Title says Senior/Lead but no year count in description = null\n` +
     `  - Nothing mentioned = null\n\n` +
+    `Rules for sal:\n` +
+    `  - Any dollar amount, range, or OTE mentioned = 1\n` +
+    `  - "competitive salary", "equity", "stock options" alone = 0\n` +
+    `  - No compensation info = 0\n\n` +
     `Reply ONLY with a JSON array, one object per job, in the same order:\n` +
-    `[{"c":1,"s":"React","e":"2-5"}, ...]\n\n` +
+    `[{"c":1,"s":"React","e":"2-5","sal":1}, ...]\n\n` +
     `Jobs:\n` + lines.join("\n");
 
   const res = await fetch(GROQ_URL, {
@@ -126,7 +132,7 @@ export async function classifyJobs(jobs) {
     const hit = j.url && cache[j.url];
     if (!hit) return j;
     const canadaOpen = j._canadaSource === "source" ? true : hit.canadaOpen;
-    return { ...j, canadaOpen, groqStack: hit.groqStack, groqExp: hit.groqExp };
+    return { ...j, canadaOpen, groqStack: hit.groqStack, groqExp: hit.groqExp, groqSal: hit.groqSal };
   });
 
   if (uncached.length === 0) {
@@ -151,6 +157,7 @@ export async function classifyJobs(jobs) {
             canadaOpen: r.c !== 0,
             groqStack:  STACK_OPTIONS.includes(r.s) ? r.s : null,
             groqExp:    ["0-2","2-5","5+"].includes(r.e) ? r.e : null,
+            groqSal:    r.sal === 1,
             at:         Date.now(),
           };
         });
@@ -171,7 +178,7 @@ export async function classifyJobs(jobs) {
       if (!fresh) return j;
       // Preserve API-confirmed Canada signal — Groq stack/exp still applied
       const canadaOpen = j._canadaSource === "source" ? true : fresh.canadaOpen;
-      return { ...j, ...fresh, canadaOpen };
+      return { ...j, ...fresh, canadaOpen, groqSal: fresh.groqSal };
     });
 
     const caOpen = result.filter(j => j.canadaOpen).length;
