@@ -57,7 +57,7 @@ export default defineConfig({
       "/api/himalayas": {
         target: "https://himalayas.app",
         changeOrigin: true,
-        rewrite: () => "/jobs/api/search?sort=recent&limit=100&q=software",
+        rewrite: () => "/jobs/api/search?sort=recent&limit=100&q=software&countries=Canada,United+States",
       },
       "/api/weworkremotely": {
         target: "https://weworkremotely.com",

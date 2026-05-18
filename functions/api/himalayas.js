@@ -2,7 +2,7 @@
 // Deployed at: /api/himalayas
 // Vite dev: proxied via vite.config.js
 
-const UPSTREAM = "https://himalayas.app/jobs/api/search?sort=recent&limit=100&q=software";
+const UPSTREAM = "https://himalayas.app/jobs/api/search?sort=recent&limit=100&q=software&countries=Canada,United+States";
 
 const HEADERS = {
   "Content-Type": "application/json",

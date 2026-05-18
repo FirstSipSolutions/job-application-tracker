@@ -306,10 +306,6 @@ export function fromHimalayas(job) {
     ? `$${Math.round(job.minSalary / 1000)}k - $${Math.round(job.maxSalary / 1000)}k ${job.currency ?? "USD"}`
     : null;
   const slug   = (job.applicationLink ?? job.guid ?? "").split("/").filter(Boolean).pop() ?? "";
-  // Detect Canada eligibility from locationRestrictions rather than relying on the query filter.
-  // Empty restrictions = worldwide = open. Explicit Canada/NA/Global = open.
-  const canadaOpen = restrictions.length === 0
-    || restrictions.some(r => /canada|worldwide|anywhere|north america|global/i.test(r));
   return {
     id:                 `hm-${job.companySlug ?? "x"}-${slug}`,
     title:              job.title ?? "",
@@ -322,8 +318,8 @@ export function fromHimalayas(job) {
     url:                job.applicationLink ?? job.guid ?? "",
     source:             "Himalayas",
     category:           "remote",
-    canadaOpen,
-    _canadaSource:      canadaOpen ? "source" : undefined,
+    canadaOpen:         true,
+    _canadaSource:      "source",
     sourceExp:          mapHimalayasSeniority(job.seniority),
     descriptionSnippet: toSnippet(job.description ?? job.excerpt ?? ""),
   };
