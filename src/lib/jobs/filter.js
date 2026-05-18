@@ -140,7 +140,7 @@ export function isTech(job) {
 }
 
 export function passesFilter(job) {
-  return isRemote(job) && isTech(job) && isFresh(job);
+  return isRemote(job) && (job.sourceTech || isTech(job)) && isFresh(job);
 }
 
 // ── UI filter helpers ─────────────────────────────────────────────

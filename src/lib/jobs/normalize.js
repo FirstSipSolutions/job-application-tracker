@@ -204,6 +204,7 @@ export function fromRemoteCo(item) {
     url:                link,
     source:             "Remote.co",
     category:           "remote",
+    sourceTech:         true,
     descriptionSnippet: toSnippet(desc),
   };
 }
@@ -240,6 +241,7 @@ export function fromWeWorkRemotely(item) {
     url:                link,
     source:             "WeWorkRemotely",
     category:           "remote",
+    sourceTech:         true,
     descriptionSnippet: toSnippet(desc),
   };
 }

@@ -52,6 +52,7 @@ export default defineConfig({
         target: "https://remote.co",
         changeOrigin: true,
         rewrite: () => "/remote-jobs/developer/feed/",
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; CVVault/1.0)" },
       },
     },
   },
