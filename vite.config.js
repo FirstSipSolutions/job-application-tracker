@@ -36,6 +36,22 @@ export default defineConfig({
           res.end(r.ok ? await r.text() : JSON.stringify({ results: [] }));
         } catch { res.end(JSON.stringify({ results: [] })); }
       });
+
+      // Remote.co: blocks automated requests without browser-like headers
+      server.middlewares.use("/api/remoteco", async (req, res) => {
+        res.setHeader("Content-Type", "application/rss+xml; charset=UTF-8");
+        try {
+          const r = await fetch("https://remote.co/remote-jobs/developer/feed/", {
+            headers: {
+              "User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+              "Accept":          "application/rss+xml, text/xml, */*",
+              "Accept-Language": "en-US,en;q=0.9",
+            },
+          });
+          res.statusCode = r.status;
+          res.end(r.ok ? await r.text() : "");
+        } catch { res.statusCode = 500; res.end(""); }
+      });
     },
     proxy: {
       "/api/himalayas": {
@@ -47,12 +63,6 @@ export default defineConfig({
         target: "https://weworkremotely.com",
         changeOrigin: true,
         rewrite: () => "/categories/remote-programming-jobs.rss",
-      },
-      "/api/remoteco": {
-        target: "https://remote.co",
-        changeOrigin: true,
-        rewrite: () => "/remote-jobs/developer/feed/",
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; CVVault/1.0)" },
       },
     },
   },
