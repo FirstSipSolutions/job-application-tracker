@@ -17,19 +17,21 @@ const STATUS_COLOR = {
 };
 
 export default function ResumeDetailModal({ resume, onClose, getUrl }) {
+  const isCL = resume.type === "cover_letter";
   const { count, responses, lastUsed } = resume._stats;
   const rate = count ? Math.round(responses / count * 100) : null;
   const [apps, setApps] = useState([]);
 
   useEffect(() => {
+    const col = isCL ? "cover_letter_id" : "resume_id";
     supabase
       .from("applications")
       .select("company, role, status, date")
-      .eq("resume_id", resume.id)
+      .eq(col, resume.id)
       .order("date", { ascending: false })
       .limit(8)
       .then(({ data }) => setApps(data ?? []));
-  }, [resume.id]);
+  }, [resume.id, isCL]);
 
   return (
     <div className="modal-overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}>
@@ -41,27 +43,29 @@ export default function ResumeDetailModal({ resume, onClose, getUrl }) {
 
         <div className="rdm-meta">
           <span>Uploaded {fmtDate(resume.created_at)}</span>
-          <span>Last used {fmtDate(lastUsed)}</span>
+          {!isCL && <span>Last used {fmtDate(lastUsed)}</span>}
         </div>
 
-        <div className="rdm-stats">
-          <div className="rdm-stat-box">
-            <span className="rdm-stat-num">{count}</span>
-            <span className="rdm-stat-label">times sent</span>
+        {!isCL && (
+          <div className="rdm-stats">
+            <div className="rdm-stat-box">
+              <span className="rdm-stat-num">{count}</span>
+              <span className="rdm-stat-label">times sent</span>
+            </div>
+            <div className="rdm-stat-box">
+              <span className="rdm-stat-num">{rate !== null ? `${rate}%` : "--"}</span>
+              <span className="rdm-stat-label">response rate</span>
+            </div>
+            <div className="rdm-stat-box">
+              <span className="rdm-stat-num">{responses}</span>
+              <span className="rdm-stat-label">interviews / offers</span>
+            </div>
           </div>
-          <div className="rdm-stat-box">
-            <span className="rdm-stat-num">{rate !== null ? `${rate}%` : "--"}</span>
-            <span className="rdm-stat-label">response rate</span>
-          </div>
-          <div className="rdm-stat-box">
-            <span className="rdm-stat-num">{responses}</span>
-            <span className="rdm-stat-label">interviews / offers</span>
-          </div>
-        </div>
+        )}
 
         {apps.length > 0 && (
           <div className="rdm-apps">
-            <div className="rdm-apps-title">Sent with this resume</div>
+            <div className="rdm-apps-title">{isCL ? "Sent with this cover letter" : "Sent with this resume"}</div>
             <div className="rdm-apps-list">
               {apps.map((a, i) => (
                 <div key={i} className="rdm-app-row">
@@ -75,8 +79,12 @@ export default function ResumeDetailModal({ resume, onClose, getUrl }) {
           </div>
         )}
 
-        {apps.length === 0 && count === 0 && (
-          <p className="rdm-empty">No applications linked yet. Select this resume when logging a job.</p>
+        {apps.length === 0 && (
+          <p className="rdm-empty">
+            {isCL
+              ? "No applications linked yet. Select this cover letter when logging a job."
+              : "No applications linked yet. Select this resume when logging a job."}
+          </p>
         )}
 
         <div className="modal-footer">

@@ -10,11 +10,11 @@ function companyColor(name) {
 }
 
 function daysAgoLabel(postedAt) {
-  if (!postedAt) return null;
+  if (!postedAt) return { text: null, stale: false };
   const d = Math.floor((Date.now() - new Date(postedAt)) / 864e5);
-  if (d === 0) return "Today";
-  if (d === 1) return "Yesterday";
-  return `${d}d ago`;
+  if (d === 0) return { text: "Today",     stale: false };
+  if (d === 1) return { text: "Yesterday", stale: false };
+  return { text: `${d}d ago`, stale: d >= 10 };
 }
 
 function expLabel(job) {
@@ -27,7 +27,7 @@ function expLabel(job) {
 
 export default function JobCard({ job, onApply }) {
   const tags  = getTechTags(job);
-  const age   = daysAgoLabel(job.postedAt);
+  const { text: ageText, stale } = daysAgoLabel(job.postedAt);
   const exp   = expLabel(job);
   const color = companyColor(job.company);
 
@@ -45,7 +45,8 @@ export default function JobCard({ job, onApply }) {
     {
       id: 2,
       icon: <Clock color={color} />,
-      label: age ?? undefined,
+      label: ageText ?? undefined,
+      labelStyle: stale ? { color: "#f59e0b" } : undefined,
       iconColor: color,
       title: exp ? `${exp} experience` : "Details",
       body: [

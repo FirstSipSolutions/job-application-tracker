@@ -2,26 +2,29 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import AppNav from "../components/layout/AppNav.jsx";
 import JobCard from "../components/jobs/JobCard.jsx";
 import { fetchSiliconHarbour } from "../lib/jobs/sources/siliconHarbour.js";
-import { fetchDigitalNS }      from "../lib/jobs/sources/digitalNovascotia.js";
 import { fetchGreenhouse }     from "../lib/jobs/sources/greenhouse.js";
 import { fetchAshby }          from "../lib/jobs/sources/ashby.js";
 import { fetchHimalayas }      from "../lib/jobs/sources/himalayas.js";
 import { fetchJobicy }         from "../lib/jobs/sources/jobicy.js";
 import { fetchRemotive }       from "../lib/jobs/sources/remotive.js";
-import { fetchWeWorkRemotely } from "../lib/jobs/sources/weWorkRemotely.js";
 import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
 import { fetchLever }          from "../lib/jobs/sources/lever.js";
+import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
+import { fetchWorkable }       from "../lib/jobs/sources/workable.js";
+import { fetchSmartRecruiters }  from "../lib/jobs/sources/smartrecruiters.js";
+import { fetchWeWorkRemotely }   from "../lib/jobs/sources/weWorkRemotely.js";
+import { fetchRemoteCo }         from "../lib/jobs/sources/remoteCo.js";
 import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
 import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
+import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
-const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchWeWorkRemotely, fetchRemoteOk];
-const POLL_MS        = 5 * 60 * 1000;
-const PAGE_SIZE      = 10;
-const CLASSIFY_BATCH = 24; // 4 chunks of 6 -- stays under Groq free-tier token-per-minute limit
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk];
+const POLL_MS   = 5 * 60 * 1000;
+const PAGE_SIZE = 10;
 
 const POSTED_BANDS = [
   { value: 1,  label: "Today" },
@@ -67,7 +70,8 @@ function matchesRegion(job, region) {
   // "province" acts as Canada-wide at the region level; the province sub-filter
   // narrows further inside the useMemo.
   if (region === "canada" || region === "province") {
-    return isCanadaJob(job) || job.category === "canadian";
+    // Include source-confirmed or Groq-confirmed Canada-open jobs (e.g. Himalayas worldwide, Remotive NA)
+    return isCanadaJob(job) || job.category === "canadian" || job.canadaOpen === true;
   }
   if (region === "ca-us")     return canadaOK(job) && getCountry(job) === "US";
   if (region === "ca-global") return canadaOK(job) && (getCountry(job) === "Global" || getCountry(job) === null);
@@ -94,16 +98,17 @@ function scoreJob(job) {
   // Title patterns are the fallback for jobs neither Groq nor the source has classified yet.
   const exp   = job.groqExp ?? job.sourceExp;
   const title = job.title ?? "";
+  // Target: jr and mid both surface well (0–3 years sweet spot)
   if (exp === "0-2") {
-    score += 40;
+    score += 35;
   } else if (exp === "2-5") {
-    score += 15;
+    score += 30;
   } else if (exp === "5+") {
     score -= 40;
   } else {
     // No exp signal yet -- use title keywords as a rough proxy
-    if      (/\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) score += 35;
-    else if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) score += 15;
+    if      (/\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) score += 32;
+    else if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) score += 28;
     else if (/\bstaff\b|\bprincipal\b|\bdistinguished\b|\bhead\s+of\b|\bvp\b|\bdirector\b/i.test(title)) score -= 55;
     else if (/\bsenior\b|\bsr\.?\b|\blead\b/i.test(title)) score -= 30;
   }
@@ -116,9 +121,21 @@ function scoreJob(job) {
   else if (job.canadaOpen === true)          score += 12;
   else if (job.canadaOpen === false)         score -= 20;
 
+  // Fullstack title bonus — matches user's target role
+  if (/\bfull[- ]?stack\b/i.test(title)) score += 12;
+
   // Quality signals
   if (job.salary)             score += 8;
+  if (job.groqSal)            score += 10; // Groq detected salary in description
   if (job.descriptionSnippet) score += 3;
+
+  // ATS-direct source bonus — these are real postings, not aggregator noise
+  const atsSource = ["Greenhouse","Lever","Ashby"].includes(job.source);
+  if (atsSource) score += 8;
+
+  // Aggregator penalty when canadaOpen not confirmed — high false-positive rate
+  const aggregator = ["RemoteOK","Arbeitnow","Jobicy"].includes(job.source);
+  if (aggregator && job.canadaOpen !== true && job.category !== "canadian") score -= 8;
 
   // US-only location penalty when Canada status unknown
   if (job.canadaOpen === undefined && job.category !== "canadian" && job.category !== "global-remote") {
@@ -136,8 +153,8 @@ function scoreJob(job) {
   return score;
 }
 
-function byScore(a, b) {
-  return scoreJob(b) - scoreJob(a);
+function byScore() {
+  return (a, b) => scoreJob(b) - scoreJob(a);
 }
 
 function byNewest(a, b) {
@@ -167,7 +184,7 @@ function readJobsCache() {
   try {
     const raw = JSON.parse(localStorage.getItem(JOBS_CACHE_KEY) ?? "null");
     if (!raw) return [];
-    return (raw.jobs ?? []).filter(j => j.postedAt && (Date.now() - new Date(j.postedAt)) / 864e5 <= 20);
+    return (raw.jobs ?? []).filter(j => j.postedAt && (Date.now() - new Date(j.postedAt)) / 864e5 <= 7);
   } catch { return []; }
 }
 
@@ -197,17 +214,18 @@ export default function JobsPage() {
   const [provider,   setProvider]  = useState("");
   const [posted,     setPosted]    = useState(0);
   const [tech,       setTech]      = useState("");
-  const [expLevel,   setExpLevel]  = useState("");
+  const [expLevel,   setExpLevel]  = useState("jr-mid");
   const [shuffleKey, setShuffleKey] = useState(0);
   const [page,       setPage]      = useState(1);
   const [live,        setLive]        = useState(false);
   const [liveJobs,    setLiveJobs]    = useState([]);
   const [polling,     setPolling]     = useState(false);
   const [aiFiltering, setAiFiltering] = useState(false);
+  const [coverJob,    setCoverJob]    = useState(null);
   const seenUrls       = useRef(new Set());
   const classifiedUrls = useRef(new Set());
   const pollTimer      = useRef(null);
-  const { addApp } = useApplications();
+  const { apps, addApp } = useApplications();
 
   useEffect(() => {
     let active = true;
@@ -226,7 +244,7 @@ export default function JobsPage() {
           classifiedUrls.current.add(j.url);
         }
       });
-      setJobs(applyMemory(cached.sort(byScore)));
+      setJobs(applyMemory(cached.sort(byScore())));
     }
 
     SOURCES.forEach(fn => {
@@ -246,7 +264,7 @@ export default function JobsPage() {
           });
           collected.push(...enriched);
           // Merge with remaining cached jobs not yet replaced by fresh source data
-          setJobs(dedup([...collected, ...cached]).sort(byScore));
+          setJobs(dedup([...collected, ...cached]).sort(byScore()));
         })
         .catch(err => console.error(`[Source] ${fn.name} failed:`, err))
         .finally(() => {
@@ -255,8 +273,7 @@ export default function JobsPage() {
           setResolved(done);
 
           if (done === SOURCES.length) {
-            const base       = dedup(collected).sort(byScore);
-            const firstBatch = base.slice(0, CLASSIFY_BATCH);
+            const base = dedup(collected).sort(byScore());
             setJobs(base);
             writeJobsCache(base); // persist for next visit
 
@@ -267,8 +284,8 @@ export default function JobsPage() {
               .map(j => ({ title: j.title, company: j.company, url: j.url, postedAt: j.postedAt, source: j.source }));
             try { localStorage.setItem("cv-vault-hot-jobs", JSON.stringify({ jobs: hotJobs, savedAt: Date.now() })); } catch {}
 
-            // Only classify jobs Groq hasn't seen yet
-            const toClassify = firstBatch.filter(j => !classifiedUrls.current.has(j.url));
+            // Classify ALL uncached jobs — filters need groqExp to work correctly
+            const toClassify = base.filter(j => !classifiedUrls.current.has(j.url));
             if (toClassify.length === 0) return;
             setAiFiltering(true);
             classifyJobs(toClassify).then(scored => {
@@ -276,8 +293,8 @@ export default function JobsPage() {
               scored.forEach(j => classifiedUrls.current.add(j.url));
               const m = new Map(scored.map(j => [j.url, j]));
               setJobs(prev => {
-                const updated = applyMemory(prev.map(j => m.get(j.url) ?? j));
-                writeJobsCache(updated); // update cache with fresh Groq data
+                const updated = applyMemory(prev.map(j => m.get(j.url) ?? j).sort(byScore()));
+                writeJobsCache(updated);
                 return updated;
               });
               setAiFiltering(false);
@@ -319,23 +336,35 @@ export default function JobsPage() {
     setPolling(false);
   }
 
-  function logAndOpen(job) {
+  function logAndOpen(job, coverLetter) {
     window.open(job.url, "_blank", "noopener,noreferrer");
     markApplied(job.company); // strongest Canada signal: you clicked Apply
     addApp({
-      url:     job.url,
-      company: job.company,
-      role:    job.title,
-      status:  "Viewed",
-      date:    new Date().toISOString().slice(0, 10),
-      notes:   [
+      url:          job.url,
+      company:      job.company,
+      role:         job.title,
+      status:       "Viewed",
+      date:         new Date().toISOString().slice(0, 10),
+      cover_letter: coverLetter ?? null,
+      notes:        [
         `Via ${job.source}`,
+        job.postedAt                 ? `Posted: ${job.postedAt.slice(0, 10)}` : null,
         job.groqStack                ? `Stack: ${job.groqStack}`       : null,
         job.groqExp                  ? `Exp: ${job.groqExp} yrs`       : null,
         job.salary                   ? `Salary: ${job.salary}`         : null,
+        job.groqSal && !job.salary   ? `Salary mentioned in posting`   : null,
         job.descriptionSnippet       ? job.descriptionSnippet.slice(0, 300) : null,
       ].filter(Boolean).join(" | "),
     });
+  }
+
+  function handleApply(job) {
+    setCoverJob(job);
+  }
+
+  function handleCoverConfirm(coverLetter) {
+    logAndOpen(coverJob, coverLetter);
+    setCoverJob(null);
   }
 
   const providers = useMemo(() => {
@@ -343,16 +372,26 @@ export default function JobsPage() {
     return [...set].sort();
   }, [jobs]);
 
+  const coveredUrls = useMemo(
+    () => new Set(apps.filter(a => a.cover_letter && a.url).map(a => a.url)),
+    [apps]
+  );
+
   const filtered = useMemo(() => {
     const sortFn = shuffleKey > 0
       ? (a, b) => jobSeed(shuffleKey, a.url ?? a.id) - jobSeed(shuffleKey, b.url ?? b.id)
-      : byScore;
+      : byScore();
     return jobs
       .filter(j => {
+        if (j.url && coveredUrls.has(j.url)) return false;
         if (!matchesRegion(j, region)) return false;
         if (region === "province" && province) {
-          const re = PROVINCE_PATTERNS[province];
-          if (re && !re.test(`${j.location ?? ""} ${j.workplaceType ?? ""}`)) return false;
+          const locStr = `${j.location ?? ""} ${j.workplaceType ?? ""}`;
+          // Exclude only if a different province is explicitly named; otherwise include
+          // Canada-wide remote jobs that don't specify any province.
+          const namesDifferentProv = Object.entries(PROVINCE_PATTERNS)
+            .some(([code, p]) => code !== province && p.test(locStr));
+          if (namesDifferentProv) return false;
         }
         if (provider && j.source !== provider) return false;
         if (posted > 0 && getDaysOld(j) > posted) return false;
@@ -362,14 +401,26 @@ export default function JobsPage() {
           if (s !== tech && !tags.includes(tech)) return false;
         }
         if (expLevel) {
-          const e = getExperienceLevel(j);
-          if (e !== null && e !== expLevel) return false;
-          if (e === null && expLevel === "0-2" && /\b(senior|sr\.|staff|principal|head\s+of|vp)\b/i.test(j.title ?? "")) return false;
+          const e          = getExperienceLevel(j);
+          const title      = j.title ?? "";
+          const isSenior   = /\b(senior|sr\.?|lead|staff|principal|head\s+of|vp|architect|director|manager)\b/i.test(title);
+          const isJunior   = /\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b/i.test(title);
+          if (expLevel === "jr-mid") {
+            if (e === "5+") return false;
+            if (e === null && isSenior) return false;
+          } else {
+            if (e === expLevel) return true;   // Groq confirmed match — short-circuit
+            if (e !== null)     return false;  // Groq says different tier
+            // No Groq data yet — fall back to title keywords
+            if (expLevel === "0-2") return isJunior;
+            if (expLevel === "5+")  return isSenior;
+            return !isSenior && !isJunior;     // mid: include anything with no strong signal
+          }
         }
         return true;
       })
       .sort(sortFn);
-  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey]);
+  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey, coveredUrls]);
 
   function resetFilters() {
     setRegion("canada");
@@ -377,12 +428,12 @@ export default function JobsPage() {
     setProvider("");
     setPosted(0);
     setTech("");
-    setExpLevel("");
+    setExpLevel("jr-mid");
     setShuffleKey(0);
     setPage(1);
   }
 
-  const filtersActive = region !== "canada" || province !== "" || provider !== "" || posted > 0 || tech !== "" || expLevel !== "" || shuffleKey > 0;
+  const filtersActive = region !== "canada" || province !== "" || provider !== "" || posted > 0 || tech !== "" || expLevel !== "jr-mid" || shuffleKey > 0;
 
   function handleLoadMore() {
     const nextPage  = page + 1;
@@ -428,7 +479,7 @@ export default function JobsPage() {
                 <p className="live-found-label">{liveJobs.length} new {liveJobs.length === 1 ? "listing" : "listings"} found</p>
                 <div className="jobs-grid">
                   {liveJobs.map(job => (
-                    <JobCard key={job.id} job={job} onApply={logAndOpen} />
+                    <JobCard key={job.id} job={job} onApply={handleApply} />
                   ))}
                 </div>
               </div>
@@ -564,7 +615,7 @@ export default function JobsPage() {
             <div key={i} className="job-card job-card-skeleton" />
           ))}
           {visible.map(job => (
-            <JobCard key={job.id} job={job} onApply={logAndOpen} />
+            <JobCard key={job.id} job={job} onApply={handleApply} />
           ))}
           {!loading && filtered.length === 0 && (
             <div className="jobs-empty-state">
@@ -594,6 +645,14 @@ export default function JobsPage() {
         )}
 
       </main>
+
+      {coverJob && (
+        <CoverLetterModal
+          job={coverJob}
+          onConfirm={handleCoverConfirm}
+          onClose={() => setCoverJob(null)}
+        />
+      )}
     </div>
   );
 }

@@ -6,27 +6,15 @@ import { supabase } from "../lib/supabase.js";
 // so we only pull the two columns we need (resume_id, status) and aggregate
 // client-side from that small payload rather than filtering a full app array.
 async function fetchResumesWithStats() {
-  const [{ data: rows }, { data: stats }] = await Promise.all([
+  const [{ data: rows }, { data: stats }, { data: pairs }] = await Promise.all([
     supabase.from("resumes").select("*").order("created_at", { ascending: false }),
-    // Only fetch rows that have a resume attached. Skips the majority of applications
-    // and avoids shipping unrelated data to the browser.
     supabase.from("applications").select("resume_id, status, date").not("resume_id", "is", null),
+    supabase.from("applications")
+      .select("resume_id, cover_letter_id, company")
+      .not("resume_id", "is", null)
+      .not("cover_letter_id", "is", null),
   ]);
 
-  // DATA STRUCTURE: Hash Map (plain object used as a key-value store)
-  //
-  // Problem: we have N applications and M resumes. A naive approach would loop
-  // through every application once per resume card to count matches: O(N*M).
-  // With 200 applications and 10 resumes that is 2,000 iterations on every render.
-  //
-  // Solution: one pass over the applications array builds a hash map keyed by
-  // resume_id. Each key maps to an object holding the running counts.
-  // Inserting and reading from a hash map is O(1) average case (JavaScript
-  // objects use a hash table internally), so the full build is O(N) and each
-  // resume card lookup is O(1). Total complexity: O(N + M) instead of O(N*M).
-  //
-  // Trade-off: we use a small amount of extra memory to store the map, but that
-  // is negligible compared to the CPU saved at render time.
   const statMap = {};
   for (const app of stats ?? []) {
     if (!statMap[app.resume_id]) statMap[app.resume_id] = { count: 0, responses: 0, lastUsed: null };
@@ -36,8 +24,26 @@ async function fetchResumesWithStats() {
       statMap[app.resume_id].lastUsed = app.date;
   }
 
-  // Attach stats directly to each resume so components never need the apps array.
-  return (rows ?? []).map(r => ({ ...r, _stats: statMap[r.id] ?? { count: 0, responses: 0, lastUsed: null } }));
+  // Build pairing maps: resume_id → [{ cover_letter_id, company }]
+  //                    cover_letter_id → [{ resume_id, company }]
+  const resumePairs = {};
+  const clPairs     = {};
+  for (const p of pairs ?? []) {
+    if (!resumePairs[p.resume_id])      resumePairs[p.resume_id]      = [];
+    if (!clPairs[p.cover_letter_id])    clPairs[p.cover_letter_id]    = [];
+    resumePairs[p.resume_id].push({ partnerId: p.cover_letter_id, company: p.company });
+    clPairs[p.cover_letter_id].push({ partnerId: p.resume_id,      company: p.company });
+  }
+
+  const docMap = {};
+  for (const r of rows ?? []) docMap[r.id] = r.name;
+
+  return (rows ?? []).map(r => ({
+    ...r,
+    _stats:  statMap[r.id] ?? { count: 0, responses: 0, lastUsed: null },
+    _pairs:  (r.type === "cover_letter" ? clPairs[r.id] : resumePairs[r.id]) ?? [],
+    _docMap: docMap,
+  }));
 }
 
 export function useResumes() {
@@ -48,12 +54,10 @@ export function useResumes() {
     fetchResumesWithStats().then(setResumes);
   }, []);
 
-  async function uploadResume(file) {
+  async function uploadResume(file, type = "resume") {
     setUploading(true);
     const { data: { user } } = await supabase.auth.getUser();
     const id   = crypto.randomUUID();
-    // Scope the file path to the user's ID so storage RLS can enforce ownership
-    // by checking the first folder segment matches auth.uid().
     const path = `${user.id}/${id}.pdf`;
 
     const { error: storageErr } = await supabase.storage
@@ -65,11 +69,10 @@ export function useResumes() {
     const name = file.name.replace(/\.pdf$/i, "");
     const { data: row, error: dbErr } = await supabase
       .from("resumes")
-      .insert({ id, name, file_path: path })
+      .insert({ id, name, file_path: path, type })
       .select()
       .single();
 
-    // Seed _stats so the new card renders immediately without a refetch.
     if (!dbErr) setResumes(prev => [{ ...row, _stats: { count: 0, responses: 0 } }, ...prev]);
     setUploading(false);
   }

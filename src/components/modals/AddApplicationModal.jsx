@@ -65,12 +65,18 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
   const [date, setDate]       = useState(initial?.date    || todayISO());
   const [notes, setNotes]     = useState(initial?.notes   || "");
   const [parsed, setParsed]   = useState(false);
-  const [resumeId, setResumeId] = useState(initial?.resume_id || null);
-  const [resumes, setResumes]   = useState([]);
+  const [resumeId,      setResumeId]      = useState(initial?.resume_id       || null);
+  const [coverLetterId, setCoverLetterId] = useState(initial?.cover_letter_id || null);
+  const [resumes,       setResumes]       = useState([]);
+  const [coverLetters,  setCoverLetters]  = useState([]);
 
   useEffect(() => {
-    supabase.from("resumes").select("id, name").order("created_at", { ascending: false })
-      .then(({ data }) => setResumes(data ?? []));
+    supabase.from("resumes").select("id, name, type").order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const docs = data ?? [];
+        setResumes(docs.filter(d => d.type !== "cover_letter"));
+        setCoverLetters(docs.filter(d => d.type === "cover_letter"));
+      });
   }, []);
 
   // ref not state, auto-fill tracking without triggering re-render
@@ -102,7 +108,7 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
   function handleSubmit(e) {
     e.preventDefault();
     if (!company.trim() || !role.trim()) return;
-    onAdd({ url: url.trim(), company: company.trim(), role: role.trim(), status, date, notes: notes.trim(), resume_id: resumeId || null });
+    onAdd({ url: url.trim(), company: company.trim(), role: role.trim(), status, date, notes: notes.trim(), resume_id: resumeId || null, cover_letter_id: coverLetterId || null });
     onClose();
   }
 
@@ -167,21 +173,26 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
               value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
-          {resumes.length > 0 && (
-            <div className="modal-field">
-              <label className="modal-label">Resume Used <span className="modal-label-opt">(optional)</span></label>
-              <div className="modal-resume-pills">
-                {resumes.map(r => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    className={`modal-resume-pill${resumeId === r.id ? " modal-resume-pill-active" : ""}`}
-                    onClick={() => setResumeId(prev => prev === r.id ? null : r.id)}
-                  >
-                    {r.name}
-                  </button>
-                ))}
-              </div>
+          {(resumes.length > 0 || coverLetters.length > 0) && (
+            <div className="modal-row">
+              {resumes.length > 0 && (
+                <div className="modal-field">
+                  <label className="modal-label">Resume <span className="modal-label-opt">(optional)</span></label>
+                  <select className="modal-input" value={resumeId || ""} onChange={e => setResumeId(e.target.value || null)}>
+                    <option value="">None</option>
+                    {resumes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {coverLetters.length > 0 && (
+                <div className="modal-field">
+                  <label className="modal-label">Cover Letter <span className="modal-label-opt">(optional)</span></label>
+                  <select className="modal-input" value={coverLetterId || ""} onChange={e => setCoverLetterId(e.target.value || null)}>
+                    <option value="">None</option>
+                    {coverLetters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 

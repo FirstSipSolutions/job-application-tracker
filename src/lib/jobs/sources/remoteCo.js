@@ -1,11 +1,11 @@
-import { fromWeWorkRemotely } from "../normalize.js";
+import { fromRemoteCo } from "../normalize.js";
 
-// Proxied via /api/weworkremotely (CF function in prod, vite proxy in dev).
-// Programming/dev category only — avoids design, support, and sales roles.
-const BASE       = "/api/weworkremotely";
+// Proxied via /api/remoteco (CF function in prod, vite proxy in dev).
+// Developer category feed — already filtered to programming roles.
+const BASE       = "/api/remoteco";
 const TIMEOUT_MS = 8000;
 
-export async function fetchWeWorkRemotely() {
+export async function fetchRemoteCo() {
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
@@ -13,7 +13,7 @@ export async function fetchWeWorkRemotely() {
     if (!res.ok) return [];
     const text = await res.text();
     const doc  = new DOMParser().parseFromString(text, "text/xml");
-    return [...doc.querySelectorAll("item")].map(fromWeWorkRemotely);
+    return [...doc.querySelectorAll("item")].map(fromRemoteCo);
   } catch {
     return [];
   } finally {

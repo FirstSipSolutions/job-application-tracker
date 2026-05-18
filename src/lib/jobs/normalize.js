@@ -56,7 +56,7 @@ function remotiveCanadaOpen(location) {
   if (/canada/i.test(l)) return true;
   // US-only without Canada mentioned
   if (/\busa?\b|united states/i.test(l) && !/canada|north america/i.test(l)) return false;
-  if (/\beurope?\b|\beu\b|\buk\b|latin america/i.test(l)) return false;
+  if (/\beurope?\b|\beu\b|\buk\b|latin america|\bemea\b|\bapac\b|asia\s+pacific/i.test(l)) return false;
   return undefined; // ambiguous
 }
 
@@ -181,6 +181,34 @@ export function fromRemotive(job) {
   };
 }
 
+// ── Remote.co (RSS) ───────────────────────────────────────────────────────────
+
+export function fromRemoteCo(item) {
+  const get = tag => item.getElementsByTagName(tag)[0]?.textContent?.trim() ?? "";
+  const titleRaw = get("title");
+  // Title format: "Job Title at Company" or just "Job Title"
+  const atIdx    = titleRaw.lastIndexOf(" at ");
+  const title    = atIdx > 0 ? titleRaw.slice(0, atIdx).trim() : titleRaw;
+  const company  = atIdx > 0 ? titleRaw.slice(atIdx + 4).trim() : "";
+  const link     = get("link") || get("guid");
+  const desc     = get("description");
+  return {
+    id:                 `rc-${link.split("/").filter(Boolean).pop() ?? Date.now()}`,
+    title,
+    company,
+    location:           "Remote",
+    workplaceType:      "Remote",
+    salary:             null,
+    currency:           null,
+    postedAt:           parseRSSDate(get("pubDate")),
+    url:                link,
+    source:             "Remote.co",
+    category:           "remote",
+    sourceTech:         true,
+    descriptionSnippet: toSnippet(desc),
+  };
+}
+
 // ── WeWorkRemotely (RSS) ──────────────────────────────────────────────────────
 
 function rssText(item, tag) {
@@ -213,6 +241,7 @@ export function fromWeWorkRemotely(item) {
     url:                link,
     source:             "WeWorkRemotely",
     category:           "remote",
+    sourceTech:         true,
     descriptionSnippet: toSnippet(desc),
   };
 }
@@ -271,7 +300,8 @@ function mapHimalayasSeniority(arr) {
 }
 
 export function fromHimalayas(job) {
-  const locs   = (job.locationRestrictions ?? []).join(", ") || "Canada Remote";
+  const restrictions = job.locationRestrictions ?? [];
+  const locs   = restrictions.join(", ") || "Remote";
   const salary = job.minSalary && job.maxSalary
     ? `$${Math.round(job.minSalary / 1000)}k - $${Math.round(job.maxSalary / 1000)}k ${job.currency ?? "USD"}`
     : null;
@@ -288,12 +318,145 @@ export function fromHimalayas(job) {
     url:                job.applicationLink ?? job.guid ?? "",
     source:             "Himalayas",
     category:           "remote",
-    // country=CA in the API query guarantees Canada eligibility
     canadaOpen:         true,
     _canadaSource:      "source",
-    // Himalayas declares seniority directly -- use it as a pre-Groq scoring signal
     sourceExp:          mapHimalayasSeniority(job.seniority),
     descriptionSnippet: toSnippet(job.description ?? job.excerpt ?? ""),
+  };
+}
+
+// ── Workday (via CF proxy) ────────────────────────────────────────────────────
+
+function parseWorkdayDate(str) {
+  // "Posted Today", "Posted 2 Days Ago", "Posted 30+ Days Ago"
+  if (!str) return null;
+  const s = str.toLowerCase();
+  if (/today/.test(s)) return new Date().toISOString();
+  const m = s.match(/(\d+)\+?\s*day/);
+  if (m) {
+    const d = new Date();
+    d.setDate(d.getDate() - parseInt(m[1], 10));
+    return d.toISOString();
+  }
+  return null;
+}
+
+export function fromWorkday(job, companyName, tenant, board, wd, category) {
+  const loc      = job.locationsText ?? "";
+  const remote   = isRemoteLoc(loc) || /remote/i.test(loc);
+  const hybrid   = /hybrid/i.test(loc);
+  const canadaOpen = /canada/i.test(loc) ? true : undefined;
+  return {
+    id:            `wd-${tenant}-${(job.externalPath ?? job.jobPostingId ?? String(Date.now())).replace(/\W+/g, "-")}`,
+    title:         job.title ?? "",
+    company:       companyName,
+    location:      loc || (remote ? "Remote" : ""),
+    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : loc,
+    salary:        null,
+    currency:      null,
+    postedAt:      parseWorkdayDate(job.postedOn),
+    url:           `https://${tenant}.wd${wd}.myworkdayjobs.com/en-US/${board}${job.externalPath ?? ""}`,
+    source:        "Workday",
+    category,
+    canadaOpen,
+    _canadaSource: canadaOpen === true ? "source" : undefined,
+    descriptionSnippet: null,
+  };
+}
+
+// ── Workable (via CF proxy) ───────────────────────────────────────────────────
+
+export function fromWorkable(job, companyName, category) {
+  const loc      = job.location ?? {};
+  const remote   = loc.remote === true || loc.workplace === "remote";
+  const hybrid   = loc.workplace === "hybrid";
+  const locStr   = [loc.city, loc.region, loc.country].filter(Boolean).join(", ");
+  const canadaOpen = loc.country_code === "CA" || loc.countryCode === "CA" ? true : undefined;
+  return {
+    id:            `wk-${job.id ?? job.shortcode ?? String(Date.now())}`,
+    title:         job.title ?? "",
+    company:       companyName,
+    location:      hybrid ? `${locStr} (Hybrid)` : remote ? "Remote" : locStr,
+    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : locStr,
+    salary:        null,
+    currency:      null,
+    postedAt:      job.created_at ?? null,
+    url:           job.url ?? "",
+    source:        "Workable",
+    category,
+    canadaOpen,
+    _canadaSource: canadaOpen === true ? "source" : undefined,
+    descriptionSnippet: null,
+  };
+}
+
+// ── SmartRecruiters (CORS = * — no proxy needed) ──────────────────────────────
+
+export function fromSmartRecruiters(job, companyName, category) {
+  const loc    = job.location ?? {};
+  const remote = loc.remote === true;
+  const hybrid = /hybrid/i.test(loc.city ?? "") || /hybrid/i.test(loc.country ?? "");
+  const locStr = [loc.city, loc.country].filter(Boolean).join(", ");
+  const canadaOpen = loc.countryCode === "CA" ? true : remote ? undefined : undefined;
+  return {
+    id:            `sr-${job.id ?? String(Date.now())}`,
+    title:         job.name ?? "",
+    company:       companyName,
+    location:      hybrid ? `${locStr} (Hybrid)` : remote ? "Remote" : locStr,
+    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : locStr,
+    salary:        null,
+    currency:      null,
+    postedAt:      job.releasedDate ?? job.createdOn ?? null,
+    url:           job.ref ?? "",
+    source:        "SmartRecruiters",
+    category,
+    canadaOpen,
+    _canadaSource: canadaOpen === true ? "source" : undefined,
+    descriptionSnippet: null,
+  };
+}
+
+// ── Arbeitnow ─────────────────────────────────────────────────────────────────
+
+export function fromArbeitnow(job) {
+  const tags = (job.tags ?? []).join(" ");
+  return {
+    id:                 `an-${job.slug}`,
+    title:              job.title ?? "",
+    company:            job.company_name ?? "",
+    location:           job.location || "Remote",
+    workplaceType:      "Remote",
+    salary:             null,
+    currency:           null,
+    postedAt:           job.created_at ? new Date(job.created_at * 1000).toISOString() : null,
+    url:                job.url ?? "",
+    source:             "Arbeitnow",
+    category:           "remote",
+    descriptionSnippet: toSnippet((job.description ?? "") + " " + tags),
+  };
+}
+
+// ── Job Bank Canada (Government of Canada) ────────────────────────────────────
+
+export function fromJobBank(job) {
+  const loc     = job.location ?? "";
+  const summary = job.summary  ?? "";
+  // Job Bank uses "Work arrangement: Telecommuting" or "Various locations" for remote roles.
+  // Check both the extracted location field and the full summary HTML.
+  const isRemote = /telecommut|remote|work\s+from\s+home|various\s+loc/i.test(loc + " " + summary);
+  return {
+    id:                 `jb-${job.url.split("/").pop()}`,
+    title:              job.title ?? "",
+    company:            job.company ?? "",
+    location:           isRemote ? "Remote, Canada" : loc,
+    workplaceType:      isRemote ? "Remote" : loc,
+    salary:             job.salary ?? null,
+    currency:           detectCurrency(job.salary ?? ""),
+    postedAt:           job.postedAt ?? null,
+    url:                job.url ?? "",
+    source:             "Job Bank",
+    category:           "canadian",
+    descriptionSnippet: null,
   };
 }
 

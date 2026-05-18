@@ -1,18 +1,14 @@
 import { fromLever } from "../normalize.js";
 
-// Lever is the third most-used ATS in tech. Unlike Greenhouse/Ashby which skew
-// toward large US companies, Lever is popular with mid-size teams — which is
-// exactly the range most likely to hire a Canadian developer at a fair rate.
-//
-// The API returns full job descriptions, so Canada detection from text is real.
-// API: https://api.lever.co/v0/postings/{slug}?mode=json
-
+// All slugs verified 200 — dead slugs removed to avoid wasted requests.
 const COMPANIES = [
-  // ── Canadian companies ────────────────────────────────────────────────────
-  { name: "Wealthsimple",   slug: "wealthsimple",   category: "canadian" }, // fintech, Toronto
-  { name: "PointClickCare", slug: "pointclickcare", category: "canadian" }, // healthcare SaaS, Mississauga
+  // ── Canadian ──────────────────────────────────────────────────────────────
+  { name: "Wealthsimple",   slug: "wealthsimple",   category: "canadian" },
+  { name: "PointClickCare", slug: "pointclickcare", category: "canadian" },
+  { name: "PolicyMe",       slug: "policyme",       category: "canadian" },
   // ── Global-remote ─────────────────────────────────────────────────────────
-  { name: "Toptal",         slug: "toptal",         category: "global-remote" }, // fully remote, worldwide
+  { name: "Toptal",         slug: "toptal",         category: "global-remote" },
+  { name: "Whereby",        slug: "whereby",        category: "global-remote" },
 ];
 
 const BASE       = "https://api.lever.co/v0/postings";

@@ -1,3 +1,358 @@
+/* ── Jobs split layout ── */
+
+.jobs-split {
+  display: flex;
+  gap: 0;
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;
+}
+
+.jobs-left {
+  flex: 1 1 50%;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 24px 20px 40px;
+  border-right: 1px solid var(--border);
+}
+
+.jobs-right {
+  flex: 0 0 380px;
+  min-width: 320px;
+  max-width: 420px;
+  overflow-y: auto;
+  padding: 24px 20px 40px;
+  background: var(--surface);
+}
+
+/* ── Cover Letter Stack ── */
+
+.cls-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.cls-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cls-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cls-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cls-stack-area {
+  position: relative;
+  flex: 1;
+}
+
+/* depth layers that peek behind the active card */
+.cls-depth {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.cls-depth-2 {
+  transform: rotate(2deg) translate(5px, 6px);
+  background: var(--surface-2);
+  z-index: 0;
+}
+
+.cls-depth-3 {
+  transform: rotate(-1.5deg) translate(-4px, 10px);
+  background: var(--surface-3);
+  z-index: -1;
+}
+
+.cls-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  height: 100%;
+  min-height: 300px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.cls-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cls-card-company {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cls-card-role {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.cls-card-date {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.cls-card-body {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+.cls-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.cls-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cls-nav-btn:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+.cls-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.cls-nav-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 40px;
+  text-align: center;
+}
+
+.cls-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 300px;
+  text-align: center;
+  padding: 24px;
+}
+
+.cls-empty-icon {
+  color: var(--text-faint);
+}
+
+.cls-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.cls-empty-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.6;
+}
+
+/* ── Cover Letter Modal ── */
+
+.cl-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.cl-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.cl-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-job-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cl-job-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.cl-job-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.cl-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-dim);
+  transition: background 0.15s, color 0.15s;
+}
+
+.cl-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.cl-textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 20px;
+  min-height: 320px;
+  max-height: 50vh;
+}
+
+.cl-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.cl-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.cl-btn-ghost {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+  transition: background 0.15s, color 0.15s;
+}
+
+.cl-btn-ghost:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.cl-btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: var(--surface);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cl-btn-secondary:hover {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+.cl-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-text);
+  transition: opacity 0.15s;
+}
+
+.cl-btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.cl-btn-primary:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* ── Jobs page ── */
 
 .db-greeting-h1 {
