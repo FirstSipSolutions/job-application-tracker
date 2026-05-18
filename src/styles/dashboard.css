@@ -726,39 +726,57 @@
   flex-shrink: 0;
 }
 
-.rb-card-hat {
-  border: 1px solid rgba(167, 139, 250, 0.45);
-  background: rgba(167, 139, 250, 0.07);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  padding-bottom: 6px;
-  min-width: 160px;
-  max-width: 200px;
-}
-
-.rb-stack-group > .rb-card:last-child {
+/* Resume card loses top corners when a hat sits above it */
+.rb-stack-group .rb-card {
+  border-top: none;
   border-radius: 0 0 8px 8px;
-  border-top: 2px solid rgba(167, 139, 250, 0.3);
 }
 
-.rb-stack-group > .rb-card-hat + .rb-card {
-  border-top: 2px solid rgba(167, 139, 250, 0.3);
+/* Hat strip — completely separate from .rb-card */
+.rb-hat-strip {
+  min-width: 160px;
+  max-width: 180px;
+  background: rgba(167, 139, 250, 0.11);
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 5px 10px 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
 }
+.rb-hat-strip:hover { background: rgba(167, 139, 250, 0.17); }
 
-.rb-hat-name {
-  font-size: 11px;
-  color: #a78bfa;
-  font-weight: 600;
-}
-
-.rb-hat-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.rb-hat-strip-pill {
+  font-size: 8px;
+  font-weight: 800;
   text-transform: uppercase;
-  color: rgba(167, 139, 250, 0.6);
-  margin-top: 2px;
+  letter-spacing: 0.07em;
+  color: #7c3aed;
+  background: rgba(167, 139, 250, 0.22);
+  border-radius: 3px;
+  padding: 1px 4px;
+  flex-shrink: 0;
 }
+
+.rb-hat-strip-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #c4b5fd;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rb-hat-strip-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.rb-hat-strip:hover .rb-hat-strip-actions { opacity: 1; }
 
 .rb-card-cl-solo {
   border: 1px dashed rgba(167, 139, 250, 0.4);
@@ -828,6 +846,99 @@
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 4px;
+}
+
+/* ── Compact list ── */
+
+.rb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rb-list-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.rb-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.rb-list-row:hover     { background: var(--db-surface-2); }
+.rb-list-row-open      { background: var(--db-surface-2); border-radius: 6px 6px 0 0; }
+
+.rb-list-cl-pill {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #7c3aed;
+  background: rgba(167, 139, 250, 0.22);
+  border-radius: 3px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+
+.rb-list-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--db-text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rb-list-stats {
+  font-size: 11px;
+  color: var(--db-text-dim);
+  flex-shrink: 0;
+}
+
+.rb-list-cl-tag {
+  font-size: 10px;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.1);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+}
+
+.rb-list-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.rb-list-chevron {
+  font-size: 10px;
+  color: var(--db-text-faint);
+  flex-shrink: 0;
+  width: 12px;
+  text-align: center;
+}
+
+.rb-list-popout {
+  padding: 0 8px 10px;
+  display: flex;
+  gap: 10px;
+  background: var(--db-surface-2);
+  border-radius: 0 0 6px 6px;
+}
+
+.rb-list-divider {
+  height: 1px;
+  background: var(--db-border);
+  margin: 4px 0;
 }
 
 .rb-card {
