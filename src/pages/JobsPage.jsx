@@ -2,17 +2,13 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import AppNav from "../components/layout/AppNav.jsx";
 import JobCard from "../components/jobs/JobCard.jsx";
 import { fetchSiliconHarbour } from "../lib/jobs/sources/siliconHarbour.js";
-import { fetchDigitalNS }      from "../lib/jobs/sources/digitalNovascotia.js";
 import { fetchGreenhouse }     from "../lib/jobs/sources/greenhouse.js";
 import { fetchAshby }          from "../lib/jobs/sources/ashby.js";
 import { fetchHimalayas }      from "../lib/jobs/sources/himalayas.js";
 import { fetchJobicy }         from "../lib/jobs/sources/jobicy.js";
 import { fetchRemotive }       from "../lib/jobs/sources/remotive.js";
-import { fetchWeWorkRemotely } from "../lib/jobs/sources/weWorkRemotely.js";
 import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
 import { fetchLever }          from "../lib/jobs/sources/lever.js";
-import { fetchJobBank }        from "../lib/jobs/sources/jobBank.js";
-import { fetchArbeitnow }      from "../lib/jobs/sources/arbeitnow.js";
 import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
@@ -20,7 +16,7 @@ import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
 import "../styles/jobs.css";
 
-const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchJobBank, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchWeWorkRemotely, fetchRemoteOk, fetchArbeitnow];
+const SOURCES = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchRemoteOk];
 const POLL_MS        = 5 * 60 * 1000;
 const PAGE_SIZE      = 10;
 const CLASSIFY_BATCH = 24; // 4 chunks of 6 -- stays under Groq free-tier token-per-minute limit
@@ -97,16 +93,17 @@ function scoreJob(job) {
   // Title patterns are the fallback for jobs neither Groq nor the source has classified yet.
   const exp   = job.groqExp ?? job.sourceExp;
   const title = job.title ?? "";
+  // Target: jr and mid both surface well (0–3 years sweet spot)
   if (exp === "0-2") {
-    score += 40;
+    score += 35;
   } else if (exp === "2-5") {
-    score += 15;
+    score += 30;
   } else if (exp === "5+") {
     score -= 40;
   } else {
     // No exp signal yet -- use title keywords as a rough proxy
-    if      (/\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) score += 35;
-    else if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) score += 15;
+    if      (/\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) score += 32;
+    else if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) score += 28;
     else if (/\bstaff\b|\bprincipal\b|\bdistinguished\b|\bhead\s+of\b|\bvp\b|\bdirector\b/i.test(title)) score -= 55;
     else if (/\bsenior\b|\bsr\.?\b|\blead\b/i.test(title)) score -= 30;
   }
