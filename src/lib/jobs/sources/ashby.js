@@ -8,6 +8,15 @@ const COMPANIES = [
   { name: "Sentry",       slug: "sentry",      category: "global-remote" },
   { name: "Help Scout",   slug: "helpscout",   category: "global-remote" },
   { name: "Deel",         slug: "deel",        category: "global-remote" },
+  { name: "Remote.com",   slug: "remote",      category: "global-remote" }, // EOR company, hires globally
+  { name: "Ditto",        slug: "ditto",       category: "global-remote" },
+  { name: "Maze",         slug: "maze",        category: "global-remote" },
+  { name: "Liveblocks",   slug: "liveblocks",  category: "global-remote" },
+  { name: "Sanity",       slug: "sanity",      category: "global-remote" }, // CMS, Norway-based global remote
+  { name: "Storyblok",    slug: "storyblok",   category: "global-remote" },
+  { name: "Chameleon",    slug: "chameleon",   category: "global-remote" },
+  { name: "Incident.io",  slug: "incidentio",  category: "global-remote" },
+  { name: "Pave",         slug: "pave",        category: "global-remote" },
   // ── Dev tools ─────────────────────────────────────────────────────────────
   { name: "Linear",       slug: "linear",      category: "devtools" },
   { name: "Notion",       slug: "notion",      category: "devtools" },
@@ -21,24 +30,41 @@ const COMPANIES = [
   { name: "Render",       slug: "render",      category: "devtools" },
   { name: "Clerk",        slug: "clerk",       category: "devtools" },
   { name: "Mistral",      slug: "mistral",     category: "devtools" },
+  { name: "Dagger",       slug: "dagger",      category: "devtools" },
+  { name: "Cal.com",      slug: "calcom",      category: "devtools" },
+  { name: "Trigger.dev",  slug: "triggerdev",  category: "devtools" },
+  { name: "Inngest",      slug: "inngest",     category: "devtools" },
+  { name: "Modal",        slug: "modal",       category: "devtools" },
+  { name: "Turso",        slug: "turso",       category: "devtools" },
+  { name: "Encore",       slug: "encore",      category: "devtools" },
+  { name: "Zed",          slug: "zed",         category: "devtools" },
   // ── Security ──────────────────────────────────────────────────────────────
   { name: "Vanta",        slug: "vanta",       category: "security" },
   { name: "Doppler",      slug: "doppler",     category: "security" },
   { name: "Infisical",    slug: "infisical",   category: "security" },
   { name: "Stytch",       slug: "stytch",      category: "security" },
+  { name: "Pangea",       slug: "pangea",      category: "security" },
   // ── Fintech ───────────────────────────────────────────────────────────────
   { name: "Ramp",         slug: "ramp",        category: "fintech"  },
   { name: "Mercury",      slug: "mercury",     category: "fintech"  },
+  { name: "Brex",         slug: "brex",        category: "fintech"  },
+  { name: "Pipe",         slug: "pipe",        category: "fintech"  },
   // ── Canadian ──────────────────────────────────────────────────────────────
   { name: "Cohere",       slug: "cohere",      category: "canadian" },
   { name: "Clearco",      slug: "clearco",     category: "canadian" },
   { name: "Trulioo",      slug: "trulioo",     category: "canadian" },
   { name: "Relay",        slug: "relay",       category: "canadian" },
   { name: "Miovision",    slug: "miovision",   category: "canadian" },
-  { name: "1Password",    slug: "1password",   category: "canadian" }, // confirmed on Ashby (was dead GH slug)
-  { name: "Procurify",    slug: "procurify",   category: "canadian" }, // spend mgmt, Vancouver, confirmed Ashby
-  { name: "Klue",         slug: "klue",        category: "canadian" }, // competitive intel, Vancouver, confirmed Ashby
-  { name: "Loopio",       slug: "loopio",      category: "canadian" }, // RFP software, Toronto, confirmed Ashby
+  { name: "1Password",    slug: "1password",   category: "canadian" },
+  { name: "Procurify",    slug: "procurify",   category: "canadian" },
+  { name: "Klue",         slug: "klue",        category: "canadian" },
+  { name: "Loopio",       slug: "loopio",      category: "canadian" },
+  { name: "Apryse",       slug: "apryse",      category: "canadian" }, // PDF SDK, Vancouver
+  { name: "Unbounce",     slug: "unbounce",    category: "canadian" }, // landing pages, Vancouver
+  { name: "League",       slug: "league",      category: "canadian" }, // digital health, Toronto
+  { name: "Nudge",        slug: "nudge",       category: "canadian" }, // employee experience, Toronto
+  { name: "Properly",     slug: "properly",    category: "canadian" }, // real estate, Toronto
+  { name: "Mysa",         slug: "mysa",        category: "canadian" }, // smart thermostat, St. John's NL
 ];
 
 const TIMEOUT_MS = 8000;

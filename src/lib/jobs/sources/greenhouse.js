@@ -24,9 +24,32 @@ const COMPANIES = [
   { name: "Mixpanel",      slug: "mixpanel",     category: "global-remote" },
   { name: "Descript",      slug: "descript",     category: "global-remote" },
   { name: "Samsara",       slug: "samsara",      category: "global-remote" },
+  { name: "Netlify",       slug: "netlify",      category: "global-remote" },
+  { name: "HashiCorp",     slug: "hashicorp",    category: "global-remote" },
+  { name: "Postman",       slug: "postman",      category: "global-remote" },
+  { name: "DigitalOcean",  slug: "digitalocean", category: "global-remote" },
+  { name: "LaunchDarkly",  slug: "launchdarkly", category: "global-remote" },
+  { name: "Snyk",          slug: "snyk",         category: "global-remote" },
+  { name: "Algolia",       slug: "algolia",      category: "global-remote" },
+  { name: "Braze",         slug: "braze",        category: "global-remote" },
+  { name: "Fastly",        slug: "fastly",       category: "global-remote" },
+  { name: "New Relic",     slug: "newrelic",     category: "global-remote" },
+  { name: "CockroachLabs", slug: "cockroachlabs",category: "global-remote" },
+  { name: "Calendly",      slug: "calendly",     category: "global-remote" },
+  { name: "Pendo",         slug: "pendo",        category: "global-remote" },
+  { name: "Kong",          slug: "kong",         category: "global-remote" },
+  { name: "Miro",          slug: "realtimeboard",category: "global-remote" },
+  { name: "Contentful",    slug: "contentful",   category: "global-remote" },
+  { name: "Braintrust",    slug: "braintrust",   category: "global-remote" },
+  { name: "Loom",          slug: "loom",         category: "global-remote" },
+  { name: "Zapier",        slug: "zapier",       category: "global-remote" },
   // ── AI / dev-tools ────────────────────────────────────────────────────────
   { name: "Anthropic",     slug: "anthropic",    category: "devtools" },
   { name: "Scale AI",      slug: "scaleai",      category: "devtools" },
+  { name: "Retool",        slug: "retool",       category: "devtools" },
+  { name: "Harness",       slug: "harness",      category: "devtools" },
+  { name: "Figma",         slug: "figma",        category: "devtools" },
+  { name: "Vercel",        slug: "vercel",       category: "devtools" },
   // ── Global-remote startups ─────────────────────────────────────────────────
   { name: "Remote",        slug: "remote",       category: "global-remote" },
   // ── Fintech (many hire across North America) ──────────────────────────────
@@ -35,11 +58,12 @@ const COMPANIES = [
   { name: "Faire",         slug: "faire",        category: "fintech"  },
   { name: "Gusto",         slug: "gusto",        category: "fintech"  },
   { name: "Carta",         slug: "carta",        category: "fintech"  },
-  { name: "Vercel",        slug: "vercel",       category: "devtools" },
-  { name: "Figma",         slug: "figma",        category: "devtools" },
+  { name: "Plaid",         slug: "plaid",        category: "fintech"  },
+  { name: "Affirm",        slug: "affirm",       category: "fintech"  },
+  { name: "Rippling",      slug: "rippling",     category: "fintech"  },
   // ── Canadian companies ────────────────────────────────────────────────────
-  { name: "Tailscale",     slug: "tailscale",    category: "canadian" }, // networking/VPN, Toronto-distributed, confirmed GH
-  { name: "Vidyard",       slug: "vidyard",      category: "canadian" }, // video platform, Waterloo, confirmed GH
+  { name: "Tailscale",     slug: "tailscale",    category: "canadian" },
+  { name: "Vidyard",       slug: "vidyard",      category: "canadian" },
   { name: "D2L",           slug: "d2l",          category: "canadian" },
   { name: "Benevity",      slug: "benevity",     category: "canadian" },
   { name: "Tulip",         slug: "tulip",        category: "canadian" },
@@ -49,6 +73,13 @@ const COMPANIES = [
   { name: "StackAdapt",    slug: "stackadapt",   category: "canadian" },
   { name: "Later",         slug: "later",        category: "canadian" },
   { name: "Coconut Software", slug: "coconutsoftware", category: "canadian" },
+  { name: "FreshBooks",    slug: "freshbooks",   category: "canadian" },
+  { name: "Vena Solutions",slug: "venasolutions", category: "canadian" },
+  { name: "ApplyBoard",    slug: "applyboard",   category: "canadian" },
+  { name: "AlayaCare",     slug: "alayacare",    category: "canadian" },
+  { name: "Symend",        slug: "symend",       category: "canadian" },
+  { name: "EQ Works",      slug: "eqworks",      category: "canadian" },
+  { name: "Validere",      slug: "validere",     category: "canadian" },
 ];
 
 const TIMEOUT_MS = 8000;
