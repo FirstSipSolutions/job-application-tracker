@@ -88,7 +88,7 @@ export default function Dashboard() {
             onEdit={setEditingApp}
           />
 
-          <ResumeBoard />
+          <ResumeBoard apps={apps} />
         </div>
       </main>
 

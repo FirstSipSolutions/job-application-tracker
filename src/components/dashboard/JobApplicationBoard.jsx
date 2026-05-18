@@ -8,22 +8,17 @@ function fmtDate(iso) {
 }
 
 function useDocuments() {
-  const [resumes, setResumes]      = useState([]);
-  const [coverLetters, setCL]      = useState([]);
+  const [resumes, setResumes] = useState([]);
   useEffect(() => {
     supabase.from("resumes").select("id, name, type").order("created_at", { ascending: false })
-      .then(({ data }) => {
-        const docs = data ?? [];
-        setResumes(docs.filter(d => d.type !== "cover_letter"));
-        setCL(docs.filter(d => d.type === "cover_letter"));
-      });
+      .then(({ data }) => setResumes((data ?? []).filter(d => d.type !== "cover_letter")));
   }, []);
-  return { resumes, coverLetters };
+  return { resumes };
 }
 
-function QuickPairRow({ app, resumes, coverLetters, onSave, onClose }) {
-  const [resumeId, setResumeId]         = useState(app.resume_id       ?? "");
-  const [coverLetterId, setCoverLetter] = useState(app.cover_letter_id ?? "");
+function QuickPairRow({ app, resumes, onSave, onClose }) {
+  const [resumeId,  setResumeId]  = useState(app.resume_id ?? "");
+  const [showCL,    setShowCL]    = useState(false);
   const rowRef = useRef(null);
 
   useEffect(() => {
@@ -35,41 +30,44 @@ function QuickPairRow({ app, resumes, coverLetters, onSave, onClose }) {
   }, [onClose]);
 
   return (
-    <div className="qp-row" ref={rowRef}>
-      {app.url && (
-        <a className="qp-open-btn" href={app.url} target="_blank" rel="noopener noreferrer">
-          <ExternalLink size={13} /> Open Job
-        </a>
+    <div className="qp-panel" ref={rowRef}>
+      <div className="qp-row">
+        {app.url && (
+          <a className="qp-open-btn" href={app.url} target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={13} /> Open Job
+          </a>
+        )}
+
+        <select className="qp-select" value={resumeId} onChange={e => setResumeId(e.target.value)}>
+          <option value="">No resume</option>
+          {resumes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+
+        <button
+          className={`qp-cl-btn${app.cover_letter ? " qp-cl-btn-has" : ""}`}
+          onClick={() => setShowCL(v => !v)}
+          title={app.cover_letter ? "View cover letter" : "No cover letter written"}
+        >
+          {app.cover_letter ? "Cover Letter" : "No Cover Letter"}
+        </button>
+
+        <button
+          className="qp-save"
+          onClick={() => { onSave(app.id, { resume_id: resumeId || null }); onClose(); }}
+        >
+          Save
+        </button>
+      </div>
+
+      {showCL && app.cover_letter && (
+        <pre className="qp-cl-preview">{app.cover_letter}</pre>
       )}
-
-      <select className="qp-select" value={resumeId} onChange={e => setResumeId(e.target.value)}>
-        <option value="">No resume</option>
-        {resumes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-      </select>
-
-      <select className="qp-select qp-select-cl" value={coverLetterId} onChange={e => setCoverLetter(e.target.value)}>
-        <option value="">No cover letter</option>
-        {coverLetters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-      </select>
-
-      <button
-        className="qp-save"
-        onClick={() => {
-          onSave(app.id, {
-            resume_id:       resumeId       || null,
-            cover_letter_id: coverLetterId  || null,
-          });
-          onClose();
-        }}
-      >
-        Save
-      </button>
     </div>
   );
 }
 
 export default function JobApplicationBoard({ apps, loading, updateStatus, updateApp, removeApp, onEdit }) {
-  const { resumes, coverLetters } = useDocuments();
+  const { resumes } = useDocuments();
   const [expanded, setExpanded]   = useState(null);
 
   function toggle(id) { setExpanded(prev => prev === id ? null : id); }
@@ -126,7 +124,6 @@ export default function JobApplicationBoard({ apps, loading, updateStatus, updat
                   <QuickPairRow
                     app={app}
                     resumes={resumes}
-                    coverLetters={coverLetters}
                     onSave={updateApp}
                     onClose={() => setExpanded(null)}
                   />
