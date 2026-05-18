@@ -178,7 +178,7 @@ function readJobsCache() {
   try {
     const raw = JSON.parse(localStorage.getItem(JOBS_CACHE_KEY) ?? "null");
     if (!raw) return [];
-    return (raw.jobs ?? []).filter(j => j.postedAt && (Date.now() - new Date(j.postedAt)) / 864e5 <= 20);
+    return (raw.jobs ?? []).filter(j => j.postedAt && (Date.now() - new Date(j.postedAt)) / 864e5 <= 7);
   } catch { return []; }
 }
 

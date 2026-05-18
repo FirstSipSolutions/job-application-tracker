@@ -113,7 +113,7 @@ const DEV_ROLE = [
 ];
 
 // Drop jobs older than this. Cuts ghost jobs and filled roles.
-const MAX_AGE_DAYS = 20;
+const MAX_AGE_DAYS = 14;
 
 export function isFresh(job) {
   if (!job.postedAt) return false;
