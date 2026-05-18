@@ -23,7 +23,7 @@ function CarouselItem({ item, index, itemWidth, trackItemOffset, x, transition }
     >
       <div className="carousel-item-header">
         <span className="carousel-icon-glow" style={glow}>{item.icon}</span>
-        {item.label && <span className="carousel-item-label">{item.label}</span>}
+        {item.label && <span className="carousel-item-label" style={item.labelStyle}>{item.label}</span>}
       </div>
 
       <div className="carousel-item-content">
