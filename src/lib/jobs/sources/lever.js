@@ -3,8 +3,6 @@ import { fromLever } from "../normalize.js";
 // All slugs verified 200 — dead slugs removed to avoid wasted requests.
 const COMPANIES = [
   // ── Canadian ──────────────────────────────────────────────────────────────
-  { name: "Shopify",        slug: "shopify",        category: "canadian" },
-  { name: "Jobber",         slug: "jobber",         category: "canadian" },
   { name: "Wealthsimple",   slug: "wealthsimple",   category: "canadian" },
   { name: "PointClickCare", slug: "pointclickcare", category: "canadian" },
   { name: "PolicyMe",       slug: "policyme",       category: "canadian" },

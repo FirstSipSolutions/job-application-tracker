@@ -1,14 +1,9 @@
 import { fromWorkable } from "../normalize.js";
 
 // Proxied via /api/workable (CF function in prod, vite middleware in dev).
-const COMPANIES = [
-  // ── Canadian ──────────────────────────────────────────────────────────────────
-  { name: "Hopper",     slug: "hopper",     category: "canadian" },
-  { name: "Ritual",     slug: "ritual",     category: "canadian" },
-  { name: "Float",      slug: "floatfinancial", category: "canadian" },
-  { name: "ApplyBoard", slug: "applyboard", category: "canadian" },
-  { name: "Wattpad",    slug: "wattpad",    category: "canadian" },
-];
+// Slugs must be verified from apply.workable.com/{slug} before adding.
+// Example: Hopper → verify at apply.workable.com/hopper first.
+const COMPANIES = [];
 
 const TIMEOUT_MS = 10000;
 const BASE       = "/api/workable";
