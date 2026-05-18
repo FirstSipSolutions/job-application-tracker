@@ -42,6 +42,9 @@ const COMPANIES = [
   { name: "Procurify",   slug: "procurify",  category: "canadian" },
   { name: "Klue",        slug: "klue",       category: "canadian" },
   { name: "Loopio",      slug: "loopio",     category: "canadian" },
+  { name: "Vendasta",    slug: "vendasta",   category: "canadian" },
+  { name: "Bench",       slug: "bench",      category: "canadian" },
+  { name: "Vena",        slug: "vena",       category: "canadian" },
 ];
 
 const TIMEOUT_MS = 8000;

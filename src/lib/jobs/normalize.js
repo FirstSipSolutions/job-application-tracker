@@ -300,6 +300,97 @@ export function fromHimalayas(job) {
   };
 }
 
+// ── Workday (via CF proxy) ────────────────────────────────────────────────────
+
+function parseWorkdayDate(str) {
+  // "Posted Today", "Posted 2 Days Ago", "Posted 30+ Days Ago"
+  if (!str) return null;
+  const s = str.toLowerCase();
+  if (/today/.test(s)) return new Date().toISOString();
+  const m = s.match(/(\d+)\+?\s*day/);
+  if (m) {
+    const d = new Date();
+    d.setDate(d.getDate() - parseInt(m[1], 10));
+    return d.toISOString();
+  }
+  return null;
+}
+
+export function fromWorkday(job, companyName, tenant, board, wd, category) {
+  const loc      = job.locationsText ?? "";
+  const remote   = isRemoteLoc(loc) || /remote/i.test(loc);
+  const hybrid   = /hybrid/i.test(loc);
+  const canadaOpen = /canada/i.test(loc) ? true : undefined;
+  return {
+    id:            `wd-${tenant}-${(job.externalPath ?? job.jobPostingId ?? String(Date.now())).replace(/\W+/g, "-")}`,
+    title:         job.title ?? "",
+    company:       companyName,
+    location:      loc || (remote ? "Remote" : ""),
+    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : loc,
+    salary:        null,
+    currency:      null,
+    postedAt:      parseWorkdayDate(job.postedOn),
+    url:           `https://${tenant}.wd${wd}.myworkdayjobs.com/en-US/${board}${job.externalPath ?? ""}`,
+    source:        "Workday",
+    category,
+    canadaOpen,
+    _canadaSource: canadaOpen === true ? "source" : undefined,
+    descriptionSnippet: null,
+  };
+}
+
+// ── Workable (via CF proxy) ───────────────────────────────────────────────────
+
+export function fromWorkable(job, companyName, category) {
+  const loc      = job.location ?? {};
+  const remote   = loc.remote === true || loc.workplace === "remote";
+  const hybrid   = loc.workplace === "hybrid";
+  const locStr   = [loc.city, loc.region, loc.country].filter(Boolean).join(", ");
+  const canadaOpen = loc.country_code === "CA" || loc.countryCode === "CA" ? true : undefined;
+  return {
+    id:            `wk-${job.id ?? job.shortcode ?? String(Date.now())}`,
+    title:         job.title ?? "",
+    company:       companyName,
+    location:      hybrid ? `${locStr} (Hybrid)` : remote ? "Remote" : locStr,
+    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : locStr,
+    salary:        null,
+    currency:      null,
+    postedAt:      job.created_at ?? null,
+    url:           job.url ?? "",
+    source:        "Workable",
+    category,
+    canadaOpen,
+    _canadaSource: canadaOpen === true ? "source" : undefined,
+    descriptionSnippet: null,
+  };
+}
+
+// ── SmartRecruiters (CORS = * — no proxy needed) ──────────────────────────────
+
+export function fromSmartRecruiters(job, companyName, category) {
+  const loc    = job.location ?? {};
+  const remote = loc.remote === true;
+  const hybrid = /hybrid/i.test(loc.city ?? "") || /hybrid/i.test(loc.country ?? "");
+  const locStr = [loc.city, loc.country].filter(Boolean).join(", ");
+  const canadaOpen = loc.countryCode === "CA" ? true : remote ? undefined : undefined;
+  return {
+    id:            `sr-${job.id ?? String(Date.now())}`,
+    title:         job.name ?? "",
+    company:       companyName,
+    location:      hybrid ? `${locStr} (Hybrid)` : remote ? "Remote" : locStr,
+    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : locStr,
+    salary:        null,
+    currency:      null,
+    postedAt:      job.releasedDate ?? job.createdOn ?? null,
+    url:           job.ref ?? "",
+    source:        "SmartRecruiters",
+    category,
+    canadaOpen,
+    _canadaSource: canadaOpen === true ? "source" : undefined,
+    descriptionSnippet: null,
+  };
+}
+
 // ── Arbeitnow ─────────────────────────────────────────────────────────────────
 
 export function fromArbeitnow(job) {

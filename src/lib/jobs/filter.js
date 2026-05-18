@@ -128,6 +128,8 @@ export function isRemote(job) {
   const loc = job.location ?? "";
   const combined = `${wt} ${loc}`;
   if (/\bon[- ]?site\b|\bhybrid\b|\bin[- ]?office\b|\bin[- ]?person\b/i.test(combined)) return false;
+  // "Remote/Hybrid" or "Hybrid/Remote" labels → hybrid, not fully remote
+  if (/remote[/|]hybrid|hybrid[/|]remote/i.test(combined)) return false;
   return /remote|anywhere|worldwide|telecommut/i.test(combined);
 }
 

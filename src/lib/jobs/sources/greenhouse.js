@@ -55,6 +55,8 @@ const COMPANIES = [
   { name: "Carta",         slug: "carta",         category: "fintech" },
   { name: "Affirm",        slug: "affirm",        category: "fintech" },
   // ── Canadian ──────────────────────────────────────────────────────────────
+  { name: "Shopify",       slug: "shopify",       category: "canadian" },
+  { name: "Jobber",        slug: "jobber",        category: "canadian" },
   { name: "Tailscale",     slug: "tailscale",     category: "canadian" },
   { name: "D2L",           slug: "d2l",           category: "canadian" },
   { name: "Benevity",      slug: "benevity",      category: "canadian" },
