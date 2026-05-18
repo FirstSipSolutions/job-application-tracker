@@ -391,3 +391,13 @@ textarea.modal-input {
   color: var(--db-blue);
   font-weight: 600;
 }
+
+.modal-resume-pill-cl:hover {
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
+.modal-resume-pill-cl.modal-resume-pill-active {
+  background: rgba(167, 139, 250, 0.12);
+  border-color: #a78bfa;
+  color: #a78bfa;
+}
