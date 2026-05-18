@@ -20,7 +20,6 @@ import { classifyJobs }              from "../lib/llm/classifyJobs.js";
 import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
 import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
-import CoverLetterStack from "../components/jobs/CoverLetterStack.jsx";
 import "../styles/jobs.css";
 
 const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk];
@@ -494,8 +493,7 @@ export default function JobsPage() {
   return (
     <div className="db-root">
       <AppNav />
-      <div className="jobs-split">
-      <main className="jobs-left">
+      <main className="db-main">
 
         <div className="jobs-header">
           <div>
@@ -647,11 +645,6 @@ export default function JobsPage() {
         )}
 
       </main>
-
-      <aside className="jobs-right">
-        <CoverLetterStack apps={apps} />
-      </aside>
-      </div>
 
       {coverJob && (
         <CoverLetterModal

@@ -6,6 +6,7 @@ import ProfileCard from "../components/dashboard/ProfileCard.jsx";
 import ActivityChart from "../components/dashboard/ActivityChart.jsx";
 import JobApplicationBoard from "../components/dashboard/JobApplicationBoard.jsx";
 import ResumeBoard from "../components/dashboard/ResumeBoard.jsx";
+import CoverLetterStack from "../components/jobs/CoverLetterStack.jsx";
 import UpcomingPanel from "../components/dashboard/UpcomingPanel.jsx";
 import WidgetGrid from "../components/dashboard/WidgetGrid.jsx";
 import { useApplications } from "../hooks/useApplications.js";
@@ -88,6 +89,10 @@ export default function Dashboard() {
           />
 
           <ResumeBoard />
+
+          <div className="db-card db-cover-letters">
+            <CoverLetterStack apps={apps} />
+          </div>
         </div>
       </main>
 

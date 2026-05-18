@@ -141,7 +141,8 @@
 .db-activity-chart { grid-column: 2;     grid-row: 1; }
 .db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
 .db-app-board    { grid-column: 1 / 4; grid-row: 2; }
-.db-resume-board { grid-column: 1 / 4; grid-row: 3; }
+.db-resume-board   { grid-column: 1 / 4; grid-row: 3; }
+.db-cover-letters  { grid-column: 1 / 4; grid-row: 4; min-height: 420px; }
 
 
 /* ── Profile card ── */
