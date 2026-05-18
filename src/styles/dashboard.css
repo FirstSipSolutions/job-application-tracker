@@ -718,6 +718,53 @@
 .rb-upload-btn:hover:not(:disabled) { color: var(--db-blue); border-color: var(--db-blue); }
 .rb-upload-btn:disabled { opacity: 0.4; cursor: default; }
 
+/* ── Resume + Cover Letter hat stacking ── */
+
+.rb-stack-group {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.rb-card-hat {
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background: rgba(167, 139, 250, 0.07);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding-bottom: 6px;
+  min-width: 160px;
+  max-width: 200px;
+}
+
+.rb-stack-group > .rb-card:last-child {
+  border-radius: 0 0 8px 8px;
+  border-top: 2px solid rgba(167, 139, 250, 0.3);
+}
+
+.rb-stack-group > .rb-card-hat + .rb-card {
+  border-top: 2px solid rgba(167, 139, 250, 0.3);
+}
+
+.rb-hat-name {
+  font-size: 11px;
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+.rb-hat-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(167, 139, 250, 0.6);
+  margin-top: 2px;
+}
+
+.rb-card-cl-solo {
+  border: 1px dashed rgba(167, 139, 250, 0.4);
+  background: rgba(167, 139, 250, 0.04);
+}
+
 .rb-card-ghost {
   border: 1px dashed rgba(167, 139, 250, 0.35);
   background: rgba(167, 139, 250, 0.03);
