@@ -142,7 +142,6 @@
 .db-sidebar  { grid-column: 3;     grid-row: 1; overflow-y: auto; max-height: 480px; }
 .db-app-board    { grid-column: 1 / 4; grid-row: 2; }
 .db-resume-board   { grid-column: 1 / 4; grid-row: 3; }
-.db-cover-letters  { grid-column: 1 / 4; grid-row: 4; min-height: 420px; }
 
 
 /* ── Profile card ── */
@@ -597,8 +596,14 @@
   margin-bottom: 16px;
 }
 
-.rb-drop {
-  padding: 7px 16px;
+.rb-upload-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.rb-upload-btn {
+  padding: 6px 12px;
   border: 1px dashed var(--db-border);
   border-radius: 4px;
   font-size: 12px;
@@ -607,10 +612,14 @@
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
   white-space: nowrap;
-  user-select: none;
 }
-.rb-drop:hover,
-.rb-drop-active { color: var(--db-blue); border-color: var(--db-blue); }
+.rb-upload-btn:hover:not(:disabled) { color: var(--db-blue); border-color: var(--db-blue); }
+.rb-upload-btn:disabled { opacity: 0.4; cursor: default; }
+
+.rb-card-cl {
+  border-color: rgba(167, 139, 250, 0.2);
+  background: rgba(167, 139, 250, 0.04);
+}
 
 .rb-cards {
   display: flex;

@@ -48,12 +48,10 @@ export function useResumes() {
     fetchResumesWithStats().then(setResumes);
   }, []);
 
-  async function uploadResume(file) {
+  async function uploadResume(file, type = "resume") {
     setUploading(true);
     const { data: { user } } = await supabase.auth.getUser();
     const id   = crypto.randomUUID();
-    // Scope the file path to the user's ID so storage RLS can enforce ownership
-    // by checking the first folder segment matches auth.uid().
     const path = `${user.id}/${id}.pdf`;
 
     const { error: storageErr } = await supabase.storage
@@ -65,11 +63,10 @@ export function useResumes() {
     const name = file.name.replace(/\.pdf$/i, "");
     const { data: row, error: dbErr } = await supabase
       .from("resumes")
-      .insert({ id, name, file_path: path })
+      .insert({ id, name, file_path: path, type })
       .select()
       .single();
 
-    // Seed _stats so the new card renders immediately without a refetch.
     if (!dbErr) setResumes(prev => [{ ...row, _stats: { count: 0, responses: 0 } }, ...prev]);
     setUploading(false);
   }
