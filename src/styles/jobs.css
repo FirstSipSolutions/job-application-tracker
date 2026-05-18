@@ -1,3 +1,156 @@
+/* ── Cover Letter Modal ── */
+
+.cl-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.cl-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.cl-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cl-job-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cl-job-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.cl-job-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.cl-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: var(--text-dim);
+  transition: background 0.15s, color 0.15s;
+}
+
+.cl-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.cl-textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 20px;
+  min-height: 320px;
+  max-height: 50vh;
+}
+
+.cl-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.cl-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.cl-btn-ghost {
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+  transition: background 0.15s, color 0.15s;
+}
+
+.cl-btn-ghost:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.cl-btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  background: var(--surface);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cl-btn-secondary:hover {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+.cl-btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-text);
+  transition: opacity 0.15s;
+}
+
+.cl-btn-primary:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.cl-btn-primary:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* ── Jobs page ── */
 
 .db-greeting-h1 {

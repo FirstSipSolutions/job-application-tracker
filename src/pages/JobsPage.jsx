@@ -19,6 +19,7 @@ import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
 import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
+import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
 const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk];
@@ -220,6 +221,7 @@ export default function JobsPage() {
   const [liveJobs,    setLiveJobs]    = useState([]);
   const [polling,     setPolling]     = useState(false);
   const [aiFiltering, setAiFiltering] = useState(false);
+  const [coverJob,    setCoverJob]    = useState(null);
   const seenUrls       = useRef(new Set());
   const classifiedUrls = useRef(new Set());
   const pollTimer      = useRef(null);
@@ -334,16 +336,17 @@ export default function JobsPage() {
     setPolling(false);
   }
 
-  function logAndOpen(job) {
+  function logAndOpen(job, coverLetter) {
     window.open(job.url, "_blank", "noopener,noreferrer");
     markApplied(job.company); // strongest Canada signal: you clicked Apply
     addApp({
-      url:     job.url,
-      company: job.company,
-      role:    job.title,
-      status:  "Viewed",
-      date:    new Date().toISOString().slice(0, 10),
-      notes:   [
+      url:          job.url,
+      company:      job.company,
+      role:         job.title,
+      status:       "Viewed",
+      date:         new Date().toISOString().slice(0, 10),
+      cover_letter: coverLetter ?? null,
+      notes:        [
         `Via ${job.source}`,
         job.postedAt                 ? `Posted: ${job.postedAt.slice(0, 10)}` : null,
         job.groqStack                ? `Stack: ${job.groqStack}`       : null,
@@ -353,6 +356,15 @@ export default function JobsPage() {
         job.descriptionSnippet       ? job.descriptionSnippet.slice(0, 300) : null,
       ].filter(Boolean).join(" | "),
     });
+  }
+
+  function handleApply(job) {
+    setCoverJob(job);
+  }
+
+  function handleCoverConfirm(coverLetter) {
+    logAndOpen(coverJob, coverLetter);
+    setCoverJob(null);
   }
 
   const providers = useMemo(() => {
@@ -461,7 +473,7 @@ export default function JobsPage() {
                 <p className="live-found-label">{liveJobs.length} new {liveJobs.length === 1 ? "listing" : "listings"} found</p>
                 <div className="jobs-grid">
                   {liveJobs.map(job => (
-                    <JobCard key={job.id} job={job} onApply={logAndOpen} />
+                    <JobCard key={job.id} job={job} onApply={handleApply} />
                   ))}
                 </div>
               </div>
@@ -597,7 +609,7 @@ export default function JobsPage() {
             <div key={i} className="job-card job-card-skeleton" />
           ))}
           {visible.map(job => (
-            <JobCard key={job.id} job={job} onApply={logAndOpen} />
+            <JobCard key={job.id} job={job} onApply={handleApply} />
           ))}
           {!loading && filtered.length === 0 && (
             <div className="jobs-empty-state">
@@ -627,6 +639,14 @@ export default function JobsPage() {
         )}
 
       </main>
+
+      {coverJob && (
+        <CoverLetterModal
+          job={coverJob}
+          onConfirm={handleCoverConfirm}
+          onClose={() => setCoverJob(null)}
+        />
+      )}
     </div>
   );
 }

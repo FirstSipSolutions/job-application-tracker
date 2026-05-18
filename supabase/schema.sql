@@ -7,15 +7,16 @@
 -- ── Applications ────────────────────────────────────────────
 
 create table if not exists applications (
-  id         uuid primary key default gen_random_uuid(),
-  user_id    uuid references auth.users not null default auth.uid(),
-  company    text not null,
-  role       text not null,
-  status     text not null default 'Applied',
-  date       date not null,
-  url        text,
-  notes      text,
-  created_at timestamptz default now()
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid references auth.users not null default auth.uid(),
+  company      text not null,
+  role         text not null,
+  status       text not null default 'Applied',
+  date         date not null,
+  url          text,
+  notes        text,
+  cover_letter text,
+  created_at   timestamptz default now()
 );
 
 alter table applications enable row level security;
