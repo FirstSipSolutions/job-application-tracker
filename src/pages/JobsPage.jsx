@@ -16,10 +16,9 @@ import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
 import "../styles/jobs.css";
 
-const SOURCES = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchRemoteOk];
-const POLL_MS        = 5 * 60 * 1000;
-const PAGE_SIZE      = 10;
-const CLASSIFY_BATCH = 24; // 4 chunks of 6 -- stays under Groq free-tier token-per-minute limit
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchJobicy, fetchRemotive, fetchRemoteOk];
+const POLL_MS   = 5 * 60 * 1000;
+const PAGE_SIZE = 10;
 
 const POSTED_BANDS = [
   { value: 1,  label: "Today" },
@@ -267,8 +266,7 @@ export default function JobsPage() {
           setResolved(done);
 
           if (done === SOURCES.length) {
-            const base       = dedup(collected).sort(byScore());
-            const firstBatch = base.slice(0, CLASSIFY_BATCH);
+            const base = dedup(collected).sort(byScore());
             setJobs(base);
             writeJobsCache(base); // persist for next visit
 
@@ -279,8 +277,8 @@ export default function JobsPage() {
               .map(j => ({ title: j.title, company: j.company, url: j.url, postedAt: j.postedAt, source: j.source }));
             try { localStorage.setItem("cv-vault-hot-jobs", JSON.stringify({ jobs: hotJobs, savedAt: Date.now() })); } catch {}
 
-            // Only classify jobs Groq hasn't seen yet
-            const toClassify = firstBatch.filter(j => !classifiedUrls.current.has(j.url));
+            // Classify ALL uncached jobs — filters need groqExp to work correctly
+            const toClassify = base.filter(j => !classifiedUrls.current.has(j.url));
             if (toClassify.length === 0) return;
             setAiFiltering(true);
             classifyJobs(toClassify).then(scored => {
@@ -288,8 +286,8 @@ export default function JobsPage() {
               scored.forEach(j => classifiedUrls.current.add(j.url));
               const m = new Map(scored.map(j => [j.url, j]));
               setJobs(prev => {
-                const updated = applyMemory(prev.map(j => m.get(j.url) ?? j));
-                writeJobsCache(updated); // update cache with fresh Groq data
+                const updated = applyMemory(prev.map(j => m.get(j.url) ?? j).sort(byScore()));
+                writeJobsCache(updated);
                 return updated;
               });
               setAiFiltering(false);
@@ -380,14 +378,20 @@ export default function JobsPage() {
           if (s !== tech && !tags.includes(tech)) return false;
         }
         if (expLevel) {
-          const e = getExperienceLevel(j);
-          const seniorTitle = /\b(senior|sr\.?|lead|staff|principal|head\s+of|vp|architect|director|manager)\b/i;
+          const e          = getExperienceLevel(j);
+          const title      = j.title ?? "";
+          const isSenior   = /\b(senior|sr\.?|lead|staff|principal|head\s+of|vp|architect|director|manager)\b/i.test(title);
+          const isJunior   = /\bjunior\b|\bjr\.?\b|\bentry[- ]?level\b|\bnew\s*grad\b/i.test(title);
           if (expLevel === "jr-mid") {
             if (e === "5+") return false;
-            if (e === null && seniorTitle.test(j.title ?? "")) return false;
+            if (e === null && isSenior) return false;
           } else {
-            if (e !== null && e !== expLevel) return false;
-            if (e === null && expLevel === "0-2" && seniorTitle.test(j.title ?? "")) return false;
+            if (e === expLevel) return true;   // Groq confirmed match — short-circuit
+            if (e !== null)     return false;  // Groq says different tier
+            // No Groq data yet — fall back to title keywords
+            if (expLevel === "0-2") return isJunior;
+            if (expLevel === "5+")  return isSenior;
+            return !isSenior && !isJunior;     // mid: include anything with no strong signal
           }
         }
         return true;
