@@ -13,7 +13,7 @@ const COMPANIES = [
   { name: "Sun Life",   tenant: "sunlife",    board: "Experienced",          wd: 3, category: "canadian" },
 ];
 
-const SEARCH     = "software developer";
+const SEARCH     = ""; // empty = all jobs; isTech() in passesFilter drops non-dev roles
 const TIMEOUT_MS = 10000;
 const BASE       = "/api/workday";
 
