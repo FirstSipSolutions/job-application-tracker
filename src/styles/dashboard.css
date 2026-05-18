@@ -232,6 +232,75 @@
 
 .db-app-empty { font-size: 13px; color: var(--db-text-faint); padding: 16px 0; }
 
+.db-app-row-open { background: var(--surface-2, #1a1a2e); border-radius: 6px 6px 0 0; }
+
+.db-app-paired-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+/* ── Quick Pair Row ── */
+
+.qp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface-2, #1a1a2e);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  margin-bottom: 2px;
+}
+
+.qp-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.qp-open-btn:hover { opacity: 0.8; }
+
+.qp-select {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.qp-select-cl { border-color: rgba(167,139,250,0.3); }
+.qp-select-cl:focus { outline-color: #a78bfa; }
+
+.qp-save {
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-text);
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.qp-save:hover { opacity: 0.85; }
+
 /* ── Nav action buttons ── */
 
 .db-nav-actions {
