@@ -1,3 +1,205 @@
+/* ── Jobs split layout ── */
+
+.jobs-split {
+  display: flex;
+  gap: 0;
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;
+}
+
+.jobs-left {
+  flex: 1 1 50%;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 24px 20px 40px;
+  border-right: 1px solid var(--border);
+}
+
+.jobs-right {
+  flex: 0 0 380px;
+  min-width: 320px;
+  max-width: 420px;
+  overflow-y: auto;
+  padding: 24px 20px 40px;
+  background: var(--surface);
+}
+
+/* ── Cover Letter Stack ── */
+
+.cls-root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.cls-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cls-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cls-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cls-stack-area {
+  position: relative;
+  flex: 1;
+}
+
+/* depth layers that peek behind the active card */
+.cls-depth {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.cls-depth-2 {
+  transform: rotate(2deg) translate(5px, 6px);
+  background: var(--surface-2);
+  z-index: 0;
+}
+
+.cls-depth-3 {
+  transform: rotate(-1.5deg) translate(-4px, 10px);
+  background: var(--surface-3);
+  z-index: -1;
+}
+
+.cls-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  height: 100%;
+  min-height: 300px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.cls-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cls-card-company {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cls-card-role {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.cls-card-date {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 2px;
+}
+
+.cls-card-body {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+.cls-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.cls-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.cls-nav-btn:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  color: var(--text);
+}
+
+.cls-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.cls-nav-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 40px;
+  text-align: center;
+}
+
+.cls-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 300px;
+  text-align: center;
+  padding: 24px;
+}
+
+.cls-empty-icon {
+  color: var(--text-faint);
+}
+
+.cls-empty-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.cls-empty-sub {
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.6;
+}
+
 /* ── Cover Letter Modal ── */
 
 .cl-backdrop {

@@ -20,6 +20,7 @@ import { classifyJobs }              from "../lib/llm/classifyJobs.js";
 import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
 import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
+import CoverLetterStack from "../components/jobs/CoverLetterStack.jsx";
 import "../styles/jobs.css";
 
 const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk];
@@ -225,7 +226,7 @@ export default function JobsPage() {
   const seenUrls       = useRef(new Set());
   const classifiedUrls = useRef(new Set());
   const pollTimer      = useRef(null);
-  const { addApp } = useApplications();
+  const { apps, addApp } = useApplications();
 
   useEffect(() => {
     let active = true;
@@ -372,12 +373,18 @@ export default function JobsPage() {
     return [...set].sort();
   }, [jobs]);
 
+  const coveredUrls = useMemo(
+    () => new Set(apps.filter(a => a.cover_letter && a.url).map(a => a.url)),
+    [apps]
+  );
+
   const filtered = useMemo(() => {
     const sortFn = shuffleKey > 0
       ? (a, b) => jobSeed(shuffleKey, a.url ?? a.id) - jobSeed(shuffleKey, b.url ?? b.id)
       : byScore();
     return jobs
       .filter(j => {
+        if (j.url && coveredUrls.has(j.url)) return false;
         if (!matchesRegion(j, region)) return false;
         if (region === "province" && province) {
           const locStr = `${j.location ?? ""} ${j.workplaceType ?? ""}`;
@@ -414,7 +421,7 @@ export default function JobsPage() {
         return true;
       })
       .sort(sortFn);
-  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey]);
+  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey, coveredUrls]);
 
   function resetFilters() {
     setRegion("canada");
@@ -487,7 +494,8 @@ export default function JobsPage() {
   return (
     <div className="db-root">
       <AppNav />
-      <main className="db-main">
+      <div className="jobs-split">
+      <main className="jobs-left">
 
         <div className="jobs-header">
           <div>
@@ -639,6 +647,11 @@ export default function JobsPage() {
         )}
 
       </main>
+
+      <aside className="jobs-right">
+        <CoverLetterStack apps={apps} />
+      </aside>
+      </div>
 
       {coverJob && (
         <CoverLetterModal
