@@ -115,6 +115,17 @@ export default function ResumeBoard() {
                     {badge.label}
                   </span>
                 )}
+
+                {r._pairs.length > 0 && (
+                  <div className="rb-pairs">
+                    {r._pairs.slice(0, 2).map((p, i) => (
+                      <span key={i} className="rb-pair-chip" title={p.company}>
+                        {isCL ? "CV" : "CL"} · {r._docMap[p.partnerId] ?? "Linked"}{p.company ? ` — ${p.company}` : ""}
+                      </span>
+                    ))}
+                    {r._pairs.length > 2 && <span className="rb-pair-more">+{r._pairs.length - 2} more</span>}
+                  </div>
+                )}
               </div>
             );
           })}

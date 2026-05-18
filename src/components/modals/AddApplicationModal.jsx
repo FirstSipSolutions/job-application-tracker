@@ -173,39 +173,26 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
               value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
-          {resumes.length > 0 && (
-            <div className="modal-field">
-              <label className="modal-label">Resume Used <span className="modal-label-opt">(optional)</span></label>
-              <div className="modal-resume-pills">
-                {resumes.map(r => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    className={`modal-resume-pill${resumeId === r.id ? " modal-resume-pill-active" : ""}`}
-                    onClick={() => setResumeId(prev => prev === r.id ? null : r.id)}
-                  >
-                    {r.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {coverLetters.length > 0 && (
-            <div className="modal-field">
-              <label className="modal-label">Cover Letter Used <span className="modal-label-opt">(optional)</span></label>
-              <div className="modal-resume-pills">
-                {coverLetters.map(c => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className={`modal-resume-pill modal-resume-pill-cl${coverLetterId === c.id ? " modal-resume-pill-active" : ""}`}
-                    onClick={() => setCoverLetterId(prev => prev === c.id ? null : c.id)}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
+          {(resumes.length > 0 || coverLetters.length > 0) && (
+            <div className="modal-row">
+              {resumes.length > 0 && (
+                <div className="modal-field">
+                  <label className="modal-label">Resume <span className="modal-label-opt">(optional)</span></label>
+                  <select className="modal-input" value={resumeId || ""} onChange={e => setResumeId(e.target.value || null)}>
+                    <option value="">None</option>
+                    {resumes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {coverLetters.length > 0 && (
+                <div className="modal-field">
+                  <label className="modal-label">Cover Letter <span className="modal-label-opt">(optional)</span></label>
+                  <select className="modal-input" value={coverLetterId || ""} onChange={e => setCoverLetterId(e.target.value || null)}>
+                    <option value="">None</option>
+                    {coverLetters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 

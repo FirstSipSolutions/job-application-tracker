@@ -621,6 +621,30 @@
   background: rgba(167, 139, 250, 0.04);
 }
 
+.rb-pairs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.rb-pair-chip {
+  font-size: 10px;
+  color: var(--db-text-faint);
+  background: var(--db-surface-2, var(--surface-2));
+  border: 1px solid var(--db-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rb-pair-more {
+  font-size: 10px;
+  color: var(--db-text-faint);
+}
+
 .rb-cards {
   display: flex;
   gap: 12px;
