@@ -11,7 +11,9 @@ import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
 import { fetchLever }          from "../lib/jobs/sources/lever.js";
 import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
 import { fetchWorkable }       from "../lib/jobs/sources/workable.js";
-import { fetchSmartRecruiters } from "../lib/jobs/sources/smartrecruiters.js";
+import { fetchSmartRecruiters }  from "../lib/jobs/sources/smartrecruiters.js";
+import { fetchWeWorkRemotely }   from "../lib/jobs/sources/weWorkRemotely.js";
+import { fetchRemoteCo }         from "../lib/jobs/sources/remoteCo.js";
 import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
@@ -19,7 +21,7 @@ import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchJobicy, fetchRemotive, fetchRemoteOk];
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk];
 const POLL_MS   = 5 * 60 * 1000;
 const PAGE_SIZE = 10;
 

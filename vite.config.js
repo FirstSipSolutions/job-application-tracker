@@ -41,7 +41,17 @@ export default defineConfig({
       "/api/himalayas": {
         target: "https://himalayas.app",
         changeOrigin: true,
-        rewrite: () => "/jobs/api/search?sort=recent&limit=100",
+        rewrite: () => "/jobs/api/search?sort=recent&limit=100&q=software",
+      },
+      "/api/weworkremotely": {
+        target: "https://weworkremotely.com",
+        changeOrigin: true,
+        rewrite: () => "/categories/remote-programming-jobs.rss",
+      },
+      "/api/remoteco": {
+        target: "https://remote.co",
+        changeOrigin: true,
+        rewrite: () => "/remote-jobs/developer/feed/",
       },
     },
   },

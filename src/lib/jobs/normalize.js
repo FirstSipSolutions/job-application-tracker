@@ -181,6 +181,33 @@ export function fromRemotive(job) {
   };
 }
 
+// ── Remote.co (RSS) ───────────────────────────────────────────────────────────
+
+export function fromRemoteCo(item) {
+  const get = tag => item.getElementsByTagName(tag)[0]?.textContent?.trim() ?? "";
+  const titleRaw = get("title");
+  // Title format: "Job Title at Company" or just "Job Title"
+  const atIdx    = titleRaw.lastIndexOf(" at ");
+  const title    = atIdx > 0 ? titleRaw.slice(0, atIdx).trim() : titleRaw;
+  const company  = atIdx > 0 ? titleRaw.slice(atIdx + 4).trim() : "";
+  const link     = get("link") || get("guid");
+  const desc     = get("description");
+  return {
+    id:                 `rc-${link.split("/").filter(Boolean).pop() ?? Date.now()}`,
+    title,
+    company,
+    location:           "Remote",
+    workplaceType:      "Remote",
+    salary:             null,
+    currency:           null,
+    postedAt:           parseRSSDate(get("pubDate")),
+    url:                link,
+    source:             "Remote.co",
+    category:           "remote",
+    descriptionSnippet: toSnippet(desc),
+  };
+}
+
 // ── WeWorkRemotely (RSS) ──────────────────────────────────────────────────────
 
 function rssText(item, tag) {
