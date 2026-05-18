@@ -1,11 +1,72 @@
+import { useEffect, useRef, useState } from "react";
+import { ExternalLink } from "lucide-react";
+import { supabase } from "../../lib/supabase.js";
 import { STATUS_OPTIONS, STATUS_COLOR } from "../../lib/status.js";
 
-// T00:00:00 prevents UTC offset from shifting the displayed day backward
 function fmtDate(iso) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default function JobApplicationBoard({ apps, loading, updateStatus, removeApp, onEdit }) {
+function useDocuments() {
+  const [resumes,      setResumes]      = useState([]);
+  const [coverLetters, setCoverLetters] = useState([]);
+  useEffect(() => {
+    supabase.from("resumes").select("id, name, type").order("created_at", { ascending: false })
+      .then(({ data }) => {
+        const docs = data ?? [];
+        setResumes(docs.filter(d => d.type !== "cover_letter"));
+        setCoverLetters(docs.filter(d => d.type === "cover_letter"));
+      });
+  }, []);
+  return { resumes, coverLetters };
+}
+
+function QuickPairRow({ app, resumes, coverLetters, onSave, onClose }) {
+  const [resumeId,      setResumeId]      = useState(app.resume_id       ?? "");
+  const [coverLetterId, setCoverLetterId] = useState(app.cover_letter_id ?? "");
+  const rowRef = useRef(null);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (rowRef.current && !rowRef.current.contains(e.target)) onClose();
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+
+  return (
+    <div className="qp-panel" ref={rowRef}>
+      <div className="qp-row">
+        {app.url && (
+          <a className="qp-open-btn" href={app.url} target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={13} /> Open Job
+          </a>
+        )}
+        <select className="qp-select" value={resumeId} onChange={e => setResumeId(e.target.value)}>
+          <option value="">No resume</option>
+          {resumes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </select>
+        {coverLetters.length > 0 && (
+          <select className="qp-select qp-select-cl" value={coverLetterId} onChange={e => setCoverLetterId(e.target.value)}>
+            <option value="">No cover letter</option>
+            {coverLetters.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
+        <button className="qp-save" onClick={() => {
+          onSave(app.id, { resume_id: resumeId || null, cover_letter_id: coverLetterId || null });
+          onClose();
+        }}>Save</button>
+      </div>
+    </div>
+  );
+}
+
+export default function JobApplicationBoard({ apps, loading, updateStatus, updateApp, removeApp, onEdit }) {
+  const { resumes, coverLetters } = useDocuments();
+  const [expanded, setExpanded]   = useState(null);
+
+  function toggle(id) { setExpanded(prev => prev === id ? null : id); }
+
   return (
     <div className="db-card db-app-board">
       <div className="db-card-title">Job Application Board</div>
@@ -25,23 +86,44 @@ export default function JobApplicationBoard({ apps, loading, updateStatus, remov
 
           {apps.map((app) => {
             const { id, company, role, status, date } = app;
+            const hasDocs = app.resume_id || app.cover_letter_id;
             return (
-              <div key={id} className="db-app-row">
-                <span className="db-app-company">{company}</span>
-                <span className="db-app-role">{role}</span>
-                <select
-                  className="db-app-status-col"
-                  value={status}
-                  onChange={(e) => updateStatus(id, e.target.value)}
-                  style={{ color: STATUS_COLOR[status] ?? "#888" }}
+              <div key={id}>
+                <div
+                  className={`db-app-row${expanded === id ? " db-app-row-open" : ""}`}
+                  onClick={() => toggle(id)}
+                  style={{ cursor: "pointer" }}
                 >
-                  {STATUS_OPTIONS.map((opt) => <option key={opt}>{opt}</option>)}
-                </select>
-                <span className="db-app-date">{fmtDate(date)}</span>
-                <div className="db-app-actions">
-                  <button className="db-app-edit" onClick={() => onEdit(app)} title="Edit">✎</button>
-                  <button className="db-app-del"  onClick={() => removeApp(id)} title="Delete">×</button>
+                  <span className="db-app-company">
+                    {company}
+                    {hasDocs && <span className="db-app-paired-dot" title="Documents paired" />}
+                  </span>
+                  <span className="db-app-role">{role}</span>
+                  <select
+                    className="db-app-status-col"
+                    value={status}
+                    onClick={e => e.stopPropagation()}
+                    onChange={(e) => { e.stopPropagation(); updateStatus(id, e.target.value); }}
+                    style={{ color: STATUS_COLOR[status] ?? "#888" }}
+                  >
+                    {STATUS_OPTIONS.map((opt) => <option key={opt}>{opt}</option>)}
+                  </select>
+                  <span className="db-app-date">{fmtDate(date)}</span>
+                  <div className="db-app-actions" onClick={e => e.stopPropagation()}>
+                    <button className="db-app-edit" onClick={() => onEdit(app)} title="Full edit">✎</button>
+                    <button className="db-app-del"  onClick={() => removeApp(id)} title="Delete">×</button>
+                  </div>
                 </div>
+
+                {expanded === id && (
+                  <QuickPairRow
+                    app={app}
+                    resumes={resumes}
+                    coverLetters={coverLetters}
+                    onSave={updateApp}
+                    onClose={() => setExpanded(null)}
+                  />
+                )}
               </div>
             );
           })}

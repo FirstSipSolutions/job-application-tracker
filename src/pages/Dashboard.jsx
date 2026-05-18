@@ -83,6 +83,7 @@ export default function Dashboard() {
             apps={apps}
             loading={loading}
             updateStatus={updateStatus}
+            updateApp={updateApp}
             removeApp={removeApp}
             onEdit={setEditingApp}
           />
