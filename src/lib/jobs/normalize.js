@@ -304,6 +304,30 @@ export function fromDigitalNS(job) {
   };
 }
 
+// ── Tech NL (WP Job Manager REST API) ────────────────────────────────────────
+
+export function fromTechNL(job) {
+  const meta    = job.meta ?? {};
+  const loc     = meta._job_location ?? "";
+  const remote  = /remote/i.test(loc);
+  const title   = (job.title?.rendered ?? "").replace(/&[a-z#\d]+;/gi, " ").trim();
+  const company = meta._company_name ?? "";
+  return {
+    id:                 `tnl-${job.id}`,
+    title,
+    company,
+    location:           loc || (remote ? "Remote, NL" : "Newfoundland, Canada"),
+    workplaceType:      remote ? "Remote" : loc || "Newfoundland, Canada",
+    salary:             null,
+    currency:           null,
+    postedAt:           job.date ? new Date(job.date).toISOString() : null,
+    url:                job.link ?? "",
+    source:             "Tech NL",
+    category:           "canadian",
+    descriptionSnippet: toSnippet(job.content?.rendered ?? ""),
+  };
+}
+
 // ── Himalayas ─────────────────────────────────────────────────────────────
 
 function mapHimalayasSeniority(arr) {

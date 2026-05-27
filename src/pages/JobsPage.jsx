@@ -16,6 +16,7 @@ import { fetchWeWorkRemotely }   from "../lib/jobs/sources/weWorkRemotely.js";
 import { fetchRemoteCo }         from "../lib/jobs/sources/remoteCo.js";
 import { fetchDigitalNS }        from "../lib/jobs/sources/digitalNovascotia.js";
 import { fetchJobBank }          from "../lib/jobs/sources/jobBank.js";
+import { fetchTechNL }           from "../lib/jobs/sources/techNL.js";
 import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
@@ -24,7 +25,7 @@ import { Shuffle } from "lucide-react";
 import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk, fetchDigitalNS, fetchJobBank];
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk, fetchDigitalNS, fetchJobBank, fetchTechNL];
 const POLL_MS   = 5 * 60 * 1000;
 const PAGE_SIZE = 10;
 

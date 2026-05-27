@@ -73,6 +73,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/dns/, "/wp-json/wp/v2/job_portal"),
       },
+      "/api/technl": {
+        target:      "https://technl.ca",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/technl/, "/wp-json/wp/v2/job-listings") + "&_fields=id,title,link,date,meta,content",
+      },
       "/api/himalayas": {
         target: "https://himalayas.app",
         changeOrigin: true,
