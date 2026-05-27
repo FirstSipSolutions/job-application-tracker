@@ -140,7 +140,10 @@ export function isTech(job) {
 }
 
 export function passesFilter(job) {
-  return isRemote(job) && (job.sourceTech || isTech(job)) && isFresh(job);
+  // Canadian-category sources (DNS, JobBank, SiliconHarbour) include intentionally
+  // local NS/CA postings — skip the remote gate for those, still require tech + fresh.
+  const canadianSource = job.category === "canadian";
+  return (canadianSource || isRemote(job)) && (job.sourceTech || isTech(job)) && isFresh(job);
 }
 
 // ── UI filter helpers ─────────────────────────────────────────────

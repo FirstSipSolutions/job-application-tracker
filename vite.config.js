@@ -37,6 +37,20 @@ export default defineConfig({
         } catch { res.end(JSON.stringify({ results: [] })); }
       });
 
+      // Job Bank Canada: translate ?term= → ?searchstring= and add required headers
+      server.middlewares.use("/api/jobbank", async (req, res) => {
+        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
+        const term   = params.get("term") ?? "software developer";
+        res.setHeader("Content-Type", "application/xml;charset=UTF-8");
+        try {
+          const r = await fetch(
+            `https://www.jobbank.gc.ca/jobsearch/feed/jobSearchRSSfeed?searchstring=${encodeURIComponent(term)}&rows=100`,
+            { headers: { "User-Agent": "CVVault/1.0", "Accept": "application/atom+xml" } }
+          );
+          res.end(r.ok ? await r.text() : "<feed/>");
+        } catch { res.end("<feed/>"); }
+      });
+
       // Remote.co: blocks automated requests without browser-like headers
       server.middlewares.use("/api/remoteco", async (req, res) => {
         res.setHeader("Content-Type", "application/rss+xml; charset=UTF-8");
@@ -54,6 +68,11 @@ export default defineConfig({
       });
     },
     proxy: {
+      "/api/dns": {
+        target:      "https://digitalnovascotia.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/dns/, "/wp-json/wp/v2/job_portal"),
+      },
       "/api/himalayas": {
         target: "https://himalayas.app",
         changeOrigin: true,
