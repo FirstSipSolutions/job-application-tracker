@@ -45,36 +45,6 @@ const devMiddlewarePlugin = {
       } catch { res.end(JSON.stringify({ results: [] })); }
     });
 
-    // Groq: server-side fetch so Node.js never sends an Origin header.
-    // Vite proxy forwards Origin: http://localhost which Groq rejects with 403.
-    // proxyReq.removeHeader() in configure fires too late (headers already queued).
-    // A direct fetch() from Node has no Origin header by spec.
-    server.middlewares.use(async (req, res, next) => {
-      if (!req.url?.startsWith("/api/groq")) return next();
-      const auth   = req.headers["authorization"] ?? "";
-      const path   = req.url.replace(/^\/api\/groq/, "");
-      const chunks = [];
-      await new Promise((resolve, reject) => {
-        req.on("data",  d => chunks.push(d));
-        req.on("end",   resolve);
-        req.on("error", reject);
-      });
-      const body = Buffer.concat(chunks).toString();
-      try {
-        const r = await fetch("https://api.groq.com" + path, {
-          method:  req.method,
-          headers: { "Content-Type": "application/json", "Authorization": auth },
-          body:    req.method !== "GET" && body ? body : undefined,
-        });
-        const text = await r.text();
-        res.statusCode = r.status;
-        res.setHeader("Content-Type", "application/json");
-        res.end(text);
-      } catch (err) {
-        res.statusCode = 500;
-        res.end(JSON.stringify({ error: err.message }));
-      }
-    });
   },
 };
 
@@ -101,21 +71,6 @@ export default defineConfig({
                     ?? "software developer";
           const qs   = new URLSearchParams({ searchstring: term, rows: "100" });
           return `/jobsearch/feed/jobSearchRSSfeed?${qs}`;
-        },
-      },
-
-      // ── Remote.co ─────────────────────────────────────────────────────────
-      // Blocks automated UA — send browser-like headers via proxyReq.
-      "/api/remoteco": {
-        target:      "https://remote.co",
-        changeOrigin: true,
-        rewrite: () => "/remote-jobs/developer/feed/",
-        configure: proxy => {
-          proxy.on("proxyReq", proxyReq => {
-            proxyReq.setHeader("User-Agent",      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-            proxyReq.setHeader("Accept",          "application/rss+xml, text/xml, */*");
-            proxyReq.setHeader("Accept-Language", "en-US,en;q=0.9");
-          });
         },
       },
 

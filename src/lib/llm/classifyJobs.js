@@ -123,6 +123,9 @@ async function classifyChunk(chunk, apiKey) {
 export async function classifyJobs(jobs) {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
   if (!apiKey || jobs.length === 0) return jobs;
+  // Groq blocks residential/dev IPs with 403 "Access denied. Check network settings."
+  // Classification runs fine in production (Cloudflare datacenter IPs are allowed).
+  if (import.meta.env.DEV) return jobs;
 
   const cache    = pruneCache(loadCache());
   const uncached = jobs.filter(j => j.url && !cache[j.url]);

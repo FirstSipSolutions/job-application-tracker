@@ -13,7 +13,7 @@ import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
 import { fetchWorkable }       from "../lib/jobs/sources/workable.js";
 import { fetchSmartRecruiters }  from "../lib/jobs/sources/smartrecruiters.js";
 import { fetchWeWorkRemotely }   from "../lib/jobs/sources/weWorkRemotely.js";
-import { fetchRemoteCo }         from "../lib/jobs/sources/remoteCo.js";
+// fetchRemoteCo removed — site returns 403 on all automated requests; 0 useful results
 import { fetchDigitalNS }        from "../lib/jobs/sources/digitalNovascotia.js";
 import { fetchJobBank }          from "../lib/jobs/sources/jobBank.js";
 import { fetchTechNL }           from "../lib/jobs/sources/techNL.js";
@@ -25,7 +25,7 @@ import { Shuffle } from "lucide-react";
 import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchDigitalNS, fetchJobBank, fetchTechNL];
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchJobicy, fetchRemotive, fetchDigitalNS, fetchJobBank, fetchTechNL];
 const POLL_MS   = 5 * 60 * 1000;
 const PAGE_SIZE = 10;
 
