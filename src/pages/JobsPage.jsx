@@ -74,8 +74,10 @@ function matchesRegion(job, region) {
   // "province" acts as Canada-wide at the region level; the province sub-filter
   // narrows further inside the useMemo.
   if (region === "canada" || region === "province") {
-    // Include source-confirmed or Groq-confirmed Canada-open jobs (e.g. Himalayas worldwide, Remotive NA)
-    return isCanadaJob(job) || job.category === "canadian" || job.canadaOpen === true;
+    // canadaOK() uses Groq's canadaOpen when set, falls back to isCanadaEligible() regex pre-Groq.
+    // This makes remote-category sources (Arbeitnow, WeWorkRemotely, Remotive, etc.) visible
+    // immediately on load rather than only after Groq has run and confirmed Canada eligibility.
+    return isCanadaJob(job) || job.category === "canadian" || canadaOK(job);
   }
   if (region === "ca-us")     return canadaOK(job) && getCountry(job) === "US";
   if (region === "ca-global") return canadaOK(job) && (getCountry(job) === "Global" || getCountry(job) === null);
