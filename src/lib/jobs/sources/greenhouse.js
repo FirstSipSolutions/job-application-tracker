@@ -57,7 +57,6 @@ const COMPANIES = [
   // ── Canadian ──────────────────────────────────────────────────────────────
   { name: "Tailscale",     slug: "tailscale",     category: "canadian" },
   { name: "D2L",           slug: "d2l",           category: "canadian" },
-  { name: "Benevity",      slug: "benevity",      category: "canadian" },
   { name: "Tulip",         slug: "tulip",         category: "canadian" },
   { name: "Ecobee",        slug: "ecobee",        category: "canadian" },
   { name: "Hootsuite",     slug: "hootsuite",     category: "canadian" },

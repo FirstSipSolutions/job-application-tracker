@@ -23,7 +23,6 @@ const COMPANIES = [
   { name: "Neon",        slug: "neon",       category: "devtools" },
   { name: "Render",      slug: "render",     category: "devtools" },
   { name: "Clerk",       slug: "clerk",      category: "devtools" },
-  { name: "Mistral",     slug: "mistral",    category: "devtools" },
   // ── Security ──────────────────────────────────────────────────────────────
   { name: "Vanta",       slug: "vanta",      category: "security" },
   { name: "Doppler",     slug: "doppler",    category: "security" },
