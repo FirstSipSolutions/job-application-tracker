@@ -44,6 +44,37 @@ const devMiddlewarePlugin = {
         res.end(r.ok ? await r.text() : JSON.stringify({ results: [] }));
       } catch { res.end(JSON.stringify({ results: [] })); }
     });
+
+    // Groq: server-side fetch so Node.js never sends an Origin header.
+    // Vite proxy forwards Origin: http://localhost which Groq rejects with 403.
+    // proxyReq.removeHeader() in configure fires too late (headers already queued).
+    // A direct fetch() from Node has no Origin header by spec.
+    server.middlewares.use(async (req, res, next) => {
+      if (!req.url?.startsWith("/api/groq")) return next();
+      const auth   = req.headers["authorization"] ?? "";
+      const path   = req.url.replace(/^\/api\/groq/, "");
+      const chunks = [];
+      await new Promise((resolve, reject) => {
+        req.on("data",  d => chunks.push(d));
+        req.on("end",   resolve);
+        req.on("error", reject);
+      });
+      const body = Buffer.concat(chunks).toString();
+      try {
+        const r = await fetch("https://api.groq.com" + path, {
+          method:  req.method,
+          headers: { "Content-Type": "application/json", "Authorization": auth },
+          body:    req.method !== "GET" && body ? body : undefined,
+        });
+        const text = await r.text();
+        res.statusCode = r.status;
+        res.setHeader("Content-Type", "application/json");
+        res.end(text);
+      } catch (err) {
+        res.statusCode = 500;
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
   },
 };
 
@@ -51,21 +82,6 @@ export default defineConfig({
   plugins: [react(), devMiddlewarePlugin],
   server: {
     proxy: {
-      // ── Groq ──────────────────────────────────────────────────────────────
-      // Groq rejects Origin: http://localhost (403).  Strip it so the upstream
-      // request looks like a clean server-to-server call.
-      "/api/groq": {
-        target:      "https://api.groq.com",
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api\/groq/, ""),
-        configure: proxy => {
-          proxy.on("proxyReq", proxyReq => {
-            proxyReq.removeHeader("origin");
-            proxyReq.removeHeader("referer");
-          });
-        },
-      },
-
       // ── Digital Nova Scotia ───────────────────────────────────────────────
       "/api/dns": {
         target:      "https://digitalnovascotia.com",

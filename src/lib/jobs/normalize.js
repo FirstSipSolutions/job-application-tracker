@@ -324,6 +324,7 @@ export function fromTechNL(job) {
     url:                job.link ?? "",
     source:             "Tech NL",
     category:           "canadian",
+    sourceTech:         true,   // Tech NL is a curated NL tech-industry board — show all postings
     descriptionSnippet: toSnippet(job.content?.rendered ?? ""),
   };
 }
