@@ -7,7 +7,7 @@ import { fetchAshby }          from "../lib/jobs/sources/ashby.js";
 import { fetchHimalayas }      from "../lib/jobs/sources/himalayas.js";
 import { fetchJobicy }         from "../lib/jobs/sources/jobicy.js";
 import { fetchRemotive }       from "../lib/jobs/sources/remotive.js";
-import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
+// fetchRemoteOk removed — API returns massage therapists and food workers, not dev jobs
 import { fetchLever }          from "../lib/jobs/sources/lever.js";
 import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
 import { fetchWorkable }       from "../lib/jobs/sources/workable.js";
@@ -25,7 +25,7 @@ import { Shuffle } from "lucide-react";
 import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk, fetchDigitalNS, fetchJobBank, fetchTechNL];
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchDigitalNS, fetchJobBank, fetchTechNL];
 const POLL_MS   = 5 * 60 * 1000;
 const PAGE_SIZE = 10;
 

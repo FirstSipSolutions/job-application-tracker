@@ -37,14 +37,16 @@ export default defineConfig({
         } catch { res.end(JSON.stringify({ results: [] })); }
       });
 
-      // Job Bank Canada: translate ?term= → ?searchstring= and add required headers
+      // Job Bank Canada: translate ?term= → ?searchstring= (URLSearchParams encodes spaces as +,
+      // which Job Bank requires — encodeURIComponent's %20 returns empty results)
       server.middlewares.use("/api/jobbank", async (req, res) => {
         const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
         const term   = params.get("term") ?? "software developer";
+        const qs     = new URLSearchParams({ searchstring: term, rows: "100" });
         res.setHeader("Content-Type", "application/xml;charset=UTF-8");
         try {
           const r = await fetch(
-            `https://www.jobbank.gc.ca/jobsearch/feed/jobSearchRSSfeed?searchstring=${encodeURIComponent(term)}&rows=100`,
+            `https://www.jobbank.gc.ca/jobsearch/feed/jobSearchRSSfeed?${qs}`,
             { headers: { "User-Agent": "CVVault/1.0", "Accept": "application/atom+xml" } }
           );
           res.end(r.ok ? await r.text() : "<feed/>");
@@ -72,6 +74,11 @@ export default defineConfig({
         target:      "https://digitalnovascotia.com",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/dns/, "/wp-json/wp/v2/job_portal"),
+      },
+      "/api/groq": {
+        target:       "https://api.groq.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/groq/, ""),
       },
       "/api/technl": {
         target:      "https://technl.ca",

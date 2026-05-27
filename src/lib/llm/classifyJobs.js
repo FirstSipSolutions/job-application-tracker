@@ -16,7 +16,10 @@
 // FAIL-OPEN: any error returns the original array unchanged.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GROQ_URL      = "https://api.groq.com/openai/v1/chat/completions";
+// In dev, api.groq.com blocks HTTP-origin CORS — route through the Vite proxy instead.
+const GROQ_URL      = import.meta.env.DEV
+  ? "/api/groq/openai/v1/chat/completions"
+  : "https://api.groq.com/openai/v1/chat/completions";
 const MODEL         = "llama-3.1-8b-instant";
 const CACHE_KEY     = "cv-vault-groq-cache-v4"; // bumped — added groqSal field
 const CACHE_TTL     = 7 * 24 * 60 * 60 * 1000;
