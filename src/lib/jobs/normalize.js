@@ -250,12 +250,28 @@ export function fromWeWorkRemotely(item) {
 
 function dnsCompany(html) {
   const text = html.replace(/<[^>]+>/g, " ").replace(/&[a-z#\d]+;/gi, " ").replace(/\s+/g, " ").trim();
-  const idx  = text.search(/COMPANY\s+DESCRIPTION/i);
+
+  // Most DNS postings open with "About Company Name" as a bold heading.
+  // Capture the name up to the verb that starts the description sentence.
+  const aboutM = text.match(
+    /\bAbout\s+([A-Z][^.!?\r\n]{2,60}?)(?=\s+(?:is\b|was\b|are\b|has\b|provides\b|offers\b|creates\b|develops\b|builds\b|specializes\b|focuses\b|helps\b|works\b|serves\b|makes\b))/
+  );
+  if (aboutM) return aboutM[1].trim();
+
+  // Fallback: legacy "COMPANY DESCRIPTION" block used by older DNS postings
+  const idx = text.search(/COMPANY\s+DESCRIPTION/i);
   if (idx === -1) return null;
   const after = text.slice(idx).replace(/COMPANY\s+DESCRIPTION\s*/i, "").trim();
-  // Company name ends before the first verb that starts its description sentence
   const m = after.match(/^([^.]+?)(?:\s+(?:is|was|are|has|provides|offers|creates|develops|builds|specializes|focuses)\b|[.,])/i);
   return (m ? m[1] : after.slice(0, 60)).trim() || null;
+}
+
+// Fallback: many DNS titles follow "Job Title – Company Name" or "Job Title | Company".
+function dnsCompanyFromTitle(title) {
+  const m = title.match(/[–—|]\s*(.+)$/);
+  if (!m) return null;
+  const candidate = m[1].replace(/\s*[\(\[].*[\)\]]\s*$/, "").trim(); // drop trailing (City)
+  return candidate.length >= 2 ? candidate : null;
 }
 
 function dnsWorkplace(html) {
@@ -270,7 +286,7 @@ function dnsWorkplace(html) {
 export function fromDigitalNS(job) {
   const html    = job.content?.rendered ?? "";
   const title   = (job.title?.rendered ?? "").replace(/&[a-z#\d]+;/gi, " ").trim();
-  const company = dnsCompany(html) ?? "DNS Member";
+  const company = dnsCompany(html) ?? dnsCompanyFromTitle(title) ?? "DNS Member";
   const place   = dnsWorkplace(html);
   return {
     id:                 `dns-${job.id}`,
@@ -285,6 +301,31 @@ export function fromDigitalNS(job) {
     source:             "Digital Nova Scotia",
     category:           "canadian",
     descriptionSnippet: toSnippet(html),
+  };
+}
+
+// ── Tech NL (WP Job Manager REST API) ────────────────────────────────────────
+
+export function fromTechNL(job) {
+  const meta    = job.meta ?? {};
+  const loc     = meta._job_location ?? "";
+  const remote  = /remote/i.test(loc);
+  const title   = (job.title?.rendered ?? "").replace(/&[a-z#\d]+;/gi, " ").trim();
+  const company = meta._company_name ?? "";
+  return {
+    id:                 `tnl-${job.id}`,
+    title,
+    company,
+    location:           loc || (remote ? "Remote, NL" : "Newfoundland, Canada"),
+    workplaceType:      remote ? "Remote" : loc || "Newfoundland, Canada",
+    salary:             null,
+    currency:           null,
+    postedAt:           job.date ? new Date(job.date).toISOString() : null,
+    url:                job.link ?? "",
+    source:             "Tech NL",
+    category:           "canadian",
+    sourceTech:         true,   // Tech NL is a curated NL tech-industry board — show all postings
+    descriptionSnippet: toSnippet(job.content?.rendered ?? ""),
   };
 }
 

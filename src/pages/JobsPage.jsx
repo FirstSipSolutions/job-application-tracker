@@ -7,13 +7,16 @@ import { fetchAshby }          from "../lib/jobs/sources/ashby.js";
 import { fetchHimalayas }      from "../lib/jobs/sources/himalayas.js";
 import { fetchJobicy }         from "../lib/jobs/sources/jobicy.js";
 import { fetchRemotive }       from "../lib/jobs/sources/remotive.js";
-import { fetchRemoteOk }       from "../lib/jobs/sources/remoteOk.js";
+// fetchRemoteOk removed — API returns massage therapists and food workers, not dev jobs
 import { fetchLever }          from "../lib/jobs/sources/lever.js";
 import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
 import { fetchWorkable }       from "../lib/jobs/sources/workable.js";
 import { fetchSmartRecruiters }  from "../lib/jobs/sources/smartrecruiters.js";
 import { fetchWeWorkRemotely }   from "../lib/jobs/sources/weWorkRemotely.js";
-import { fetchRemoteCo }         from "../lib/jobs/sources/remoteCo.js";
+// fetchRemoteCo removed — site returns 403 on all automated requests; 0 useful results
+import { fetchDigitalNS }        from "../lib/jobs/sources/digitalNovascotia.js";
+import { fetchJobBank }          from "../lib/jobs/sources/jobBank.js";
+import { fetchTechNL }           from "../lib/jobs/sources/techNL.js";
 import { passesFilter, isRemote, isTech, isFresh, isCanadaJob, isCanadaEligible, getCountry, getDaysOld, getTechStack, getTechTags, getExperienceLevel, TECH_OPTIONS, EXPERIENCE_OPTIONS } from "../lib/jobs/filter.js";
 import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
@@ -22,7 +25,7 @@ import { Shuffle } from "lucide-react";
 import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
-const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchRemoteCo, fetchJobicy, fetchRemotive, fetchRemoteOk];
+const SOURCES   = [fetchSiliconHarbour, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchWorkable, fetchSmartRecruiters, fetchWeWorkRemotely, fetchJobicy, fetchRemotive, fetchDigitalNS, fetchJobBank, fetchTechNL];
 const POLL_MS   = 5 * 60 * 1000;
 const PAGE_SIZE = 10;
 
@@ -70,8 +73,10 @@ function matchesRegion(job, region) {
   // "province" acts as Canada-wide at the region level; the province sub-filter
   // narrows further inside the useMemo.
   if (region === "canada" || region === "province") {
-    // Include source-confirmed or Groq-confirmed Canada-open jobs (e.g. Himalayas worldwide, Remotive NA)
-    return isCanadaJob(job) || job.category === "canadian" || job.canadaOpen === true;
+    // canadaOK() uses Groq's canadaOpen when set, falls back to isCanadaEligible() regex pre-Groq.
+    // This makes remote-category sources (Arbeitnow, WeWorkRemotely, Remotive, etc.) visible
+    // immediately on load rather than only after Groq has run and confirmed Canada eligibility.
+    return isCanadaJob(job) || job.category === "canadian" || canadaOK(job);
   }
   if (region === "ca-us")     return canadaOK(job) && getCountry(job) === "US";
   if (region === "ca-global") return canadaOK(job) && (getCountry(job) === "Global" || getCountry(job) === null);

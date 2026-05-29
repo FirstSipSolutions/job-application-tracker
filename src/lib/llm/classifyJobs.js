@@ -16,7 +16,10 @@
 // FAIL-OPEN: any error returns the original array unchanged.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GROQ_URL      = "https://api.groq.com/openai/v1/chat/completions";
+// In dev, api.groq.com blocks HTTP-origin CORS — route through the Vite proxy instead.
+const GROQ_URL      = import.meta.env.DEV
+  ? "/api/groq/openai/v1/chat/completions"
+  : "https://api.groq.com/openai/v1/chat/completions";
 const MODEL         = "llama-3.1-8b-instant";
 const CACHE_KEY     = "cv-vault-groq-cache-v4"; // bumped — added groqSal field
 const CACHE_TTL     = 7 * 24 * 60 * 60 * 1000;
@@ -120,6 +123,9 @@ async function classifyChunk(chunk, apiKey) {
 export async function classifyJobs(jobs) {
   const apiKey = import.meta.env.VITE_GROQ_API_KEY;
   if (!apiKey || jobs.length === 0) return jobs;
+  // Groq blocks residential/dev IPs with 403 "Access denied. Check network settings."
+  // Classification runs fine in production (Cloudflare datacenter IPs are allowed).
+  if (import.meta.env.DEV) return jobs;
 
   const cache    = pruneCache(loadCache());
   const uncached = jobs.filter(j => j.url && !cache[j.url]);
