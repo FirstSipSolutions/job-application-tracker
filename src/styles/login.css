@@ -1,0 +1,38 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  background-color: #1a211f;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-input-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+}
+
+.form-input-row input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.signup-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup-card {
+  background-color: #1a211f;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+}
