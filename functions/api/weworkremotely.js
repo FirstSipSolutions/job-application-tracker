@@ -1,4 +1,4 @@
-// Cloudflare Pages Function — proxies We Work Remotely RSS to bypass browser CORS.
+// Cloudflare Pages Function - proxies We Work Remotely RSS to bypass browser CORS.
 // Deployed at: /api/weworkremotely
 
 const UPSTREAM = "https://weworkremotely.com/categories/remote-programming-jobs.rss";

@@ -113,7 +113,7 @@ export default function UpcomingPanel() {
       })}
       {extra > 0 && (
         <div className="hot-jobs-more">
-          <Link to="/jobs">+{extra} more</Link>
+          <Link to="/app/jobs">+{extra} more</Link>
         </div>
       )}
     </div>

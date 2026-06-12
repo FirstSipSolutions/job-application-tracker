@@ -1,6 +1,6 @@
 import { fromSiliconHarbour } from "../normalize.js";
 
-// workplaceType=remote filters at the API — the board has ~120 remote jobs
+// workplaceType=remote filters at the API - the board has ~120 remote jobs
 const URL = "https://siliconharbour.dev/api/jobs?limit=150&workplaceType=remote";
 const TIMEOUT_MS = 6000;
 

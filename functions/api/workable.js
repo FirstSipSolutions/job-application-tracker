@@ -1,4 +1,4 @@
-// Cloudflare Pages Function — proxies Workable API to bypass browser CORS.
+// Cloudflare Pages Function - proxies Workable API to bypass browser CORS.
 // Usage: /api/workable?slug=hopper
 
 const HEADERS = {

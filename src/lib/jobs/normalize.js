@@ -23,9 +23,9 @@ function extractSalary(text) {
 
 // Extracts the most signal-rich plain-text snippet from a job description HTML.
 // Priority: requirements/qualifications section > middle of text > first 400 chars.
-// The requirements section has experience years, tech stack, and work-auth language —
+// The requirements section has experience years, tech stack, and work-auth language -
 // all more useful than the company intro that always appears at the top.
-function toSnippet(html) {
+export function toSnippet(html) {
   if (!html) return null;
   const text = html
     .replace(/<[^>]+>/g, " ")
@@ -47,7 +47,7 @@ function toSnippet(html) {
 }
 
 // Decodes Remotive's candidate_required_location into a definitive Canada signal.
-// Returns true (open), false (excluded), or undefined (ambiguous — let Groq decide).
+// Returns true (open), false (excluded), or undefined (ambiguous - let Groq decide).
 function remotiveCanadaOpen(location) {
   if (!location) return undefined;
   const l = location.toLowerCase();
@@ -154,7 +154,7 @@ export function fromLever(job, companyName, category) {
     url:                job.hostedUrl ?? "",
     source:             "Lever",
     category,
-    // Lever returns full description HTML — best source we have for work-auth language
+    // Lever returns full description HTML - best source we have for work-auth language
     descriptionSnippet: toSnippet((job.description ?? "") + " " + (job.additional ?? "")),
   };
 }
@@ -181,34 +181,6 @@ export function fromRemotive(job) {
   };
 }
 
-// ── Remote.co (RSS) ───────────────────────────────────────────────────────────
-
-export function fromRemoteCo(item) {
-  const get = tag => item.getElementsByTagName(tag)[0]?.textContent?.trim() ?? "";
-  const titleRaw = get("title");
-  // Title format: "Job Title at Company" or just "Job Title"
-  const atIdx    = titleRaw.lastIndexOf(" at ");
-  const title    = atIdx > 0 ? titleRaw.slice(0, atIdx).trim() : titleRaw;
-  const company  = atIdx > 0 ? titleRaw.slice(atIdx + 4).trim() : "";
-  const link     = get("link") || get("guid");
-  const desc     = get("description");
-  return {
-    id:                 `rc-${link.split("/").filter(Boolean).pop() ?? Date.now()}`,
-    title,
-    company,
-    location:           "Remote",
-    workplaceType:      "Remote",
-    salary:             null,
-    currency:           null,
-    postedAt:           parseRSSDate(get("pubDate")),
-    url:                link,
-    source:             "Remote.co",
-    category:           "remote",
-    sourceTech:         true,
-    descriptionSnippet: toSnippet(desc),
-  };
-}
-
 // ── WeWorkRemotely (RSS) ──────────────────────────────────────────────────────
 
 function rssText(item, tag) {
@@ -221,13 +193,12 @@ function parseRSSDate(str) {
 }
 
 export function fromWeWorkRemotely(item) {
-  const titleRaw   = rssText(item, "title");
-  // Title format: "Category: Job Title at Company Name"
-  const withoutCat = titleRaw.includes(": ") ? titleRaw.slice(titleRaw.indexOf(": ") + 2) : titleRaw;
-  const lastAt     = withoutCat.lastIndexOf(" at ");
-  const title      = lastAt > 0 ? withoutCat.slice(0, lastAt).trim() : withoutCat;
-  const company    = lastAt > 0 ? withoutCat.slice(lastAt + 4).trim() : "";
-  const link       = rssText(item, "link") || rssText(item, "guid");
+  const titleRaw = rssText(item, "title");
+  // Title format: "Company Name: Job Title" (verified against the live feed)
+  const sep      = titleRaw.indexOf(": ");
+  const company  = sep > 0 ? titleRaw.slice(0, sep).trim() : "";
+  const title    = sep > 0 ? titleRaw.slice(sep + 2).trim() : titleRaw.trim();
+  const link     = rssText(item, "link") || rssText(item, "guid");
   const region     = rssText(item, "region") || "Remote";
   const desc       = rssText(item, "description");
   return {
@@ -241,7 +212,6 @@ export function fromWeWorkRemotely(item) {
     url:                link,
     source:             "WeWorkRemotely",
     category:           "remote",
-    sourceTech:         true,
     descriptionSnippet: toSnippet(desc),
   };
 }
@@ -268,9 +238,9 @@ function dnsCompany(html) {
 
 // Fallback: many DNS titles follow "Job Title – Company Name" or "Job Title | Company".
 function dnsCompanyFromTitle(title) {
-  const m = title.match(/[–—|]\s*(.+)$/);
+  const m = title.match(/[–|-]\s*(.+)$/);
   if (!m) return null;
-  const candidate = m[1].replace(/\s*[\(\[].*[\)\]]\s*$/, "").trim(); // drop trailing (City)
+  const candidate = m[1].replace(/\s*[([].*[)\]]\s*$/, "").trim(); // drop trailing (City)
   return candidate.length >= 2 ? candidate : null;
 }
 
@@ -324,7 +294,7 @@ export function fromTechNL(job) {
     url:                job.link ?? "",
     source:             "Tech NL",
     category:           "canadian",
-    sourceTech:         true,   // Tech NL is a curated NL tech-industry board — show all postings
+    sourceTech:         true,   // Tech NL is a curated NL tech-industry board - show all postings
     descriptionSnippet: toSnippet(job.content?.rendered ?? ""),
   };
 }
@@ -401,6 +371,7 @@ export function fromWorkday(job, companyName, tenant, board, wd, category) {
     category,
     canadaOpen,
     _canadaSource: canadaOpen === true ? "source" : undefined,
+    _externalPath: job.externalPath ?? "", // detail fetch needs it (sources/workday.js)
     descriptionSnippet: null,
   };
 }
@@ -431,14 +402,14 @@ export function fromWorkable(job, companyName, category) {
   };
 }
 
-// ── SmartRecruiters (CORS = * — no proxy needed) ──────────────────────────────
+// ── SmartRecruiters (CORS = * - no proxy needed) ──────────────────────────────
 
 export function fromSmartRecruiters(job, companyName, category) {
   const loc    = job.location ?? {};
   const remote = loc.remote === true;
   const hybrid = /hybrid/i.test(loc.city ?? "") || /hybrid/i.test(loc.country ?? "");
   const locStr = [loc.city, loc.country].filter(Boolean).join(", ");
-  const canadaOpen = loc.countryCode === "CA" ? true : remote ? undefined : undefined;
+  const canadaOpen = loc.countryCode === "CA" ? true : undefined;
   return {
     id:            `sr-${job.id ?? String(Date.now())}`,
     title:         job.name ?? "",
@@ -457,34 +428,14 @@ export function fromSmartRecruiters(job, companyName, category) {
   };
 }
 
-// ── Arbeitnow ─────────────────────────────────────────────────────────────────
-
-export function fromArbeitnow(job) {
-  const tags = (job.tags ?? []).join(" ");
-  return {
-    id:                 `an-${job.slug}`,
-    title:              job.title ?? "",
-    company:            job.company_name ?? "",
-    location:           job.location || "Remote",
-    workplaceType:      "Remote",
-    salary:             null,
-    currency:           null,
-    postedAt:           job.created_at ? new Date(job.created_at * 1000).toISOString() : null,
-    url:                job.url ?? "",
-    source:             "Arbeitnow",
-    category:           "remote",
-    descriptionSnippet: toSnippet((job.description ?? "") + " " + tags),
-  };
-}
-
 // ── Job Bank Canada (Government of Canada) ────────────────────────────────────
 
 export function fromJobBank(job) {
   const loc     = job.location ?? "";
   const summary = job.summary  ?? "";
-  // Job Bank uses "Work arrangement: Telecommuting" or "Various locations" for remote roles.
-  // Check both the extracted location field and the full summary HTML.
-  const isRemote = /telecommut|remote|work\s+from\s+home|various\s+loc/i.test(loc + " " + summary);
+  // Job Bank uses "Work arrangement: Telecommuting" for remote roles.
+  // "Various Locations" means multiple physical sites, not remote - excluded.
+  const isRemote = /telecommut|remote|work\s+from\s+home/i.test(loc + " " + summary);
   return {
     id:                 `jb-${job.url.split("/").pop()}`,
     title:              job.title ?? "",
@@ -501,34 +452,3 @@ export function fromJobBank(job) {
   };
 }
 
-// ── RemoteOK ──────────────────────────────────────────────────────────────────
-
-export function fromRemoteOk(job) {
-  const tags   = (job.tags ?? []).join(" ");
-  const raw    = [job.description ?? "", tags].filter(Boolean).join(" ");
-  const salary = job.salary_min
-    ? `$${Math.round(job.salary_min / 1000)}k - $${Math.round(job.salary_max / 1000)}k USD`
-    : null;
-  const url    = job.url
-    ? (job.url.startsWith("http") ? job.url : `https://remoteok.com${job.url}`)
-    : "";
-  const postedAt = job.date
-    ? (typeof job.date === "number"
-        ? new Date(job.date * 1000).toISOString()
-        : job.date)
-    : null;
-  return {
-    id:                 `rok-${job.id}`,
-    title:              job.position ?? "",
-    company:            job.company ?? "",
-    location:           job.location || "Remote",
-    workplaceType:      "Remote",
-    salary,
-    currency:           salary ? "USD" : null,
-    postedAt,
-    url,
-    source:             "RemoteOK",
-    category:           "remote",
-    descriptionSnippet: toSnippet(raw),
-  };
-}

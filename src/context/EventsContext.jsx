@@ -47,12 +47,10 @@ export function EventsProvider({ children }) {
   }
 
   async function deleteEvent(eventId) {
-    const { data: error } = await supabase
+    const { error } = await supabase
       .from("events")
       .delete()
-      .eq("id", eventId)
-      .select()
-      .single();
+      .eq("id", eventId);
     if (!error)
       setEvents((prev) => prev.filter((event) => event.id !== eventId));
   }

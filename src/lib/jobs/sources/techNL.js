@@ -2,7 +2,7 @@ import { fromTechNL } from "../normalize.js";
 
 // Tech NL -- Newfoundland & Labrador tech industry job board.
 // Uses the WP Job Manager REST API (same plugin as DNS but different post type slug).
-// Meta fields give us company name and location directly — no HTML parsing needed.
+// Meta fields give us company name and location directly - no HTML parsing needed.
 // Proxied through /api/technl (Cloudflare Function in prod, Vite proxy in dev).
 
 const BASE       = "/api/technl";

@@ -1,6 +1,6 @@
 import { fromRemotive } from "../normalize.js";
 
-// Remotive is remote-first by design — every job on the platform is remote.
+// Remotive is remote-first by design - every job on the platform is remote.
 // The key advantage over Greenhouse/Ashby: the `candidate_required_location`
 // field tells us *explicitly* where candidates must be located.
 // "Worldwide" = definitively Canada-open. "USA" = definitively excluded.

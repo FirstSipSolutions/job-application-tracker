@@ -1,6 +1,6 @@
 import { fromLever } from "../normalize.js";
 
-// All slugs verified 200 — dead slugs removed to avoid wasted requests.
+// All slugs verified 200 - dead slugs removed to avoid wasted requests.
 const COMPANIES = [
   // ── Canadian ──────────────────────────────────────────────────────────────
   { name: "Wealthsimple",   slug: "wealthsimple",   category: "canadian" },

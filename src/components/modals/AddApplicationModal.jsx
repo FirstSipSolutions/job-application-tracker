@@ -58,17 +58,23 @@ function todayISO() {
 // prefill: data from bookmarklet or query params (add mode, not edit mode)
 // initial: existing row data for edit mode
 export default function AddApplicationModal({ onClose, onAdd, initial, prefill }) {
-  const [url, setUrl]         = useState(prefill?.url     || initial?.url     || "");
-  const [company, setCompany] = useState(prefill?.company || initial?.company || "");
+  const initialUrl     = prefill?.url     || initial?.url     || "";
+  const initialCompany = prefill?.company || initial?.company || (isValidUrl(initialUrl) ? urlToCompany(initialUrl) : "");
+
+  const [url, setUrl]         = useState(initialUrl);
+  const [company, setCompany] = useState(initialCompany);
   const [role, setRole]       = useState(prefill?.role    || initial?.role    || "");
   const [status, setStatus]   = useState(initial?.status  || "Applied");
   const [date, setDate]       = useState(initial?.date    || todayISO());
   const [notes, setNotes]     = useState(initial?.notes   || "");
-  const [parsed, setParsed]   = useState(false);
+  const [parsed, setParsed]   = useState(() => isValidUrl(initialUrl));
   const [resumeId,      setResumeId]      = useState(initial?.resume_id       || null);
   const [coverLetterId, setCoverLetterId] = useState(initial?.cover_letter_id || null);
   const [resumes,       setResumes]       = useState([]);
   const [coverLetters,  setCoverLetters]  = useState([]);
+
+  // ref not state, auto-fill tracking without triggering re-render
+  const autoFilledRef = useRef(initialCompany);
 
   useEffect(() => {
     supabase.from("resumes").select("id, name, type").order("created_at", { ascending: false })
@@ -79,13 +85,10 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
       });
   }, []);
 
-  // ref not state, auto-fill tracking without triggering re-render
-  const autoFilledRef = useRef(prefill?.company || initial?.company || "");
-
-  useEffect(() => {
-    if (!url) { setParsed(false); return; }
-    if (isValidUrl(url)) {
-      const name = urlToCompany(url);
+  function handleUrlChange(value) {
+    setUrl(value);
+    if (value && isValidUrl(value)) {
+      const name = urlToCompany(value);
       // only overwrite if empty OR still matches last auto-fill (user hasn't manually edited)
       setCompany((c) => (c === autoFilledRef.current || c === "") ? name : c);
       autoFilledRef.current = name;
@@ -93,7 +96,7 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
     } else {
       setParsed(false);
     }
-  }, [url]);
+  }
 
   // On fresh add (no edit, no bookmarklet prefill): read clipboard for a job URL.
   // Silently ignored if clipboard is empty, non-URL, or permission is denied.
@@ -101,7 +104,7 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
     if (initial || prefill?.url || prefill?.role) return;
     navigator.clipboard?.readText().then(text => {
       const t = text?.trim() ?? "";
-      if (/^https?:\/\//i.test(t)) setUrl(t);
+      if (/^https?:\/\//i.test(t)) handleUrlChange(t);
     }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -133,7 +136,7 @@ export default function AddApplicationModal({ onClose, onAdd, initial, prefill }
                 type="text"
                 placeholder="https://stripe.com/jobs/listing/123"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => handleUrlChange(e.target.value)}
                 autoFocus
               />
               {parsed && <span className="modal-url-tag">Parsed</span>}

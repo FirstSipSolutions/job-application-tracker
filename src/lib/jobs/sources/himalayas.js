@@ -1,7 +1,7 @@
 import { fromHimalayas } from "../normalize.js";
 
 // Canadian remote jobs with country=CA baked into the query.
-// Returns all job types — isTech() in passesFilter drops the non-dev ones.
+// Returns all job types - isTech() in passesFilter drops the non-dev ones.
 // API docs: himalayas.app/api
 // Requests go through /api/himalayas (Cloudflare Function in prod, Vite proxy in dev)
 // to bypass the CORS restriction on himalayas.app.

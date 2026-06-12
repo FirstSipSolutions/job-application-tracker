@@ -93,8 +93,8 @@ export default function CalendarPage() {
 
   function addEvent(event) {
     pushEvent(event);
-    const [year, month, day] = event.date.split("-").map(Number);
-    if (year === year && month - 1 === month) setSelected(day);
+    const [evYear, evMonth, evDay] = event.date.split("-").map(Number);
+    if (evYear === year && evMonth - 1 === month) setSelected(evDay);
   }
 
   return (

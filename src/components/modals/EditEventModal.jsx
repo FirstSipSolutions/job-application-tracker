@@ -2,12 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import "./modals.css";
 
-export default function EditEventModal({
-  defaultDate,
-  onSave,
-  event,
-  onClose,
-}) {
+export default function EditEventModal({ onSave, event, onClose }) {
   const [date, setDate] = useState(event.date);
   const [type, setType] = useState(event.type);
   const [label, setLabel] = useState(event.label);

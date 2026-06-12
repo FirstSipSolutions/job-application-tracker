@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useMotionValue, useTransform } from "motion/react";
+import { motion as Motion, useMotionValue, useTransform } from "motion/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import "../../styles/Carousel.css";
 
@@ -16,7 +16,7 @@ function CarouselItem({ item, index, itemWidth, trackItemOffset, x, transition }
     : undefined;
 
   return (
-    <motion.div
+    <Motion.div
       className="carousel-item"
       style={{ width: itemWidth, rotateY }}
       transition={transition}
@@ -45,7 +45,7 @@ function CarouselItem({ item, index, itemWidth, trackItemOffset, x, transition }
           </button>
         )}
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -76,17 +76,18 @@ export default function Carousel({ items = [], autoplay = false, autoplayDelay =
     return [items[items.length - 1], ...items, items[0]];
   }, [items, loop]);
 
-  useEffect(() => {
+  // Render-time adjustments (not effects - avoids a flash of the stale slide):
+  // reset to the start when the item set, loop mode, or item width changes,
+  // and clamp the position if items were removed.
+  const [prevDeps, setPrevDeps] = useState({ len: items.length, loop, trackItemOffset });
+  if (prevDeps.len !== items.length || prevDeps.loop !== loop || prevDeps.trackItemOffset !== trackItemOffset) {
+    setPrevDeps({ len: items.length, loop, trackItemOffset });
     const start = loop ? 1 : 0;
     setPosition(start);
     x.set(-start * trackItemOffset);
-  }, [items.length, loop, trackItemOffset, x]);
-
-  useEffect(() => {
-    if (!loop && position > itemsForRender.length - 1) {
-      setPosition(Math.max(0, itemsForRender.length - 1));
-    }
-  }, [itemsForRender.length, loop, position]);
+  } else if (!loop && position > itemsForRender.length - 1) {
+    setPosition(Math.max(0, itemsForRender.length - 1));
+  }
 
   useEffect(() => {
     if (!autoplay || itemsForRender.length <= 1 || isHovered) return;
@@ -174,7 +175,7 @@ export default function Carousel({ items = [], autoplay = false, autoplayDelay =
         </button>
       )}
 
-      <motion.div
+      <Motion.div
         className="carousel-track"
         drag={isAnimating ? false : "x"}
         {...dragConstraints}
@@ -199,12 +200,12 @@ export default function Carousel({ items = [], autoplay = false, autoplayDelay =
             transition={effectiveTransition}
           />
         ))}
-      </motion.div>
+      </Motion.div>
 
       <div className="carousel-indicators-container">
         <div className="carousel-indicators">
           {items.map((_, i) => (
-            <motion.div
+            <Motion.div
               key={i}
               className={`carousel-indicator ${activeIndex === i ? "active" : "inactive"}`}
               animate={{ scale: activeIndex === i ? 1.2 : 1 }}
