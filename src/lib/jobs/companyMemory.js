@@ -1,14 +1,14 @@
 // ── Company Memory ────────────────────────────────────────────────────────────
 //
 // Persists what we learn about each company's Canada eligibility across sessions.
-// Over time this replaces Groq guesses with real signals — either from the user
+// Over time this replaces Groq guesses with real signals - either from the user
 // clicking Apply (strongest signal: they're hiring you, a Canadian) or from
 // Groq's classification being confirmed repeatedly.
 //
 // Source hierarchy (highest wins):
 //   "source"   → definitively known from API data (e.g. Remotive location field)
-//   "user"     → user clicked Apply — they are clearly hiring Canadians
-//   "groq"     → AI guess — useful but can be overridden
+//   "user"     → user clicked Apply - they are clearly hiring Canadians
+//   "groq"     → AI guess - useful but can be overridden
 //
 // Format in localStorage:
 //   { "stripe": { canadaOpen: true, source: "groq", updatedAt: 1234567890 } }
@@ -21,17 +21,11 @@ function load() {
 }
 
 function save(store) {
-  try { localStorage.setItem(KEY, JSON.stringify(store)); } catch {}
+  try { localStorage.setItem(KEY, JSON.stringify(store)); } catch { /* quota exceeded - memory is best-effort */ }
 }
 
 function rank(source) {
   return source === "source" ? 3 : source === "user" ? 2 : 1; // groq = 1
-}
-
-// Returns { canadaOpen, source, updatedAt } or null if unknown.
-export function getCompanyKnowledge(companyName) {
-  if (!companyName) return null;
-  return load()[companyName.toLowerCase().trim()] ?? null;
 }
 
 // Learn something about a company. Higher-ranked sources never get overwritten.
@@ -45,7 +39,7 @@ export function learnCompany(companyName, canadaOpen, source = "groq") {
   save(store);
 }
 
-// Call when user clicks Apply — their action is the strongest Canada signal.
+// Call when user clicks Apply - their action is the strongest Canada signal.
 export function markApplied(companyName) {
   learnCompany(companyName, true, "user");
 }
@@ -58,7 +52,10 @@ export function applyMemory(jobs) {
   const updates = {};
 
   const result = jobs.map(j => {
-    const key   = (j.company ?? "").toLowerCase().trim();
+    const key = (j.company ?? "").toLowerCase().trim();
+    // No company name → no memory key. Without this guard every nameless job
+    // (Job Bank often omits employer) would share and overwrite the "" entry.
+    if (!key) return j;
     const known = store[key];
 
     if (known) {

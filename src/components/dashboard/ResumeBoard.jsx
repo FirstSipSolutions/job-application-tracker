@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Download, ExternalLink } from "lucide-react";
-import { useResumes } from "../../hooks/useResumes.js";
+import { useResumes } from "@/hooks/useResumes.js";
 import ResumeDetailModal from "../modals/ResumeDetailModal.jsx";
 
 function fmtDate(iso) {

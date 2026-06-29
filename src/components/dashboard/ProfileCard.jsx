@@ -1,4 +1,4 @@
-import { useProfile } from "../../context/ProfileContext.jsx";
+import { useProfile } from "@/context/ProfileContext.jsx";
 import HireHub from "./HireHub.jsx";
 
 export default function ProfileCard() {

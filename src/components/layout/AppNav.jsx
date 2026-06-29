@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "../../lib/supabase.js";
+import { supabase } from "@/lib/supabase.js";
 import ThemeToggle from "../ui/ThemeToggle.jsx";
 import LogoutModal from "../modals/LogoutModal.jsx";
 

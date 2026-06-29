@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ExternalLink } from "lucide-react";
 
 const BOARDS = [
   { label: "Indeed",    url: "https://indeed.com"        },

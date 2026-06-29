@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Download, ExternalLink } from "lucide-react";
-import { supabase } from "../../lib/supabase.js";
+import { supabase } from "@/lib/supabase.js";
 import "./modals.css";
 
 function fmtDate(iso) {

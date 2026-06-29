@@ -1,6 +1,6 @@
 import { fromSmartRecruiters } from "../normalize.js";
 
-// SmartRecruiters returns Access-Control-Allow-Origin: * — no proxy needed.
+// SmartRecruiters returns Access-Control-Allow-Origin: * - no proxy needed.
 // Company identifiers match the path on careers.smartrecruiters.com/{id}
 const COMPANIES = [
   { name: "Canva",      id: "Canva",      category: "global-remote" },

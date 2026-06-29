@@ -1,21 +1,41 @@
-import { fromWorkday } from "../normalize.js";
+import { fromWorkday, toSnippet } from "../normalize.js";
+import { isRemote, isTech } from "../filter.js";
 
 // Proxied via /api/workday (CF function in prod, vite middleware in dev).
-// board names are taken from the public Workday URL: tenant.wdN.myworkdayjobs.com/en-US/{board}/...
+// Board names come from the public Workday URL: tenant.wdN.myworkdayjobs.com/en-US/{board}/...
+// Every tenant here is verified to return 200 from the CXS API. TELUS, Bell,
+// Scotiabank, RBC and Manulife were removed: their tenants reject anonymous
+// CXS requests (404/422), so they only ever produced wasted requests.
 const COMPANIES = [
-  // ── Canadian ──────────────────────────────────────────────────────────────────
-  { name: "Verafin",    tenant: "nasdaq",     board: "Global_External_Site", wd: 1, category: "canadian" },
-  { name: "TELUS",      tenant: "telus",      board: "TELUS_External",       wd: 3, category: "canadian" },
-  { name: "Bell",       tenant: "bell",       board: "Bell_External",        wd: 3, category: "canadian" },
-  { name: "RBC",        tenant: "rbc",        board: "RBC_Jobs",             wd: 3, category: "canadian" },
-  { name: "Scotiabank", tenant: "scotiabank", board: "Global_External",      wd: 3, category: "canadian" },
-  { name: "Manulife",   tenant: "manulife",   board: "MFCJOBS",              wd: 3, category: "canadian" },
-  { name: "Sun Life",   tenant: "sunlife",    board: "Experienced",          wd: 3, category: "canadian" },
+  { name: "Verafin",  tenant: "nasdaq",  board: "Global_External_Site", wd: 1, category: "canadian" },
+  { name: "Sun Life", tenant: "sunlife", board: "Experienced",          wd: 3, category: "canadian" },
+  { name: "BMO",      tenant: "bmo",     board: "External",             wd: 3, category: "canadian" },
+  { name: "CIBC",     tenant: "cibc",    board: "search",               wd: 3, category: "canadian" },
+  { name: "TD Bank",  tenant: "td",      board: "TD_Bank_Careers",      wd: 3, category: "canadian" },
 ];
 
-const SEARCH     = ""; // empty = all jobs; isTech() in passesFilter drops non-dev roles
+// Scope the search: big tenants (banks) have thousands of postings and the API
+// caps at 100 - an empty search wastes the budget on non-dev roles.
+const SEARCH     = "software developer";
 const TIMEOUT_MS = 10000;
 const BASE       = "/api/workday";
+
+// Search results carry no description, which starves Groq of the text it needs
+// for experience/Canada classification. Fetch details for the few jobs that
+// can actually surface (remote + tech title) - capped to bound request count.
+const DETAIL_CAP = 5;
+
+async function enrichDescriptions(jobs, { tenant, board, wd }, signal) {
+  const candidates = jobs.filter(j => j._externalPath && isRemote(j) && isTech(j)).slice(0, DETAIL_CAP);
+  await Promise.allSettled(candidates.map(async j => {
+    const params = new URLSearchParams({ tenant, board, wd: String(wd), path: j._externalPath });
+    const res = await fetch(`${BASE}?${params}`, { signal });
+    if (!res.ok) return;
+    const data = await res.json();
+    const html = data.jobPostingInfo?.jobDescription ?? "";
+    if (html) j.descriptionSnippet = toSnippet(html);
+  }));
+}
 
 async function fetchOne({ name, tenant, board, wd, category }) {
   const ctrl  = new AbortController();
@@ -25,7 +45,9 @@ async function fetchOne({ name, tenant, board, wd, category }) {
     const res = await fetch(`${BASE}?${params}`, { signal: ctrl.signal });
     if (!res.ok) return [];
     const { jobPostings } = await res.json();
-    return (jobPostings ?? []).map(j => fromWorkday(j, name, tenant, board, wd, category));
+    const jobs = (jobPostings ?? []).map(j => fromWorkday(j, name, tenant, board, wd, category));
+    await enrichDescriptions(jobs, { tenant, board, wd }, ctrl.signal);
+    return jobs;
   } catch {
     return [];
   } finally {

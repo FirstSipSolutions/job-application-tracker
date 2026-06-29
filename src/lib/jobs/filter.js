@@ -1,21 +1,9 @@
 // Shared filter applied to every job regardless of source.
 // All conditions must pass or the job is dropped.
 
-// ── isTech: two-layer title filter ────────────────────────────────────────────
-//
-// Layer 1 - NON_DEV: titles that are definitely not dev/engineering roles.
-//   Checked first. If any pattern matches, the job is dropped immediately.
-//   This catches "Product Manager", "UX Designer", etc. that sneak through
-//   because they have tech-adjacent words in them.
-//
-// Layer 2 - DEV_ROLE: patterns that specifically identify the roles we want.
-//   A title must match at least one of these to pass.
-//   Much more precise than the old keyword-set approach. "designer" alone
-//   used to pass because "design" was in TECH_KEYWORDS.
-//
-// Groq (lib/llm/classifyJobs.js) runs after this and catches anything
-// the regex misses. These two layers work together, not in isolation.
-// ─────────────────────────────────────────────────────────────────────────────
+// isTech is a two-layer title filter: NON_DEV rejects first (PM/design/etc.
+// with tech-adjacent words), then the title must match a DEV_ROLE pattern.
+// Groq (lib/llm/classifyJobs.js) runs later and refines what the regex misses.
 
 const NON_DEV = [
   /\bproduct\s+(manager|designer|owner)\b/i,
@@ -139,11 +127,22 @@ export function isTech(job) {
   return DEV_ROLE.some(re => re.test(title));
 }
 
+// Canada ingest gate: at least one positive (or non-negative) Canada signal.
+export function passesCanadaGate(job) {
+  return job.category === "canadian"
+    || job._canadaSource === "source"
+    || isCanadaJob(job)
+    || job.canadaOpen === true
+    || isCanadaEligible(job);
+}
+
 export function passesFilter(job) {
-  // Canadian-category sources (DNS, JobBank, SiliconHarbour) include intentionally
-  // local NS/CA postings — skip the remote gate for those, still require tech + fresh.
-  const canadianSource = job.category === "canadian";
-  return (canadianSource || isRemote(job)) && (job.sourceTech || isTech(job)) && isFresh(job);
+  // Canadian-category sources (DNS, JobBank, SiliconHarbour, TechNL) include
+  // intentionally local NS/NL/CA postings - skip the remote gate for those.
+  if (job.category !== "canadian" && !isRemote(job)) return false;
+  // sourceTech: curated tech boards (TechNL) where every posting is relevant.
+  if (!job.sourceTech && !isTech(job)) return false;
+  return isFresh(job) && passesCanadaGate(job);
 }
 
 // ── UI filter helpers ─────────────────────────────────────────────
@@ -179,8 +178,8 @@ export function isCanadaEligible(job) {
   if (/\beu\s*[-/]?\s*only\b|europe\s+only|\buk\s*[-/]?\s*only\b|\bemea\b|\bapac\b|asia\s+pacific/i.test(loc)) return false;
 
   // "Remote (US)", "Remote - US", "Remote, US", "US Remote", "Remote United States"
-  if (/\bremote\s*[,(\-]\s*(us|usa|united states)\b/i.test(loc)) return false;
-  if (/\b(us|usa|united states)\s*[),\-]?\s*remote\b/i.test(loc)) return false;
+  if (/\bremote\s*[,(-]\s*(us|usa|united states)\b/i.test(loc)) return false;
+  if (/\b(us|usa|united states)\s*[),-]?\s*remote\b/i.test(loc)) return false;
 
   // US state as the only location with no remote/worldwide qualifier
   if (/\b(california|texas|new york|washington state|florida|colorado|illinois|georgia|massachusetts|oregon|nevada|arizona|virginia|north carolina)\b/i.test(loc)

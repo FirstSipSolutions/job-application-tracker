@@ -8,7 +8,7 @@ import { fromJobBank } from "../normalize.js";
 
 const BASE        = "/api/jobbank";
 const TIMEOUT_MS  = 10000;
-const TERMS       = ["software developer", "software engineer", "web developer", "full stack", "frontend developer"];
+const TERMS       = ["software developer", "web developer"];
 
 function parseAtom(xml) {
   const entries = [];

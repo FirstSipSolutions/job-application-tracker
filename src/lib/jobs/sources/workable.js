@@ -2,7 +2,8 @@ import { fromWorkable } from "../normalize.js";
 
 // Proxied via /api/workable (CF function in prod, vite middleware in dev).
 // Slugs must be verified from apply.workable.com/{slug} before adding.
-// Example: Hopper → verify at apply.workable.com/hopper first.
+// NOT in JobsPage SOURCES until COMPANIES has verified slugs - re-add the
+// import there when filling this in.
 const COMPANIES = [];
 
 const TIMEOUT_MS = 10000;

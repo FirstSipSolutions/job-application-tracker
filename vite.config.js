@@ -1,99 +1,146 @@
-import { defineConfig } from "vite";
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { classifyWithGroq, MAX_JOBS } from "./functions/api/_groq.js";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Dev-server middleware plugin
-//
-// Workday and Workable need a per-request dynamic proxy target (the company
-// tenant/slug comes in as a query param). Everything else uses server.proxy.
-//
-// NOTE: configureServer is a Vite *plugin* hook — it must live inside
-// plugins[], NOT inside server{}.  Putting it in server{} is silently ignored.
-// ─────────────────────────────────────────────────────────────────────────────
-const devMiddlewarePlugin = {
-  name: "dev-api-middleware",
-  configureServer(server) {
-    // Workday: target URL is per-company (tenant + board from query params)
-    server.middlewares.use(async (req, res, next) => {
-      if (!req.url?.startsWith("/api/workday")) return next();
-      const p      = new URLSearchParams(req.url.split("?")[1] ?? "");
-      const tenant = p.get("tenant") ?? "";
-      const board  = p.get("board")  ?? "";
-      const wd     = p.get("wd")     ?? "3";
-      const q      = p.get("q")      ?? "software developer";
-      res.setHeader("Content-Type", "application/json");
-      if (!tenant || !board) { res.end(JSON.stringify({ jobPostings: [] })); return; }
-      try {
-        const r = await fetch(
-          `https://${tenant}.wd${wd}.myworkdayjobs.com/wday/cxs/${tenant}/${board}/jobs`,
-          { method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ limit: 100, offset: 0, searchText: q, appliedFacets: {} }) },
-        );
-        res.end(r.ok ? await r.text() : JSON.stringify({ jobPostings: [] }));
-      } catch { res.end(JSON.stringify({ jobPostings: [] })); }
-    });
+// Dev-only mirrors of the Cloudflare Pages Functions in functions/api/.
+// These must live in a plugin: `configureServer` is a plugin hook and is
+// silently ignored when placed under the `server` config option.
+function devApiProxy(groqKey) {
+  const json = (res, body) => {
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify(body));
+  };
 
-    // Workable: target URL is per-company (slug from query params)
-    server.middlewares.use(async (req, res, next) => {
-      if (!req.url?.startsWith("/api/workable")) return next();
-      const slug = new URLSearchParams(req.url.split("?")[1] ?? "").get("slug") ?? "";
-      res.setHeader("Content-Type", "application/json");
-      if (!slug) { res.end(JSON.stringify({ results: [] })); return; }
-      try {
-        const r = await fetch(`https://apply.workable.com/api/v3/accounts/${slug}/jobs`);
-        res.end(r.ok ? await r.text() : JSON.stringify({ results: [] }));
-      } catch { res.end(JSON.stringify({ results: [] })); }
-    });
+  return {
+    name: "dev-api-proxy",
+    configureServer(server) {
+      // Groq classification: keeps the API key out of the client bundle.
+      // Reads GROQ_API_KEY from .env.local (prod uses a CF Pages secret).
+      server.middlewares.use("/api/classify", async (req, res) => {
+        if (req.method !== "POST") { res.statusCode = 405; return json(res, { error: "POST only" }); }
+        if (!groqKey) { res.statusCode = 503; return json(res, { error: "GROQ_API_KEY not set in .env.local" }); }
+        let raw = "";
+        for await (const chunk of req) raw += chunk;
+        let jobs;
+        try { jobs = JSON.parse(raw).jobs; } catch { jobs = null; }
+        if (!Array.isArray(jobs) || jobs.length === 0 || jobs.length > MAX_JOBS) {
+          res.statusCode = 400;
+          return json(res, { error: `jobs must contain 1-${MAX_JOBS} items` });
+        }
+        try {
+          const out = await classifyWithGroq(jobs, groqKey);
+          if (out.status !== 200) {
+            res.statusCode = out.status === 429 ? 429 : 502;
+            return json(res, { error: `Groq ${out.status}` });
+          }
+          json(res, { results: out.results, usage: out.usage });
+        } catch (err) {
+          console.error("[dev-api] classify:", err.message);
+          res.statusCode = 502;
+          json(res, { error: "Groq request failed" });
+        }
+      });
 
+      // Workday: dynamic tenant per company - can't use a static proxy target.
+      // With ?path=/job/... fetches a single posting's detail (description).
+      server.middlewares.use("/api/workday", async (req, res) => {
+        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
+        const tenant = params.get("tenant") ?? "";
+        const board  = params.get("board")  ?? "";
+        const wd     = params.get("wd")     ?? "3";
+        const q      = params.get("q")      ?? "software developer";
+        const path   = params.get("path")   ?? "";
+        if (!tenant || !board) return json(res, { jobPostings: [] });
+        try {
+          const base = `https://${tenant}.wd${wd}.myworkdayjobs.com/wday/cxs/${tenant}/${board}`;
+          const r = path.startsWith("/job/")
+            ? await fetch(`${base}${path}`)
+            : await fetch(`${base}/jobs`, {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                // Workday CXS rejects limit > 20 with HTTP 400
+                body:    JSON.stringify({ limit: 20, offset: 0, searchText: q, appliedFacets: {} }),
+              });
+          if (!r.ok) {
+            console.error(`[dev-api] workday ${tenant}/${board}: upstream ${r.status}`);
+            return json(res, { jobPostings: [] });
+          }
+          res.setHeader("Content-Type", "application/json");
+          res.end(await r.text());
+        } catch (err) {
+          console.error("[dev-api] workday:", err.message);
+          json(res, { jobPostings: [] });
+        }
+      });
+
+      // Workable: dynamic slug per company
+      server.middlewares.use("/api/workable", async (req, res) => {
+        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
+        const slug   = params.get("slug") ?? "";
+        if (!slug) return json(res, { results: [] });
+        try {
+          const r = await fetch(`https://apply.workable.com/api/v3/accounts/${slug}/jobs`);
+          if (!r.ok) return json(res, { results: [] });
+          res.setHeader("Content-Type", "application/json");
+          res.end(await r.text());
+        } catch { json(res, { results: [] }); }
+      });
+
+      // Job Bank Canada: Atom feed, search term in query
+      server.middlewares.use("/api/jobbank", async (req, res) => {
+        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
+        const term   = params.get("term") ?? "software developer";
+        res.setHeader("Content-Type", "application/xml;charset=UTF-8");
+        try {
+          const r = await fetch(
+            `https://www.jobbank.gc.ca/jobsearch/feed/jobSearchRSSfeed?searchstring=${encodeURIComponent(term)}&rows=100`,
+            { headers: { "User-Agent": "CVVault/1.0", "Accept": "application/atom+xml" } },
+          );
+          res.end(r.ok ? await r.text() : "<feed/>");
+        } catch { res.end("<feed/>"); }
+      });
+
+      // Digital Nova Scotia: WordPress REST API
+      server.middlewares.use("/api/dns", async (req, res) => {
+        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
+        const page   = params.get("page") ?? "1";
+        try {
+          const r = await fetch(`https://digitalnovascotia.com/wp-json/wp/v2/job_portal?per_page=100&status=publish&page=${page}`);
+          if (!r.ok) return json(res, []);
+          res.setHeader("Content-Type", "application/json");
+          res.end(await r.text());
+        } catch { json(res, []); }
+      });
+
+    },
+  };
+}
+
+const ROOT = fileURLToPath(new URL(".", import.meta.url));
+
+export default defineConfig(({ mode }) => ({
+  plugins: [react(), devApiProxy(loadEnv(mode, ROOT, "").GROQ_API_KEY)],
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
-};
-
-export default defineConfig({
-  plugins: [react(), devMiddlewarePlugin],
   server: {
     proxy: {
-      // ── Digital Nova Scotia ───────────────────────────────────────────────
-      "/api/dns": {
-        target:      "https://digitalnovascotia.com",
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api\/dns/, "/wp-json/wp/v2/job_portal"),
-      },
-
-      // ── Job Bank Canada ───────────────────────────────────────────────────
-      // Translate ?term=<word> → ?searchstring=<word>&rows=100
-      // URLSearchParams encodes spaces as + which Job Bank requires (%20 fails).
-      // Vite proxy uses Node's https module (not undici) so gc.ca TLS works fine.
-      "/api/jobbank": {
-        target:      "https://www.jobbank.gc.ca",
-        changeOrigin: true,
-        rewrite: path => {
-          const term = new URLSearchParams(path.split("?")[1] ?? "").get("term")
-                    ?? "software developer";
-          const qs   = new URLSearchParams({ searchstring: term, rows: "100" });
-          return `/jobsearch/feed/jobSearchRSSfeed?${qs}`;
-        },
-      },
-
-      // ── Tech NL ───────────────────────────────────────────────────────────
       "/api/technl": {
-        target:      "https://technl.ca",
+        target: "https://technl.ca",
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api\/technl/, "/wp-json/wp/v2/job-listings") + "&_fields=id,title,link,date,meta,content",
       },
-
-      // ── Himalayas ─────────────────────────────────────────────────────────
       "/api/himalayas": {
-        target:      "https://himalayas.app",
+        target: "https://himalayas.app",
         changeOrigin: true,
         rewrite: () => "/jobs/api/search?sort=recent&limit=100&q=software&countries=Canada,United+States",
       },
-
-      // ── WeWorkRemotely ────────────────────────────────────────────────────
       "/api/weworkremotely": {
-        target:      "https://weworkremotely.com",
+        target: "https://weworkremotely.com",
         changeOrigin: true,
         rewrite: () => "/categories/remote-programming-jobs.rss",
       },
     },
   },
-});
+}));

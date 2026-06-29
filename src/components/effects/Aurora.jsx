@@ -211,6 +211,8 @@ export default function Aurora(props) {
       }
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
+    // blend/colorStops are read via a ref each frame - re-running on change would rebuild the WebGL context
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [amplitude]);
 
   return <div ref={ctnDom} className="aurora-container" />;
