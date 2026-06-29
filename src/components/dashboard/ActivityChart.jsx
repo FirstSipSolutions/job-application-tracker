@@ -1,5 +1,5 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useTheme } from "../../context/ThemeContext.jsx";
+import { useTheme } from "@/context/ThemeContext.jsx";
 
 // groups apps into 8 weekly buckets ending today
 function buildChartData(apps) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X } from "lucide-react";
-import { supabase } from "../../lib/supabase.js";
-import { STATUS_OPTIONS } from "../../lib/status.js";
+import { supabase } from "@/lib/supabase.js";
+import { STATUS_OPTIONS } from "@/lib/status.js";
 import "./modals.css";
 
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { supabase } from "../../lib/supabase.js";
-import { STATUS_OPTIONS, STATUS_COLOR } from "../../lib/status.js";
+import { supabase } from "@/lib/supabase.js";
+import { STATUS_OPTIONS, STATUS_COLOR } from "@/lib/status.js";
 
 function fmtDate(iso) {
   return new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });

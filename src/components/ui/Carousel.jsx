@@ -49,7 +49,7 @@ function CarouselItem({ item, index, itemWidth, trackItemOffset, x, transition }
   );
 }
 
-export default function Carousel({ items = [], autoplay = false, autoplayDelay = 3000, loop = false }) {
+export default function Carousel({ items = [], autoplay = false, autoplayDelay = 3000, loop = false, className = "" }) {
   const containerRef   = useRef(null);
   const pointerStartX  = useRef(null);
   const didDrag        = useRef(false);
@@ -157,7 +157,7 @@ export default function Carousel({ items = [], autoplay = false, autoplayDelay =
   return (
     <div
       ref={containerRef}
-      className="carousel-container"
+      className={`carousel-container${className ? ` ${className}` : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onPointerDown={e => { pointerStartX.current = e.clientX; didDrag.current = false; }}

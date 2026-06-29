@@ -16,6 +16,16 @@
   border-color: var(--db-blue);
 }
 
+/* Cards the user has already opened/logged - same yellow as the Viewed stat */
+.carousel-container.carousel-viewed {
+  border-color: rgba(250, 204, 21, 0.55);
+  background: rgba(250, 204, 21, 0.07);
+}
+
+.carousel-container.carousel-viewed:hover {
+  border-color: #facc15;
+}
+
 .carousel-track {
   display: flex;
 }

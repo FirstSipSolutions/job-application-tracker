@@ -19,7 +19,6 @@ import { useApplications }           from "../hooks/useApplications.js";
 import { classifyJobs }              from "../lib/llm/classifyJobs.js";
 import { applyMemory, markApplied }  from "../lib/jobs/companyMemory.js";
 import { Shuffle } from "lucide-react";
-import CoverLetterModal from "../components/jobs/CoverLetterModal.jsx";
 import "../styles/jobs.css";
 
 // RemoteOK and Remote.co removed: RemoteOK returns mostly non-dev listings,
@@ -214,7 +213,7 @@ export default function JobsPage() {
   const [liveJobs,    setLiveJobs]    = useState([]);
   const [polling,     setPolling]     = useState(false);
   const [aiFiltering, setAiFiltering] = useState(false);
-  const [coverJob,    setCoverJob]    = useState(null);
+  const [justViewed,  setJustViewed]  = useState(() => new Set());
   const seenUrls       = useRef(new Set());
   const classifiedUrls = useRef(new Set());
   const pollTimer      = useRef(null);
@@ -330,17 +329,19 @@ export default function JobsPage() {
     setPolling(false);
   }
 
-  function logAndOpen(job, coverLetter) {
+  // Opens the posting and logs it as Viewed. Marking justViewed gives the card
+  // an instant yellow tint before the addApp DB roundtrip lands in `apps`.
+  function handleApply(job) {
     window.open(job.url, "_blank", "noopener,noreferrer");
     markApplied(job.company); // strongest Canada signal: you clicked Apply
+    if (job.url) setJustViewed(prev => new Set(prev).add(job.url));
     addApp({
-      url:          job.url,
-      company:      job.company,
-      role:         job.title,
-      status:       "Viewed",
-      date:         new Date().toISOString().slice(0, 10),
-      cover_letter: coverLetter ?? null,
-      notes:        [
+      url:     job.url,
+      company: job.company,
+      role:    job.title,
+      status:  "Viewed",
+      date:    new Date().toISOString().slice(0, 10),
+      notes:   [
         `Via ${job.source}`,
         job.postedAt                 ? `Posted: ${job.postedAt.slice(0, 10)}` : null,
         job.groqStack                ? `Stack: ${job.groqStack}`       : null,
@@ -352,24 +353,19 @@ export default function JobsPage() {
     });
   }
 
-  function handleApply(job) {
-    setCoverJob(job);
-  }
-
-  function handleCoverConfirm(coverLetter) {
-    logAndOpen(coverJob, coverLetter);
-    setCoverJob(null);
-  }
-
   const providers = useMemo(() => {
     const set = new Set(jobs.map(j => j.source).filter(Boolean));
     return [...set].sort();
   }, [jobs]);
 
-  const coveredUrls = useMemo(
-    () => new Set(apps.filter(a => a.cover_letter && a.url).map(a => a.url)),
-    [apps]
-  );
+  // URLs the user has already opened/logged - used to tint those cards yellow.
+  // Seeded from logged applications (persists across reloads) plus this session's
+  // clicks for instant feedback before the DB write returns.
+  const viewedUrls = useMemo(() => {
+    const s = new Set(justViewed);
+    apps.forEach(a => { if (a.url) s.add(a.url); });
+    return s;
+  }, [apps, justViewed]);
 
   const filtered = useMemo(() => {
     const sortFn = shuffleKey > 0
@@ -377,7 +373,6 @@ export default function JobsPage() {
       : byScore();
     return jobs
       .filter(j => {
-        if (j.url && coveredUrls.has(j.url)) return false;
         if (j.canadaOpen === false) return false;
         if (!matchesRegion(j, region)) return false;
         if (region === "province" && province) {
@@ -415,7 +410,7 @@ export default function JobsPage() {
         return true;
       })
       .sort(sortFn);
-  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey, coveredUrls]);
+  }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey]);
 
   function resetFilters() {
     setRegion("canada");
@@ -484,7 +479,7 @@ export default function JobsPage() {
                 <p className="live-found-label">{liveJobs.length} new {liveJobs.length === 1 ? "listing" : "listings"} found</p>
                 <div className="jobs-grid">
                   {liveJobs.map(job => (
-                    <JobCard key={job.id} job={job} onApply={handleApply} />
+                    <JobCard key={job.id} job={job} onApply={handleApply} viewed={job.url ? viewedUrls.has(job.url) : false} />
                   ))}
                 </div>
               </div>
@@ -623,7 +618,7 @@ export default function JobsPage() {
             <div key={i} className="job-card job-card-skeleton" />
           ))}
           {visible.map(job => (
-            <JobCard key={job.id} job={job} onApply={handleApply} />
+            <JobCard key={job.id} job={job} onApply={handleApply} viewed={job.url ? viewedUrls.has(job.url) : false} />
           ))}
           {!loading && filtered.length === 0 && (
             <div className="jobs-empty-state">
@@ -653,14 +648,6 @@ export default function JobsPage() {
         )}
 
       </main>
-
-      {coverJob && (
-        <CoverLetterModal
-          job={coverJob}
-          onConfirm={handleCoverConfirm}
-          onClose={() => setCoverJob(null)}
-        />
-      )}
     </div>
   );
 }

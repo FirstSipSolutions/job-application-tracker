@@ -3,8 +3,8 @@ import { Flame, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import FadeContent from "../ui/FadeContent.jsx";
-import { useApplications } from "../../hooks/useApplications.js";
-import { markApplied } from "../../lib/jobs/companyMemory.js";
+import { useApplications } from "@/hooks/useApplications.js";
+import { markApplied } from "@/lib/jobs/companyMemory.js";
 
 const HOT_KEY  = "cv-vault-hot-jobs";
 const WINDOW   = 864e5; // 24 hours

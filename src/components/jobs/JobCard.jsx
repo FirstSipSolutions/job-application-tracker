@@ -1,6 +1,6 @@
 import { Building2, Clock, FileText, Layers, Send } from "lucide-react";
 import Carousel from "../ui/Carousel.jsx";
-import { getTechTags, getExperienceLevel } from "../../lib/jobs/filter.js";
+import { getTechTags, getExperienceLevel } from "@/lib/jobs/filter.js";
 
 // Deterministic hue from company name so each company has a consistent accent color
 function companyColor(name) {
@@ -25,7 +25,7 @@ function expLabel(job) {
   return null;
 }
 
-export default function JobCard({ job, onApply }) {
+export default function JobCard({ job, onApply, viewed = false }) {
   const tags  = getTechTags(job);
   const { text: ageText, stale } = daysAgoLabel(job.postedAt);
   const exp   = expLabel(job);
@@ -83,5 +83,5 @@ export default function JobCard({ job, onApply }) {
     },
   ].filter(Boolean);
 
-  return <Carousel items={slides} />;
+  return <Carousel items={slides} className={viewed ? "carousel-viewed" : ""} />;
 }
