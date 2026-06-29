@@ -3,8 +3,9 @@ import { isRemote, isTech } from "../filter.js";
 
 // Proxied via /api/workday (CF function in prod, vite middleware in dev).
 // Board names come from the public Workday URL: tenant.wdN.myworkdayjobs.com/en-US/{board}/...
-// Only include tenants verified to return 200 from the CXS API - some tenants
-// reject anonymous CXS requests (404/422) and only produce wasted calls.
+// Every tenant here is verified to return 200 from the CXS API. TELUS, Bell,
+// Scotiabank, RBC and Manulife were removed: their tenants reject anonymous
+// CXS requests (404/422), so they only ever produced wasted requests.
 const COMPANIES = [
   { name: "Verafin",  tenant: "nasdaq",  board: "Global_External_Site", wd: 1, category: "canadian" },
   { name: "Sun Life", tenant: "sunlife", board: "Experienced",          wd: 3, category: "canadian" },
