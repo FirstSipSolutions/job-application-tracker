@@ -443,7 +443,7 @@ export default function JobsPage() {
   const visible = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = visible.length < filtered.length;
 
-  // Source health: a feed that breaks (like Workday did) should be visible,
+  // Source health: a feed that breaks or returns nothing should be visible,
   // not buried in the console.
   const srcLabel     = name => name.replace(/^fetch/, "").replace(/([a-z])([A-Z])/g, "$1 $2");
   const failedSrcs   = Object.entries(sourceStats).filter(([, s]) => s.failed).map(([n]) => srcLabel(n));
