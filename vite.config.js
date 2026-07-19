@@ -74,19 +74,6 @@ function devApiProxy(groqKey) {
         }
       });
 
-      // Workable: dynamic slug per company
-      server.middlewares.use("/api/workable", async (req, res) => {
-        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
-        const slug   = params.get("slug") ?? "";
-        if (!slug) return json(res, { results: [] });
-        try {
-          const r = await fetch(`https://apply.workable.com/api/v3/accounts/${slug}/jobs`);
-          if (!r.ok) return json(res, { results: [] });
-          res.setHeader("Content-Type", "application/json");
-          res.end(await r.text());
-        } catch { json(res, { results: [] }); }
-      });
-
       // Job Bank Canada: Atom feed, search term in query
       server.middlewares.use("/api/jobbank", async (req, res) => {
         const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
