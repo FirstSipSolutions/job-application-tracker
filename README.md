@@ -40,4 +40,8 @@ src/
   lib/llm/        AI classification client
 functions/api/   serverless: Groq classify + source proxies
 ```
-```
+
+## Docs
+
+- [`docs/dsa.md`](docs/dsa.md) - data structure decisions and why
+- [`docs/bookmarklet.md`](docs/bookmarklet.md) - the "log this job" bookmarklet
