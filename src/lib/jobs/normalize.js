@@ -376,32 +376,6 @@ export function fromWorkday(job, companyName, tenant, board, wd, category) {
   };
 }
 
-// ── Workable (via CF proxy) ───────────────────────────────────────────────────
-
-export function fromWorkable(job, companyName, category) {
-  const loc      = job.location ?? {};
-  const remote   = loc.remote === true || loc.workplace === "remote";
-  const hybrid   = loc.workplace === "hybrid";
-  const locStr   = [loc.city, loc.region, loc.country].filter(Boolean).join(", ");
-  const canadaOpen = loc.country_code === "CA" || loc.countryCode === "CA" ? true : undefined;
-  return {
-    id:            `wk-${job.id ?? job.shortcode ?? String(Date.now())}`,
-    title:         job.title ?? "",
-    company:       companyName,
-    location:      hybrid ? `${locStr} (Hybrid)` : remote ? "Remote" : locStr,
-    workplaceType: hybrid ? "Hybrid" : remote ? "Remote" : locStr,
-    salary:        null,
-    currency:      null,
-    postedAt:      job.created_at ?? null,
-    url:           job.url ?? "",
-    source:        "Workable",
-    category,
-    canadaOpen,
-    _canadaSource: canadaOpen === true ? "source" : undefined,
-    descriptionSnippet: null,
-  };
-}
-
 // ── SmartRecruiters (CORS = * - no proxy needed) ──────────────────────────────
 
 export function fromSmartRecruiters(job, companyName, category) {
