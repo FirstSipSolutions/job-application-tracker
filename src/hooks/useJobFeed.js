@@ -5,6 +5,8 @@
  * Also drives "live" mode, which polls for new listings in the background.
  * Returns the ranked jobs plus the status the page renders.
  */
+
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { fetchSiliconHarbour } from "../lib/jobs/sources/siliconHarbour.js";
 import { fetchDigitalNS }      from "../lib/jobs/sources/digitalNovascotia.js";

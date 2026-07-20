@@ -22,6 +22,20 @@ GROQ_API_KEY=
 
 `GROQ_API_KEY` stays server-side (used by `/api/classify`), so no `VITE_` prefix.
 
+## AI usage (free)
+
+The only AI call is job classification via Groq (`llama-3.1-8b-instant`, free tier).
+It is built to stay free:
+
+- Runs only after a cheap regex pre-filter, so the model sees only real candidates
+- Results cached 7 days per job, so repeat visits cost 0 tokens
+- Small chunks and trimmed descriptions to stay under free-tier limits
+- Stops on rate limit (429) and falls back to regex; nothing breaks
+- With no key set, classification is skipped entirely (regex only)
+
+Groq's free tier is rate-limited, not billed, so it cannot charge unless a paid
+plan is added. Watch usage at https://console.groq.com (Usage / Limits).
+
 ## Test
 
 ```sh
