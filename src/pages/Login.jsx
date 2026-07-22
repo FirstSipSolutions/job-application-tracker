@@ -1,4 +1,4 @@
- import Aurora from "../components/effects/Aurora.jsx";
+import Aurora from "../components/effects/Aurora.jsx";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/login.css";
@@ -173,7 +173,6 @@ export default function Login() {
     return (
       <button
         type="submit"
-        onSubmit={handleLogin}
         style={{
           display: "inline-flex",
           alignItems: "center",
