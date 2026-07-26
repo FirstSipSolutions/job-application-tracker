@@ -64,13 +64,19 @@ function QuickPairRow({ app, resumes, coverLetters, onSave, onClose }) {
 export default function JobApplicationBoard({ apps, loading, updateStatus, updateApp, removeApp, onEdit }) {
   const { resumes, coverLetters } = useDocuments();
   const [expanded, setExpanded]   = useState(null);
+  const [showViewed, setShowViewed] = useState(false);
+  const viewed = apps.filter(a => a.status === "Viewed");
+  const shown  = showViewed ? apps : apps.filter(a => a.status !== "Viewed");
 
   function toggle(id) { setExpanded(prev => prev === id ? null : id); }
 
   return (
     <div className="db-card db-app-board">
       <div className="db-card-title">Job Application Board</div>
-      <div className="db-card-sub">{loading ? "Loading..." : `${apps.length} tracked`}</div>
+      <div className="db-card-sub">{loading ? "Loading..." : `${shown.length} tracked`}</div>
+      <button className="db-app-viewed-btn" onClick={() => setShowViewed(v => !v)}>
+        {showViewed ? "Hide viewed" : "Show viewed"} ({viewed.length})
+      </button>
 
       {loading ? null : apps.length === 0 ? (
         <p className="db-app-empty">No applications yet. Hit + Add Application to start.</p>
@@ -84,7 +90,7 @@ export default function JobApplicationBoard({ apps, loading, updateStatus, updat
             <span className="db-app-actions" />
           </div>
 
-          {apps.map((app) => {
+          {shown.map((app) => {
             const { id, company, role, status, date } = app;
             const hasDocs = app.resume_id || app.cover_letter_id;
             return (
@@ -106,7 +112,7 @@ export default function JobApplicationBoard({ apps, loading, updateStatus, updat
                     onChange={(e) => { e.stopPropagation(); updateStatus(id, e.target.value); }}
                     style={{ color: STATUS_COLOR[status] ?? "#888" }}
                   >
-                    {STATUS_OPTIONS.map((opt) => <option key={opt}>{opt}</option>)}
+                    {STATUS_OPTIONS.filter(o => o !== "Viewed" || status === "Viewed").map((opt) => <option key={opt}>{opt}</option>)}
                   </select>
                   <span className="db-app-date">{fmtDate(date)}</span>
                   <div className="db-app-actions" onClick={e => e.stopPropagation()}>
