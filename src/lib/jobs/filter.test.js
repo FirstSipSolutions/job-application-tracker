@@ -1,19 +1,30 @@
 import { test, expect } from "vitest";
-import { isRemote, isTech, getCountry } from "./filter.js";
+import { isRemote, isTech, getCountry, isFresh } from "./filter.js";
 
-// The filter decides which jobs reach the user. These cover the main gates:
-// remote-only, dev roles, and reading the country from a location string.
+test("a remote job passes, a hybrid job does not", () => {
+  const remoteJob = { workplaceType: "Remote" };
+  const hybridJob = { workplaceType: "Hybrid" };
 
-test("isRemote keeps remote roles and drops hybrid ones", () => {
-  expect(isRemote({ workplaceType: "Remote" })).toBe(true);
-  expect(isRemote({ workplaceType: "Hybrid" })).toBe(false);
+  expect(isRemote(remoteJob)).toBe(true);
+  expect(isRemote(hybridJob)).toBe(false);
 });
 
-test("isTech keeps dev roles and drops non-dev ones", () => {
-  expect(isTech({ title: "Software Engineer" })).toBe(true);
-  expect(isTech({ title: "Product Manager" })).toBe(false);
+test("a dev role passes, a non-dev role does not", () => {
+  const devJob = { title: "Software Engineer" };
+  const nonDevJob = { title: "Product Manager" };
+
+  expect(isTech(devJob)).toBe(true);
+  expect(isTech(nonDevJob)).toBe(false);
 });
 
-test("getCountry reads Canada from the location", () => {
-  expect(getCountry({ location: "Remote, Canada" })).toBe("CA");
+test("a Canadian location reads as CA", () => {
+  const job = { location: "Remote, Canada" };
+
+  expect(getCountry(job)).toBe("CA");
+});
+
+test("a job with no date is not fresh", () => {
+  const undatedJob = {};
+
+  expect(isFresh(undatedJob)).toBe(false);
 });

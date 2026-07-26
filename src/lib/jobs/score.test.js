@@ -1,6 +1,9 @@
 import { test, expect } from "vitest";
 import { scoreJob } from "./score.js";
 
+
+
+
 // scoreJob ranks listings so the most hirable ones show first.
 // The clearest rule: a Canadian junior role should beat a senior US one.
 test("scoreJob ranks a Canadian junior role above a senior US role", () => {
@@ -15,3 +18,4 @@ test("scoreJob ranks a Canadian junior role above a senior US role", () => {
   // Assert: the Canadian junior role ranks higher
   expect(juniorScore).toBeGreaterThan(seniorScore);
 });
+
