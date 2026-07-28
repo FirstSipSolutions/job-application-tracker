@@ -43,9 +43,8 @@ export function passesCanadaGate(job) {
 }
 
 export function passesFilter(job) {
-  // Canadian-category sources (DNS, JobBank, SiliconHarbour, TechNL) include
-  // intentionally local NS/NL/CA postings - skip the remote gate for those.
-  if (job.category !== "canadian" && !isRemote(job)) return false;
+  // Every job must be remote - no source is exempt, or on-site listings leak in.
+  if (!isRemote(job)) return false;
   // sourceTech: curated tech boards (TechNL) where every posting is relevant.
   if (!job.sourceTech && !isTech(job)) return false;
   return isFresh(job) && passesCanadaGate(job);

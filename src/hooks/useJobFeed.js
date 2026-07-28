@@ -21,6 +21,7 @@ import { fetchLever }          from "../lib/jobs/sources/lever.js";
 import { fetchWorkday }        from "../lib/jobs/sources/workday.js";
 import { fetchSmartRecruiters } from "../lib/jobs/sources/smartrecruiters.js";
 import { fetchWeWorkRemotely }  from "../lib/jobs/sources/weWorkRemotely.js";
+import { fetchCanadianCompanies } from "../lib/jobs/sources/additions/canadianCompanies.js";
 import { passesFilter, passesCanadaGate, isRemote, isTech, isFresh } from "../lib/jobs/filter.js";
 import { classifyJobs } from "../lib/llm/classifyJobs.js";
 import { applyMemory } from "../lib/jobs/companyMemory.js";
@@ -28,7 +29,7 @@ import { byScore, byNewest } from "../lib/jobs/score.js";
 
 // RemoteOK and Remote.co are left out: RemoteOK returns mostly non-dev listings,
 // Remote.co 403-blocks automated requests.
-const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchJobBank, fetchTechNL, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchSmartRecruiters, fetchWeWorkRemotely, fetchJobicy, fetchRemotive];
+const SOURCES = [fetchSiliconHarbour, fetchDigitalNS, fetchJobBank, fetchTechNL, fetchCanadianCompanies, fetchGreenhouse, fetchAshby, fetchHimalayas, fetchLever, fetchWorkday, fetchSmartRecruiters, fetchWeWorkRemotely, fetchJobicy, fetchRemotive];
 const POLL_MS = 5 * 60 * 1000;
 
 // How many sources the feed pulls from - used by the page's status line.
