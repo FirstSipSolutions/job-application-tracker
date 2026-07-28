@@ -1,18 +1,18 @@
 # Job Application Tracker
 
-V2 rebuild - frontend-only (React + Vite), Supabase for database and auth.
+Track job applications from search to offer. React + Vite, Supabase for auth and data,
+with an AI layer that filters and ranks remote job listings.
 
 **Live:** https://first-sip-application-tracker.netlify.app/
-**Org:** https://github.com/FirstSipSolutions
 
-## Setup
+## Run
 
 ```sh
 npm install
 npm run dev
 ```
 
-Create `.env.local` with:
+`.env.local`:
 
 ```
 VITE_SUPABASE_URL=
@@ -20,27 +20,38 @@ VITE_SUPABASE_ANON_KEY=
 GROQ_API_KEY=
 ```
 
-`GROQ_API_KEY` is server-side only - it is read by the `/api/classify` function
-(Cloudflare Pages in prod, Vite middleware in dev) and never bundled into the
-client. Do not prefix it with `VITE_`.
+`GROQ_API_KEY` stays server-side (used by `/api/classify`), so no `VITE_` prefix.
 
-## Stack
+## AI usage (free)
 
-- React 19 + Vite
-- React Router
-- Supabase (DB + Auth)
-- Custom CSS
-- motion (animations)
-- Groq AI (job classification)
-- Recharts (dashboard charts)
-- dnd-kit (drag and drop)
+The only AI call is job classification via Groq (`llama-3.1-8b-instant`, free tier).
+It is built to stay free:
 
-## DSA in Practice
+- Runs only after a cheap regex pre-filter, so the model sees only real candidates
+- Results cached 7 days per job, so repeat visits cost 0 tokens
+- Small chunks and trimmed descriptions to stay under free-tier limits
+- Stops on rate limit (429) and falls back to regex; nothing breaks
+- With no key set, classification is skipped entirely (regex only)
 
-See [`docs/dsa.md`](docs/dsa.md) for full explanations with code samples.
+Groq's free tier is rate-limited, not billed, so it cannot charge unless a paid
+plan is added. Watch usage at https://console.groq.com (Usage / Limits).
 
-**Hash Map** - `src/hooks/useResumes.js` - resume stats aggregated in O(N), read in O(1) per card instead of O(N*M) naive filtering.
+## Test
 
-**Set (dismissed events)** - `src/context/EventsContext.jsx` - O(1) membership check on every panel render instead of O(N) array scan.
+```sh
+npm test
+```
 
-**Set (URL pattern matching)** - `src/components/modals/AddApplicationModal.jsx` - O(1) subdomain and path lookups to extract company name from any job board URL.
+## Structure
+
+```
+src/
+  pages/         one file per route
+  components/     UI grouped by area (jobs, dashboard, modals, layout)
+  hooks/          data hooks (useJobFeed, useApplications, useResumes)
+  context/        app-wide state (theme, profile, events)
+  lib/jobs/       the job feed: sources, normalize, filter, score, memory
+  lib/llm/        AI classification client
+functions/api/   serverless: Groq classify + source proxies
+```
+```
