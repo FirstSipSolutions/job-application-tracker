@@ -35,11 +35,21 @@ export function isTech(job) {
 
 // Canada ingest gate: at least one positive (or non-negative) Canada signal.
 export function passesCanadaGate(job) {
-  return job.category === "canadian"
+  if (job.canadaOpen === false) return false;
+
+  const loc = `${job.location ?? ""} ${job.workplaceType ?? ""}`.toLowerCase();
+  const canadaOrGlobal = /canad|worldwide|anywhere|\bglobal\b|north\s+america|americas/.test(loc);
+
+  // If the location names a specific foreign place and never offers Canada or a
+  // global scope, drop it - this is what keeps US-only (and UK/EU/etc.) roles out.
+  const foreign = /\bunited states\b|\busa\b|\bu\.s\.?\b|\bus\b|united kingdom|\buk\b|\beu\b|europe|germany|france|spain|india|australia|ireland|netherlands|poland|brazil|mexico|portugal|singapore|philippines|\bemea\b|\bapac\b|latam/.test(loc);
+  if (foreign && !canadaOrGlobal) return false;
+
+  // Otherwise require a real Canada signal.
+  return job.canadaOpen === true
     || job._canadaSource === "source"
-    || isCanadaJob(job)
-    || job.canadaOpen === true
-    || isCanadaEligible(job);
+    || job.category === "canadian"
+    || canadaOrGlobal;
 }
 
 export function passesFilter(job) {
