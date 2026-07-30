@@ -5,7 +5,9 @@
 const HEADERS = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
-  "Cache-Control": "s-maxage=300",
+  // Long CDN cache so many visitors on the live URL share one upstream call,
+  // keeping total Adzuna usage far under the free daily cap.
+  "Cache-Control": "s-maxage=21600",
 };
 
 export async function onRequest(context) {

@@ -430,8 +430,9 @@ export function fromJobBank(job) {
 
 export function fromAdzuna(job) {
   const loc    = job.location?.display_name ?? "";
+  // Check the description too - many roles are remote but only say so in the body.
   const text   = `${job.title ?? ""} ${loc} ${job.description ?? ""}`;
-  const remote = /remote|work\s+from\s+home|telecommut|anywhere/i.test(text);
+  const remote = /remote|work\s+from\s+home|telecommut|anywhere|fully\s+remote|remote[- ]first|work\s+from\s+anywhere|distributed\s+team/i.test(text);
   const salary = job.salary_min
     ? `$${Math.round(job.salary_min / 1000)}k - $${Math.round(job.salary_max / 1000)}k CAD`
     : null;
