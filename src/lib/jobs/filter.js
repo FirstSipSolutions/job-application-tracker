@@ -179,8 +179,8 @@ export function getExperienceLevel(job) {
   }
 
   // Entry-level keywords
-  if (/new\s*grad|entry[- ]level|0\s*[-–]\s*[12]\s*year|no\s+experience\s+required/i.test(snippet + " " + title)) return "0-2";
-  if (/\bjunior\b|\bjr\.?\b|\bassociate\s+(software|developer|engineer)\b/i.test(title)) return "0-2";
+  if (/new\s*grad|entry[- ]level|0\s*[-–]\s*[12]\s*year|no\s+experience\s+required|early\s+career|new\s+graduate/i.test(snippet + " " + title)) return "0-2";
+  if (/\bjunior\b|\bjr\.?\b|\bassociate\s+(software|developer|engineer)\b|\b(software\s+)?(engineer|developer)\s+i\b|\bgraduate\s+(engineer|developer)\b/i.test(title)) return "0-2";
 
   // Mid-level keywords in title
   if (/\bmid[- ]?level\b|\bintermediate\b/i.test(title)) return "2-5";

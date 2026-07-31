@@ -144,8 +144,12 @@ export default function JobsPage() {
           } else {
             if (e === expLevel) return true;   // Groq confirmed match - short-circuit
             if (e !== null)     return false;  // Groq says different tier
-            // No Groq data yet - fall back to title keywords
-            if (expLevel === "0-2") return isJunior;
+            // No Groq data yet - fall back to title keywords.
+            // Entry: a junior can realistically apply to anything that is not
+            // senior-titled, so include unclassified non-senior roles here.
+            // Roles that explicitly need 5+ years are already excluded above
+            // (getExperienceLevel reads the snippet), so this stays honest.
+            if (expLevel === "0-2") return !isSenior;
             if (expLevel === "5+")  return isSenior;
             return !isSenior && !isJunior;     // mid: include anything with no strong signal
           }
