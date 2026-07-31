@@ -17,6 +17,13 @@ const COMPANIES = [
   { name: "KOHO",           ats: "ashby",      slug: "koho" },          // Toronto, ON
   { name: "Jane",           ats: "ashby",      slug: "jane" },          // Vancouver, BC
   { name: "Jobber",         ats: "ashby",      slug: "jobber" },        // Edmonton, AB
+  { name: "Rewind",         ats: "ashby",      slug: "rewind" },        // Ottawa, ON
+  { name: "Solink",         ats: "ashby",      slug: "solink" },        // Ottawa, ON
+  { name: "Noibu",          ats: "ashby",      slug: "noibu" },         // Ottawa, ON
+  { name: "Relay",          ats: "ashby",      slug: "relayfi" },       // Toronto, ON
+  { name: "Felix",          ats: "ashby",      slug: "felix" },         // Toronto, ON
+  { name: "Flipp",          ats: "greenhouse", slug: "flipp" },         // Toronto, ON
+  { name: "Ritual",         ats: "greenhouse", slug: "ritual" },        // Toronto, ON
 ];
 
 const TIMEOUT_MS = 8000;

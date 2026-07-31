@@ -313,6 +313,10 @@ function mapHimalayasSeniority(arr) {
 export function fromHimalayas(job) {
   const restrictions = job.locationRestrictions ?? [];
   const locs   = restrictions.join(", ") || "Remote";
+  // Canada-eligible only if unrestricted (worldwide) or Canada/North America is
+  // listed - otherwise it is a foreign-only role (Egypt, Turkey, etc.) and drops.
+  const canadaOpen = restrictions.length === 0
+    || /canada|north\s+america|worldwide|anywhere/i.test(locs);
   const salary = job.minSalary && job.maxSalary
     ? `$${Math.round(job.minSalary / 1000)}k - $${Math.round(job.maxSalary / 1000)}k ${job.currency ?? "USD"}`
     : null;
@@ -329,8 +333,8 @@ export function fromHimalayas(job) {
     url:                job.applicationLink ?? job.guid ?? "",
     source:             "Himalayas",
     category:           "remote",
-    canadaOpen:         true,
-    _canadaSource:      "source",
+    canadaOpen,
+    _canadaSource:      canadaOpen ? "source" : undefined,
     sourceExp:          mapHimalayasSeniority(job.seniority),
     descriptionSnippet: toSnippet(job.description ?? job.excerpt ?? ""),
   };
