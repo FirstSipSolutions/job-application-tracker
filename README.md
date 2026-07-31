@@ -3,7 +3,8 @@
 Track job applications from search to offer. React + Vite, Supabase for auth and data,
 with an AI layer that filters and ranks remote job listings.
 
-**Live:** https://first-sip-application-tracker.netlify.app/
+**Deploy:** Cloudflare Pages. The `functions/api/` endpoints are Pages Functions,
+so the AI classifier and source proxies only run on Cloudflare, not on static hosts.
 
 ## Run
 
@@ -18,9 +19,19 @@ npm run dev
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 GROQ_API_KEY=
+ADZUNA_APP_ID=
+ADZUNA_APP_KEY=
 ```
 
-`GROQ_API_KEY` stays server-side (used by `/api/classify`), so no `VITE_` prefix.
+`GROQ_API_KEY`, `ADZUNA_APP_ID`, and `ADZUNA_APP_KEY` stay server-side (used by the
+`functions/api/` endpoints), so no `VITE_` prefix.
+
+## Deploy (Cloudflare Pages)
+
+Build command `npm run build`, output directory `dist`. The `functions/api/`
+folder is picked up automatically as Pages Functions. Set the three server-side
+secrets above in the Pages project (Settings > Environment variables). Without
+them the classifier returns 503 and Adzuna returns empty, but nothing breaks.
 
 ## AI usage (free)
 

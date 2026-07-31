@@ -144,8 +144,12 @@ export default function JobsPage() {
           } else {
             if (e === expLevel) return true;   // Groq confirmed match - short-circuit
             if (e !== null)     return false;  // Groq says different tier
-            // No Groq data yet - fall back to title keywords
-            if (expLevel === "0-2") return isJunior;
+            // No Groq data yet - fall back to title keywords.
+            // Entry: a junior can realistically apply to anything that is not
+            // senior-titled, so include unclassified non-senior roles here.
+            // Roles that explicitly need 5+ years are already excluded above
+            // (getExperienceLevel reads the snippet), so this stays honest.
+            if (expLevel === "0-2") return !isSenior;
             if (expLevel === "5+")  return isSenior;
             return !isSenior && !isJunior;     // mid: include anything with no strong signal
           }
@@ -155,13 +159,15 @@ export default function JobsPage() {
       .sort(sortFn);
 
     // Cap each company so a few big employers can't flood the feed - keeps it
-    // diverse. Skipped when you filter by a specific source.
+    // diverse. The feed is small after the Canada + jr-mid filters, so a cap of
+    // 2 stops two or three large employers from eating most of the visible
+    // slots. Skipped when you filter by a specific source.
     if (provider) return ranked;
     const perCompany = {};
     return ranked.filter(j => {
       const c = (j.company ?? "").toLowerCase().trim();
       perCompany[c] = (perCompany[c] ?? 0) + 1;
-      return perCompany[c] <= 3;
+      return perCompany[c] <= 2;
     });
   }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey]);
 

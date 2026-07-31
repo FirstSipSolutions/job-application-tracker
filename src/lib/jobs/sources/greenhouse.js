@@ -24,7 +24,6 @@ const COMPANIES = [
   { name: "Mixpanel",      slug: "mixpanel",      category: "global-remote" },
   { name: "Descript",      slug: "descript",      category: "global-remote" },
   { name: "Samsara",       slug: "samsara",       category: "global-remote" },
-  { name: "Netlify",       slug: "netlify",       category: "global-remote" },
   { name: "Postman",       slug: "postman",       category: "global-remote" },
   { name: "LaunchDarkly",  slug: "launchdarkly",  category: "global-remote" },
   { name: "Algolia",       slug: "algolia",       category: "global-remote" },

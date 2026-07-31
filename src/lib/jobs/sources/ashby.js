@@ -32,6 +32,7 @@ const COMPANIES = [
   { name: "Ramp",        slug: "ramp",       category: "fintech" },
   { name: "Mercury",     slug: "mercury",    category: "fintech" },
   // ── Canadian ──────────────────────────────────────────────────────────────
+  { name: "Wealthsimple", slug: "wealthsimple", category: "canadian" },
   { name: "Cohere",      slug: "cohere",     category: "canadian" },
   { name: "Clearco",     slug: "clearco",    category: "canadian" },
   { name: "Trulioo",     slug: "trulioo",    category: "canadian" },
