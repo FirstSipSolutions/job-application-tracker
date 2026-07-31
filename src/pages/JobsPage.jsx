@@ -114,7 +114,7 @@ export default function JobsPage() {
     const sortFn = shuffleKey > 0
       ? (a, b) => jobSeed(shuffleKey, a.url ?? a.id) - jobSeed(shuffleKey, b.url ?? b.id)
       : byScore();
-    return jobs
+    const ranked = jobs
       .filter(j => {
         if (j.canadaOpen === false) return false;
         if (!matchesRegion(j, region)) return false;
@@ -153,6 +153,16 @@ export default function JobsPage() {
         return true;
       })
       .sort(sortFn);
+
+    // Cap each company so a few big employers can't flood the feed - keeps it
+    // diverse. Skipped when you filter by a specific source.
+    if (provider) return ranked;
+    const perCompany = {};
+    return ranked.filter(j => {
+      const c = (j.company ?? "").toLowerCase().trim();
+      perCompany[c] = (perCompany[c] ?? 0) + 1;
+      return perCompany[c] <= 3;
+    });
   }, [jobs, region, province, provider, posted, tech, expLevel, shuffleKey]);
 
   function resetFilters() {
