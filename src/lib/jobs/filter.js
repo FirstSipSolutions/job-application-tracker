@@ -40,16 +40,13 @@ export function passesCanadaGate(job) {
   const loc = `${job.location ?? ""} ${job.workplaceType ?? ""}`.toLowerCase();
   const canadaOrGlobal = /canad|worldwide|anywhere|\bglobal\b|north\s+america|americas/.test(loc);
 
-  // If the location names a specific foreign place and never offers Canada or a
-  // global scope, drop it - this is what keeps US-only (and UK/EU/etc.) roles out.
-  const foreign = /\bunited states\b|\busa\b|\bu\.s\.?\b|\bus\b|united kingdom|\buk\b|\beu\b|europe|germany|france|spain|india|australia|ireland|netherlands|poland|brazil|mexico|portugal|singapore|philippines|\bemea\b|\bapac\b|latam/.test(loc);
+  // Drop only locations that explicitly name a foreign place with no Canada or
+  // global scope. Ambiguous "Remote" (no country) is allowed through so Groq and
+  // the UI region filter can refine it - being strict here collapses the feed.
+  const foreign = /\bunited states\b|\busa\b|\bu\.s\.?\b|\bus\b|united kingdom|\buk\b|\beu\b|europe|germany|france|spain|india|australia|ireland|netherlands|poland|brazil|mexico|portugal|singapore|philippines|turkey|turkiye|ukraine|pakistan|nigeria|argentina|colombia|romania|egypt|indonesia|vietnam|bangladesh|kenya|\bemea\b|\bapac\b|latam/.test(loc);
   if (foreign && !canadaOrGlobal) return false;
 
-  // Otherwise require a real Canada signal.
-  return job.canadaOpen === true
-    || job._canadaSource === "source"
-    || job.category === "canadian"
-    || canadaOrGlobal;
+  return true;
 }
 
 export function passesFilter(job) {

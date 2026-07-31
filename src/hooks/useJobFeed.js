@@ -37,10 +37,13 @@ const POLL_MS = 5 * 60 * 1000;
 export const JOB_SOURCE_COUNT = SOURCES.length;
 
 function dedup(arr) {
+  // Key on company + title, not URL - one role often lists under many location
+  // URLs, which URL-dedup misses and floods the feed with the same job.
   const seen = new Set();
   return arr.filter(j => {
-    if (!j.url || seen.has(j.url)) return false;
-    seen.add(j.url);
+    const key = `${(j.company ?? "").toLowerCase().trim()}|${(j.title ?? "").toLowerCase().trim()}`;
+    if (key === "|" || seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
