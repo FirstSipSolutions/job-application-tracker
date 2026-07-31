@@ -74,7 +74,11 @@ export async function classifyWithGroq(jobs, apiKey) {
       model:       MODEL,
       messages:    [{ role: "user", content: buildPrompt(trimmed) }],
       temperature: 0,
-      max_tokens:  trimmed.length * 36 + 60,
+      // gpt-oss is a reasoning model: it spends tokens thinking before it writes
+      // content. Keep reasoning minimal and leave enough room for both the
+      // reasoning and the JSON, or content comes back empty (finish: length).
+      reasoning_effort: "low",
+      max_tokens:  trimmed.length * 90 + 500,
     }),
   });
 
