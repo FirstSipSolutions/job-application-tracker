@@ -426,3 +426,29 @@ export function fromJobBank(job) {
   };
 }
 
+// ── Adzuna (Canada aggregator) ────────────────────────────────────────────────
+
+export function fromAdzuna(job) {
+  const loc    = job.location?.display_name ?? "";
+  // Check the description too - many roles are remote but only say so in the body.
+  const text   = `${job.title ?? ""} ${loc} ${job.description ?? ""}`;
+  const remote = /remote|work\s+from\s+home|telecommut|anywhere|fully\s+remote|remote[- ]first|work\s+from\s+anywhere|distributed\s+team/i.test(text);
+  const salary = job.salary_min
+    ? `$${Math.round(job.salary_min / 1000)}k - $${Math.round(job.salary_max / 1000)}k CAD`
+    : null;
+  return {
+    id:                 `adz-${job.id}`,
+    title:              job.title ?? "",
+    company:            job.company?.display_name ?? "",
+    location:           remote ? "Remote, Canada" : loc,
+    workplaceType:      remote ? "Remote" : loc,
+    salary,
+    currency:           salary ? "CAD" : null,
+    postedAt:           job.created ?? null,
+    url:                job.redirect_url ?? "",
+    source:             "Adzuna",
+    category:           "canadian", // Canada endpoint - passesCanadaGate, isRemote keeps only remote
+    descriptionSnippet: toSnippet(job.description ?? ""),
+  };
+}
+
