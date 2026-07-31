@@ -7,7 +7,9 @@
 // classify job postings - not as an open proxy to Groq.
 
 const GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL      = "llama-3.1-8b-instant";
+// Groq deprecated llama-3.1-8b-instant (free-tier shutdown Aug 2026); this is
+// their recommended free replacement. Swap here if it changes again.
+const MODEL      = "openai/gpt-oss-20b";
 const DESC_CHARS = 150;
 
 export const MAX_JOBS = 8;
@@ -76,7 +78,10 @@ export async function classifyWithGroq(jobs, apiKey) {
     }),
   });
 
-  if (!res.ok) return { status: res.status, results: null, usage: null };
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    return { status: res.status, results: null, usage: null, detail: detail.slice(0, 300) };
+  }
 
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content ?? "";

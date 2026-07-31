@@ -26,7 +26,7 @@ export async function onRequestPost(context) {
 
   try {
     const out = await classifyWithGroq(jobs, apiKey);
-    if (out.status !== 200) return reply(out.status === 429 ? 429 : 502, { error: `Groq ${out.status}` });
+    if (out.status !== 200) return reply(out.status === 429 ? 429 : 502, { error: `Groq ${out.status}`, detail: out.detail ?? null });
     return reply(200, { results: out.results, usage: out.usage });
   } catch {
     return reply(502, { error: "Groq request failed" });
