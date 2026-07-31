@@ -6,7 +6,8 @@ import { classifyWithGroq, MAX_JOBS } from "./functions/api/_groq.js";
 // Dev-only mirrors of the Cloudflare Pages Functions in functions/api/.
 // These must live in a plugin: `configureServer` is a plugin hook and is
 // silently ignored when placed under the `server` config option.
-function devApiProxy(groqKey) {
+function devApiProxy(env) {
+  const groqKey = env.GROQ_API_KEY;
   const json = (res, body) => {
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify(body));
@@ -15,6 +16,21 @@ function devApiProxy(groqKey) {
   return {
     name: "dev-api-proxy",
     configureServer(server) {
+      // Adzuna: Canada job aggregator. Keeps app_id/app_key server-side.
+      server.middlewares.use("/api/adzuna", async (req, res) => {
+        const id = env.ADZUNA_APP_ID, key = env.ADZUNA_APP_KEY;
+        if (!id || !key) return json(res, { results: [] });
+        const params = new URLSearchParams((req.url ?? "").split("?")[1] ?? "");
+        const what   = params.get("what") ?? "software developer";
+        const page   = params.get("page") ?? "1";
+        try {
+          const r = await fetch(`https://api.adzuna.com/v1/api/jobs/ca/search/${page}?app_id=${id}&app_key=${key}&results_per_page=50&what=${encodeURIComponent(what)}&content-type=application/json`);
+          if (!r.ok) return json(res, { results: [] });
+          res.setHeader("Content-Type", "application/json");
+          res.end(await r.text());
+        } catch { json(res, { results: [] }); }
+      });
+
       // Groq classification: keeps the API key out of the client bundle.
       // Reads GROQ_API_KEY from .env.local (prod uses a CF Pages secret).
       server.middlewares.use("/api/classify", async (req, res) => {
@@ -107,7 +123,7 @@ function devApiProxy(groqKey) {
 const ROOT = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), devApiProxy(loadEnv(mode, ROOT, "").GROQ_API_KEY)],
+  plugins: [react(), devApiProxy(loadEnv(mode, ROOT, ""))],
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
