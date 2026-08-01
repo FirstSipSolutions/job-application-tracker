@@ -5,11 +5,12 @@ import { fromAdzuna } from "../normalize.js";
 // call cap - repeat loads and live polling reuse the cache instead of calling.
 const BASE       = "/api/adzuna";
 const TIMEOUT_MS = 10000;
-// Remote-scoped queries: the whole feed only shows remote roles, and this is
-// the Canada endpoint, so leading with "remote" pulls Canadian remote listings
-// instead of wasting each page on on-site jobs that get filtered out anyway.
-const TERMS      = ["remote software developer", "remote software engineer", "remote web developer"];
-const PAGES      = 3;                     // 3 pages x 3 terms = 9 calls per refresh
+// Remote-scoped queries on the Canada endpoint. "remote developer" is by far
+// the highest-yield term (a full page of remote Canadian roles each time), so
+// it leads; the rest widen coverage across stacks. Every result is Canadian and
+// remote by construction, so this is the main volume source.
+const TERMS      = ["remote developer", "remote software engineer", "remote full stack", "remote frontend developer", "remote backend developer"];
+const PAGES      = 4;                     // 4 pages x 5 terms = 20 calls per refresh (cached 6h)
 const CACHE_KEY  = "cv-adzuna-cache";
 const CACHE_TTL  = 6 * 60 * 60 * 1000;    // 6 hours
 
