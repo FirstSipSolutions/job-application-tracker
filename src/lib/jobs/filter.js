@@ -6,8 +6,11 @@
 // The pattern lists live in patterns.js; Groq refines what the regex misses.
 import { NON_DEV, DEV_ROLE, TECH_STACKS, TAG_PATTERNS } from "./patterns.js";
 
-// Drop jobs older than this. Cuts ghost jobs and filled roles.
-const MAX_AGE_DAYS = 14;
+// Drop jobs older than this. Cuts ghost jobs and filled roles, but 14 days was
+// throwing away most of the feed - aggregators list good roles that are 2-4
+// weeks old and still open. 30 days is the balance: roughly triples the pool
+// while staying inside the window where a posting is usually still live.
+const MAX_AGE_DAYS = 30;
 
 export function isFresh(job) {
   if (!job.postedAt) return false;
